@@ -107,95 +107,52 @@ void convertInputData(dataType *inData, int size) {
 	int buf;
 	for (int i=0; i<size; i++) {
 		switch(inData[i]) {
-			case 0x000000: buf = 0; inData[i] = buf; break;
-			case 0x166b46: buf = 1; inData[i] = buf; break;
-			case 0x69ba73: buf = 2; inData[i] = buf; break;
-			case 0xd2f0af: buf = 4; inData[i] = buf; break;
-			case 0x3e6c60: buf = 1; inData[i] = buf; break;
-			case 0x397a4c: buf = 1; inData[i] = buf; break;
-			case 0x569358: buf = 2; inData[i] = buf; break;
-			case 0x77c063: buf = 7; inData[i] = buf; break;
-			case 0xbedb92: buf = 4; inData[i] = buf; break;
-			case 0x247e61: buf = 1; inData[i] = buf; break;
-			case 0x135e46: buf = 1; inData[i] = buf; break;
+			case 0x87dad2: buf = 3; inData[i] = buf; break;
+			case 0x68c5b0: buf = 3; inData[i] = buf; break;
+			case 0x9cb58b: buf = 7; inData[i] = buf; break;
+			case 0x556268: buf = 1; inData[i] = buf; break;
+			case 0x85897a: buf = 1; inData[i] = buf; break;
+			case 0x667a7b: buf = 1; inData[i] = buf; break;
+			case 0xdbe0c9: buf = 4; inData[i] = buf; break;
+			case 0xdb9fa7: buf = 0; inData[i] = buf; break; //rooftop
+			case 0x7aa35f: buf = 7; inData[i] = buf; break;
+			case 0x6f838a: buf = 1; inData[i] = buf; break;
+			case 0x6d8188: buf = 1; inData[i] = buf; break;
+			case 0x627063: buf = 1; inData[i] = buf; break;
+			case 0x7d9152: buf = 2; inData[i] = buf; break;
+			case 0x5eac9e: buf = 3; inData[i] = buf; break;
+			case 0x97b18e: buf = 7; inData[i] = buf; break;
+			case 0xedebec: buf = 4; inData[i] = buf; break;
+			case 0xcbf3fd: buf = 3; inData[i] = buf; break; //light river
+			case 0x98a093: buf = 1; inData[i] = buf; break;
+			case 0x709079: buf = 1; inData[i] = buf; break;
+			case 0x183c63: buf = 3; inData[i] = buf; break;
 			case 0xa1acc8: buf = 5; inData[i] = buf; break;
-			case 0x7d796d: buf = 4; inData[i] = buf; break;
-			case 0xacb3ab: buf = 0; inData[i] = buf; break;
-			case 0x16314f: buf = 3; inData[i] = buf; break;
-			case 0x29452e: buf = 1; inData[i] = buf; break;
-			case 0x2e502f: buf = 1; inData[i] = buf; break;
-			case 0x464b37: buf = 4; inData[i] = buf; break;
-			case 0x1d2624: buf = 0; inData[i] = buf; break;
-			case 0x2a462f: buf = 1; inData[i] = buf; break;
-			case 0x2a462d: buf = 1; inData[i] = buf; break;
-			case 0x375439: buf = 1; inData[i] = buf; break;
-			case 0x2b4730: buf = 1; inData[i] = buf; break;
-			case 0x263f2a: buf = 1; inData[i] = buf; break;
-			case 0x314e30: buf = 1; inData[i] = buf; break;
-			case 0x38513b: buf = 1; inData[i] = buf; break;
-			case 0x596d6c: buf = 5; inData[i] = buf; break;
-			case 0x3a5568: buf = 5; inData[i] = buf; break;
-			case 0x7a8567: buf = 4; inData[i] = buf; break;
-			case 0x566c6a: buf = 5; inData[i] = buf; break;
-			case 0x586a6a: buf = 5; inData[i] = buf; break;						
+			case 0x5b897f: buf = 1; inData[i] = buf; break;
+			case 0xd1d1d1: buf = 4; inData[i] = buf; break;
+			case 0x74875a: buf = 7; inData[i] = buf; break;
+			case 0x50545d: buf = 1; inData[i] = buf; break;
+			case 0x6b877b: buf = 1; inData[i] = buf; break;
+			case 0x7a958c: buf = 1; inData[i] = buf; break;
+			case 0x526f6a: buf = 1; inData[i] = buf; break;
+			case 0x0c0172: buf = 3; inData[i] = buf; break;
+			case 0x94bea8: buf = 2; inData[i] = buf; break;
+			case 0x7f8a8e: buf = 1; inData[i] = buf; break;
+			case 0xb1b5c1: buf = 1; inData[i] = buf; break;
+			case 0x9cb47a: buf = 7; inData[i] = buf; break;	
+			case 0x8c816b: buf = 6; inData[i] = buf; break;
+			case 0x3c496b: buf = 0; inData[i] = buf; break;	
+			case 0x939081: buf = 7; inData[i] = buf; break;
+			case 0x1f2e4b: buf = 0; inData[i] = buf; break;	
 			default: buf = 5; inData[i] = buf; break;
 		}
 	}
 }
  
-void loadInputData(char *inPath, dataType *inData, int size) {
-	
-	FILE *dataFile = fopen(inPath, "r");
-
-	char line[1024];
-	while (fgets(line, 1024, dataFile)) {
-		char* tmp = strdup(line);
-		for (int i=0; i<size; i++) {
-			switch(atoi(getfield(tmp, i))) {
-				case 0x000000: inData[i] = 0; break;
-				case 0x166b46: inData[i] = 1; break;
-				case 0x69ba73: inData[i] = 2; break;
-				case 0xd2f0af: inData[i] = 4; break;
-				case 0x3e6c60: inData[i] = 1; break;
-				case 0x397a4c: inData[i] = 1; break;
-				case 0x569358: inData[i] = 2; break;
-				case 0x77c063: inData[i] = 7; break;
-				case 0xbedb92: inData[i] = 4; break;
-				case 0x247e61: inData[i] = 1; break;
-				case 0x135e46: inData[i] = 1; break;
-				case 0xa1acc8: inData[i] = 5; break;
-				case 0x7d796d: inData[i] = 4; break;
-				case 0xacb3ab: inData[i] = 0; break;
-				case 0x16314f: inData[i] = 3; break;
-				case 0x29452e: inData[i] = 1; break;
-				case 0x2e502f: inData[i] = 1; break;
-				case 0x464b37: inData[i] = 4; break;
-				case 0x1d2624: inData[i] = 0; break;
-				case 0x2a462f: inData[i] = 1; break;
-				case 0x2a462d: inData[i] = 1; break;
-				case 0x375439: inData[i] = 1; break;
-				case 0x2b4730: inData[i] = 1; break;
-				case 0x263f2a: inData[i] = 1; break;
-				case 0x314e30: inData[i] = 1; break;
-				case 0x38513b: inData[i] = 1; break;
-				case 0x596d6c: inData[i] = 5; break;
-				case 0x3a5568: inData[i] = 5; break;
-				case 0x7a8567: inData[i] = 4; break;
-				case 0x566c6a: inData[i] = 5; break;
-				case 0x586a6a: inData[i] = 5; break;						
-				default: inData[i] = 5; break;
-			}		
-		}
-		free(tmp);
-	}
-
-	fclose(dataFile);
-}
-
 //initialization
 void init(dataType *a, float normal, float lush, int burningOnes) {
 
-	for (int i=0; i<WIDTH*HEIGHT; i++) a[i] = 2;
+	for (int i=0; i<WIDTH*HEIGHT; i++) a[i] = 0;
 
 	int randomIndex;
 	srand(time(NULL));
@@ -205,7 +162,7 @@ void init(dataType *a, float normal, float lush, int burningOnes) {
 	// filled ones (normal)
 	for (int i=0; i<items; i++) {
 		randomIndex = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));		
-		a[randomIndex] = 0;
+		a[randomIndex] = 2;
 	}
 
 	int itemsLush = floor(WIDTH*HEIGHT*lush);
@@ -220,6 +177,23 @@ void init(dataType *a, float normal, float lush, int burningOnes) {
 	for (int i=0; i<burningOnes; i++) {
 		randomIndex = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));		
 		a[randomIndex] = burning;
+	}
+}
+
+setSomeTreesOnFire(dataType *dataIn, int size, int burningOnes) {
+	int burningTrees = 0, randomIndex = 0;
+	dataType buf = 0;
+
+	int maxTries = 1000, x = 0;
+
+	while (burningTrees < burningOnes && x < maxTries) {
+		randomIndex = floor(( (float) rand() / RAND_MAX) * ( (float) size));
+		buf = dataIn[randomIndex];
+		if (buf == 1 || buf == 2) {
+			dataIn[randomIndex] = burning;
+			burningTrees++;
+		}
+		x++;
 	}
 }
  
@@ -450,6 +424,7 @@ int main(int argc, char *argv[]) {
 		loadImage(inPath, &dataIn, &width, &height, 0);
 		printf("Converting input data...\n");
 		convertInputData(dataIn, WIDTH*HEIGHT);
+		setSomeTreesOnFire(dataIn, WIDTH*HEIGHT, burningOnes);
 	}
 
 	if (!outSet) {
