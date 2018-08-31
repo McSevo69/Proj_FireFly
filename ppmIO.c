@@ -29,7 +29,16 @@ void loadImage(
 		exit(1);
 	}
 	fgets(buffer, 200, file); // Type
-	// assume no comment for now
+
+	//check for comments
+	int c = getc(file);
+	while (c == '#') {
+		while (getc(file) != '\n');
+		c = getc(file);
+	}
+
+	ungetc(c, file);
+
 	fscanf(file, "%d %d\n", width, height);
 	fgets(buffer, 200, file); // Max intensity
 
@@ -107,4 +116,3 @@ void writeImage(char *filename, int *data, int width, int height, int grayscale)
 	}
 	fclose(file);
 }
-

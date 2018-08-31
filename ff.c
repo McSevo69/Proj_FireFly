@@ -7,6 +7,7 @@
 
 #include "ppmIO.h"
 #include "visualizer.h"
+#include "colors.h"
 
 #define HEIGHT 720
 #define WIDTH 1280
@@ -28,18 +29,18 @@ enum compass {S = 0b1100, SW = 0b1101, W = 0b0001, NW = 0b0101, N = 0b0100, NE =
 //tbc
 
 dataType* getNeighbors(dataType *dataSet, dataType *neighborhood, int x, int y, int radius) {
-	int neighSize = (2*radius+1)*(2*radius+1);	
+	int neighSize = (2*radius+1)*(2*radius+1);
 
 	int centeredIndex = (neighSize-1)/2;
 	int dsIndex = y*WIDTH+x;
-	
+
 	neighborhood[centeredIndex] = dataSet[dsIndex]; //<-- center cell
 
 	//cross around center cell -> 4*r
 	for (int i=1; i <= radius; i++) {
 		neighborhood[centeredIndex-i*(2*radius+1)] = ((y - i) < 0) ? 1 //any number higher than $burning is okay here
 				: dataSet[dsIndex-i*WIDTH]; //above
-		neighborhood[centeredIndex+i*(2*radius+1)] = ((y + i) >= HEIGHT) ? 1 
+		neighborhood[centeredIndex+i*(2*radius+1)] = ((y + i) >= HEIGHT) ? 1
 				: dataSet[dsIndex+i*WIDTH]; //below
 		neighborhood[centeredIndex-i] = ((x - i) < 0) ? 1
 				: dataSet[dsIndex-i]; //left
@@ -50,19 +51,19 @@ dataType* getNeighbors(dataType *dataSet, dataType *neighborhood, int x, int y, 
 	//squares around x -> 4*r^2
 	for (int i=1; i <= radius; i++) {
 		for (int j=1; j <= radius; j++) {
-				
-			neighborhood[centeredIndex-i*(2*radius+1)-j] = ((y - i) < 0 || (x - j) < 0) ? 1 : 
-				dataSet[dsIndex-i*WIDTH-j]; //above left	
 
-			neighborhood[centeredIndex-i*(2*radius+1)+j] = ((y - i) < 0 || (x + j) >= WIDTH) ? 1 : 
-				dataSet[dsIndex-i*WIDTH+j]; //above right	
-				
+			neighborhood[centeredIndex-i*(2*radius+1)-j] = ((y - i) < 0 || (x - j) < 0) ? 1 :
+				dataSet[dsIndex-i*WIDTH-j]; //above left
+
+			neighborhood[centeredIndex-i*(2*radius+1)+j] = ((y - i) < 0 || (x + j) >= WIDTH) ? 1 :
+				dataSet[dsIndex-i*WIDTH+j]; //above right
+
 			neighborhood[centeredIndex+i*(2*radius+1)-j] = ((y + i) >= HEIGHT || (x - j) < 0) ? 1 :
 				dataSet[dsIndex+i*WIDTH-j]; //below left
 
 			neighborhood[centeredIndex+i*(2*radius+1)+j] = ((y + i) >= HEIGHT || (x + j) >= WIDTH) ? 1 :
 				dataSet[dsIndex+i*WIDTH+j]; //below right
-		}		
+		}
 	}
 
 	return neighborhood;
@@ -94,7 +95,7 @@ const char* getfield(char* line, int num) {
 	}
 	return NULL;
 }
- 
+
 //initialization
 void init(dataType *a, float normal, float lush, int burningOnes) {
 
@@ -107,7 +108,7 @@ void init(dataType *a, float normal, float lush, int burningOnes) {
 
 	// filled ones (normal)
 	for (int i=0; i<items; i++) {
-		randomIndex = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));		
+		randomIndex = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
 		a[randomIndex] = 2;
 	}
 
@@ -115,38 +116,37 @@ void init(dataType *a, float normal, float lush, int burningOnes) {
 
 	// filled ones (lush)
 	for (int i=0; i<itemsLush; i++) {
-		randomIndex = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));		
+		randomIndex = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
 		a[randomIndex] = 1;
 	}
 
 	// number of burning ones
 	for (int i=0; i<burningOnes; i++) {
-		randomIndex = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));		
+		randomIndex = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
 		a[randomIndex] = burning;
 	}
 }
 
-setSomeTreesOnFire(dataType *dataIn, int size, int burningOnes) {
+void setSomeTreesOnFire(dataType *dataIn, int size, int burningOnes) {
 	int burningTrees = 0, randomIndex = 0;
-	dataType buf = 0;
-
-	int maxTries = 1000, x = 0;
+	int maxTries = 10000000, x = 0;
 
 	while (burningTrees < burningOnes && x < maxTries) {
 		randomIndex = floor(( (float) rand() / RAND_MAX) * ( (float) size));
 		if (getInflammability(dataIn[randomIndex]) > 0) {
+			//printf("index %d burning...\n", randomIndex);
 			dataIn[randomIndex] = burning;
 			burningTrees++;
 		}
 		x++;
 	}
 }
- 
+
 int hasBurningNeighbors(int* dataset, int x, int y, int width, int height, int radius, enum compass wind) {
 
 	int cnt;
 	int index = y*width+x;
-	
+
 	cnt = (y - 1 >= 0) ? dataset[index - WIDTH] < -1 : 0;
 	cnt += (y - 1 >= 0 && x + 1 < width) ? dataset[index - WIDTH + 1] < -1 : 0;
 	cnt += (x + 1 < width) ? dataset[index + 1] < -1 : 0;
@@ -173,7 +173,7 @@ int hasBurningNeighbors(int* dataset, int x, int y, int width, int height, int r
 
 	if (wind % 2 == 0) { //vertical
 		for (int i = 2; i <= radius; i++) cnt += neighborhood[centerCell+moveUpDown*i*(2*radius+1)] < -1;
-		
+
 		for (int a = 2; a <= radius; a++) {
 			for (int b = 1; b < a; b++) {
 				cnt += neighborhood[centerCell+moveUpDown*a*(2*radius+1)+b] < -1; //counting left/right ones
@@ -182,7 +182,7 @@ int hasBurningNeighbors(int* dataset, int x, int y, int width, int height, int r
 		}
 	} else if (wind % 8 <= 3) { //horizontal
 		for (int i = 2; i <= radius; i++) cnt += neighborhood[centerCell+moveLeftRight*i] < -1;
-		
+
 		for (int a = 2; a <= radius; a++) {
 			for (int b = 1; b < a; b++) {
 				cnt += neighborhood[centerCell+moveLeftRight*a+b*(2*radius+1)] < -1; //counting above/below ones
@@ -202,7 +202,7 @@ int hasBurningNeighbors(int* dataset, int x, int y, int width, int height, int r
 
 	free(neighborhood);
 
-	return cnt;	
+	return cnt;
 }
 
 int getNewCellState(int* dataset, int x, int y, int width, int height, int radius, enum compass wind) {
@@ -211,17 +211,17 @@ int getNewCellState(int* dataset, int x, int y, int width, int height, int radiu
 
 	if (dataset[index] < -1) return dataset[index] + 1;
 	else {
-		if (getInflammability(dataset[index]) >= 3) { //tree dry
+		if (getInflammability(dataset[index]) > 3) { //tree dry
 			int burnState = hasBurningNeighbors(dataset, x, y, width, height, radius, wind);
 
 			if (burnState == -1) return burning + 1;
 			else if (burnState > 0) return burning;
 			else return dataset[index];
-		} else if(getInflammability(dataset[index]) >= 1) { //try normal
+		} else if(getInflammability(dataset[index]) > 0) { //tree normal
 			int burnState = hasBurningNeighbors(dataset, x, y, width, height, radius, wind);
 
 			if (burnState == -1) return burning + 1;
-			else if (burnState > 1) return burning -1;
+			else if (burnState > 0) return burning -1;
 			else return dataset[index];
 		} else return dataset[index];
 	}
@@ -246,9 +246,9 @@ void VectorsCPU(dataType *dataIn, dataType *dataOut, int* paramsOut, int radius,
 		for (int x = 0; x < WIDTH; x++) {
 			int index = y*WIDTH+x;
 
-			dataOut[index] = getNewCellState(dataIn, x, y, WIDTH, HEIGHT, radiusToGo, windToGo);			
+			dataOut[index] = getNewCellState(dataIn, x, y, WIDTH, HEIGHT, radiusToGo, windToGo);
 		}
-	}	
+	}
 }
 
 void printDataset(int *dataset, int width, int height) {
@@ -256,7 +256,7 @@ void printDataset(int *dataset, int width, int height) {
 	for (int y = 1; y + 1 < height; y++) {
 		for (int x = 1; x + 1 < width; x++) {
 			int index = y*width+x;
-			printf("%d ", dataset[index]);              
+			printf("%d ", dataset[index]);
 		}
 		printf("\n");
 	}
@@ -302,7 +302,7 @@ int main(int argc, char *argv[]) {
 	printf("Forest fire stream\n");
 	printf("Precision: %ld\n",sizeof(dataType)*8);
 	printf("=================\n");
-	
+
 	size_t benchmark = 0, inSet = 0, outSet = 0;
 	float normal = 0.4, lush = 0.1;
 	char *inPath, *outPath = "out.csv", *windString = "RAND";
@@ -375,7 +375,7 @@ int main(int argc, char *argv[]) {
 	if (!outSet) {
 		printf("WARNING: No output path (param: -out) set. Default is used.\n");
 	}
-		
+
 	printf("Running CPU...\n");
 	gettimeofday(&begin, NULL);
 	VectorsCPU(dataIn, dataOut[0], paramsOut[0], radius, wind);
@@ -389,7 +389,7 @@ int main(int argc, char *argv[]) {
 		printf("Exporting results...\n");
 		FILE* results;
 		FILE* paramsFile;
-		
+
 		if (outSet) {
 			results = fopen(outPath, "w");
 		} else {
@@ -403,7 +403,7 @@ int main(int argc, char *argv[]) {
 		snprintf(paramsFileName, sizeof(paramsFileName), "params_%dx%d_%d.csv", WIDTH, HEIGHT, it);
 
 		paramsFile = fopen(paramsFileName, "w");
-		
+
 		//exporting
 		for (int j = 0; j < it; j++) {
 
@@ -416,12 +416,12 @@ int main(int argc, char *argv[]) {
 
 			fprintf(results, "\n");
 		}
-		
+
 		fclose(results);
 		fclose(paramsFile);
 
 		printf("Exporting done.\n");
-	}	
+	}
 
 	if (vis) {
 		printf("Visualising...\n");
@@ -436,6 +436,6 @@ int main(int argc, char *argv[]) {
 	free(paramsOut);
 
 	printf("Goodbye!\n");
-	
+
 	return 0;
 }
