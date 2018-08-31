@@ -30,8 +30,7 @@ void startVisualisation(int width, int height, int iterations, dataType **dataOu
 	for (it = 0; it < iterations; ++it) {
 
 		for (int j=0; j<height; j++) {
-			for (int k=0; k<width; k++) {
-				
+			for (int k=0; k<width; k++) {				
 				currentCell = dataOut[it][j*width+k];				
 				int colorToDraw = getColorForRendering(currentCell);
 				SDL_SetRenderDrawColor(Main_Renderer, colorToDraw >> 16, colorToDraw >> 8 & 0xFF, colorToDraw & 0xFF, 255);

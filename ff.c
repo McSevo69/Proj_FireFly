@@ -13,16 +13,8 @@
 
 typedef int dataType;
 
-static int burning = 9;
-static int burnt = 8;
-// 7 - grass
-// 6 - grass (dry)
-// 5 - street
-// 4 - road (nature)
-// 3 - river
-// 2 - tree dry
-// 1 - tree
-// 0 - shadow (background)
+static int burning = -2;
+static int maxT = 3;
 
 //bits representing index
 //4 bits: SIGN|TOPDOWN|SIGN|LEFTRIGHT
@@ -45,7 +37,7 @@ dataType* getNeighbors(dataType *dataSet, dataType *neighborhood, int x, int y, 
 
 	//cross around center cell -> 4*r
 	for (int i=1; i <= radius; i++) {
-		neighborhood[centeredIndex-i*(2*radius+1)] = ((y - i) < 0) ? 1 //any number smaller than $burning is okay here
+		neighborhood[centeredIndex-i*(2*radius+1)] = ((y - i) < 0) ? 1 //any number higher than $burning is okay here
 				: dataSet[dsIndex-i*WIDTH]; //above
 		neighborhood[centeredIndex+i*(2*radius+1)] = ((y + i) >= HEIGHT) ? 1 
 				: dataSet[dsIndex+i*WIDTH]; //below
@@ -102,52 +94,6 @@ const char* getfield(char* line, int num) {
 	}
 	return NULL;
 }
-
-void convertInputData(dataType *inData, int size) {
-	int buf;
-	for (int i=0; i<size; i++) {
-		switch(inData[i]) {
-			case 0x87dad2: buf = 3; inData[i] = buf; break;
-			case 0x68c5b0: buf = 3; inData[i] = buf; break;
-			case 0x9cb58b: buf = 7; inData[i] = buf; break;
-			case 0x556268: buf = 1; inData[i] = buf; break;
-			case 0x85897a: buf = 1; inData[i] = buf; break;
-			case 0x667a7b: buf = 1; inData[i] = buf; break;
-			case 0xdbe0c9: buf = 4; inData[i] = buf; break;
-			case 0xdb9fa7: buf = 0; inData[i] = buf; break; //rooftop
-			case 0x7aa35f: buf = 7; inData[i] = buf; break;
-			case 0x6f838a: buf = 1; inData[i] = buf; break;
-			case 0x6d8188: buf = 1; inData[i] = buf; break;
-			case 0x627063: buf = 1; inData[i] = buf; break;
-			case 0x7d9152: buf = 2; inData[i] = buf; break;
-			case 0x5eac9e: buf = 3; inData[i] = buf; break;
-			case 0x97b18e: buf = 7; inData[i] = buf; break;
-			case 0xedebec: buf = 4; inData[i] = buf; break;
-			case 0xcbf3fd: buf = 3; inData[i] = buf; break; //light river
-			case 0x98a093: buf = 1; inData[i] = buf; break;
-			case 0x709079: buf = 1; inData[i] = buf; break;
-			case 0x183c63: buf = 3; inData[i] = buf; break;
-			case 0xa1acc8: buf = 5; inData[i] = buf; break;
-			case 0x5b897f: buf = 1; inData[i] = buf; break;
-			case 0xd1d1d1: buf = 4; inData[i] = buf; break;
-			case 0x74875a: buf = 7; inData[i] = buf; break;
-			case 0x50545d: buf = 1; inData[i] = buf; break;
-			case 0x6b877b: buf = 1; inData[i] = buf; break;
-			case 0x7a958c: buf = 1; inData[i] = buf; break;
-			case 0x526f6a: buf = 1; inData[i] = buf; break;
-			case 0x0c0172: buf = 3; inData[i] = buf; break;
-			case 0x94bea8: buf = 2; inData[i] = buf; break;
-			case 0x7f8a8e: buf = 1; inData[i] = buf; break;
-			case 0xb1b5c1: buf = 1; inData[i] = buf; break;
-			case 0x9cb47a: buf = 7; inData[i] = buf; break;	
-			case 0x8c816b: buf = 6; inData[i] = buf; break;
-			case 0x3c496b: buf = 0; inData[i] = buf; break;	
-			case 0x939081: buf = 7; inData[i] = buf; break;
-			case 0x1f2e4b: buf = 0; inData[i] = buf; break;	
-			default: buf = 5; inData[i] = buf; break;
-		}
-	}
-}
  
 //initialization
 void init(dataType *a, float normal, float lush, int burningOnes) {
@@ -188,8 +134,7 @@ setSomeTreesOnFire(dataType *dataIn, int size, int burningOnes) {
 
 	while (burningTrees < burningOnes && x < maxTries) {
 		randomIndex = floor(( (float) rand() / RAND_MAX) * ( (float) size));
-		buf = dataIn[randomIndex];
-		if (buf == 1 || buf == 2) {
+		if (getInflammability(dataIn[randomIndex]) > 0) {
 			dataIn[randomIndex] = burning;
 			burningTrees++;
 		}
@@ -202,14 +147,14 @@ int hasBurningNeighbors(int* dataset, int x, int y, int width, int height, int r
 	int cnt;
 	int index = y*width+x;
 	
-	cnt = (y - 1 >= 0) ? dataset[index - WIDTH] > burnt : 0;
-	cnt += (y - 1 >= 0 && x + 1 < width) ? dataset[index - WIDTH + 1] > burnt : 0;
-	cnt += (x + 1 < width) ? dataset[index + 1] > burnt : 0;
-	cnt += (y + 1 < height && x + 1 < width) ? dataset[index + WIDTH + 1] > burnt : 0;
-	cnt += (y + 1 < height) ? dataset[index + WIDTH] > burnt : 0;
-	cnt += (y + 1 < height && x - 1 >= 0) ? dataset[index + WIDTH - 1] > burnt : 0;
-	cnt += (x - 1 >= 0) ? dataset[index - 1] > burnt : 0;
-	cnt += (y - 1 >= 0 && x - 1 >= 0) ? dataset[index - WIDTH - 1] > burnt : 0;
+	cnt = (y - 1 >= 0) ? dataset[index - WIDTH] < -1 : 0;
+	cnt += (y - 1 >= 0 && x + 1 < width) ? dataset[index - WIDTH + 1] < -1 : 0;
+	cnt += (x + 1 < width) ? dataset[index + 1] < -1 : 0;
+	cnt += (y + 1 < height && x + 1 < width) ? dataset[index + WIDTH + 1] < -1 : 0;
+	cnt += (y + 1 < height) ? dataset[index + WIDTH] < -1 : 0;
+	cnt += (y + 1 < height && x - 1 >= 0) ? dataset[index + WIDTH - 1] < -1 : 0;
+	cnt += (x - 1 >= 0) ? dataset[index - 1] < -1 : 0;
+	cnt += (y - 1 >= 0 && x - 1 >= 0) ? dataset[index - WIDTH - 1] < -1 : 0;
 
 	if (cnt > 6) return -1; //full fire
 
@@ -224,33 +169,33 @@ int hasBurningNeighbors(int* dataset, int x, int y, int width, int height, int r
 
 	int centerCell = ((2*radius+1)*(2*radius+1)-1)/2;
 
-	//TODO - overflow check
+	//TODO - overflow check ?
 
 	if (wind % 2 == 0) { //vertical
-		for (int i = 2; i <= radius; i++) cnt += neighborhood[centerCell+moveUpDown*i*(2*radius+1)] > burnt;
+		for (int i = 2; i <= radius; i++) cnt += neighborhood[centerCell+moveUpDown*i*(2*radius+1)] < -1;
 		
 		for (int a = 2; a <= radius; a++) {
 			for (int b = 1; b < a; b++) {
-				cnt += neighborhood[centerCell+moveUpDown*a*(2*radius+1)+b] > burnt; //counting left/right ones
-				cnt += neighborhood[centerCell+moveUpDown*a*(2*radius+1)-b] > burnt;
+				cnt += neighborhood[centerCell+moveUpDown*a*(2*radius+1)+b] < -1; //counting left/right ones
+				cnt += neighborhood[centerCell+moveUpDown*a*(2*radius+1)-b] < -1;
 			}
 		}
 	} else if (wind % 8 <= 3) { //horizontal
-		for (int i = 2; i <= radius; i++) cnt += neighborhood[centerCell+moveLeftRight*i] > burnt;
+		for (int i = 2; i <= radius; i++) cnt += neighborhood[centerCell+moveLeftRight*i] < -1;
 		
 		for (int a = 2; a <= radius; a++) {
 			for (int b = 1; b < a; b++) {
-				cnt += neighborhood[centerCell+moveLeftRight*a+b*(2*radius+1)] > burnt; //counting above/below ones
-				cnt += neighborhood[centerCell+moveLeftRight*a-b*(2*radius+1)] > burnt;
+				cnt += neighborhood[centerCell+moveLeftRight*a+b*(2*radius+1)] < -1; //counting above/below ones
+				cnt += neighborhood[centerCell+moveLeftRight*a-b*(2*radius+1)] < -1;
 			}
 		}
 	} else {
-		for (int i = 2; i <= radius; i++) cnt += neighborhood[centerCell+moveUpDown*i+moveLeftRight*i] > burnt; //diagonal
+		for (int i = 2; i <= radius; i++) cnt += neighborhood[centerCell+moveUpDown*i+moveLeftRight*i] < -1; //diagonal
 
 		for (int a = 2; a <= radius; a++) {
 			for (int b = 1; b < a; b++) {
-				cnt += neighborhood[centerCell+moveUpDown*a+moveLeftRight*a+moveUpDown*b*(2*radius+1)] > burnt; //counting above/below ones
-				cnt += neighborhood[centerCell+moveUpDown*a+moveLeftRight*a+moveLeftRight*b] > burnt;
+				cnt += neighborhood[centerCell+moveUpDown*a+moveLeftRight*a+moveUpDown*b*(2*radius+1)] < -1; //counting above/below ones
+				cnt += neighborhood[centerCell+moveUpDown*a+moveLeftRight*a+moveLeftRight*b] < -1;
 			}
 		}
 	}
@@ -264,19 +209,19 @@ int getNewCellState(int* dataset, int x, int y, int width, int height, int radiu
 
 	int index = y*width+x;
 
-	if (dataset[index] > burnt) return dataset[index] - 1;
+	if (dataset[index] < -1) return dataset[index] + 1;
 	else {
-		if (dataset[index] == 2) { //tree dry
+		if (getInflammability(dataset[index]) >= 3) { //tree dry
 			int burnState = hasBurningNeighbors(dataset, x, y, width, height, radius, wind);
 
-			if (burnState == -1) return burning -1;
+			if (burnState == -1) return burning + 1;
 			else if (burnState > 0) return burning;
 			else return dataset[index];
-		} else if(dataset[index] == 1) { //try normal
+		} else if(getInflammability(dataset[index]) >= 1) { //try normal
 			int burnState = hasBurningNeighbors(dataset, x, y, width, height, radius, wind);
 
-			if (burnState == -1) return burning;
-			else if (burnState > 1) return burning + 1;
+			if (burnState == -1) return burning + 1;
+			else if (burnState > 1) return burning -1;
 			else return dataset[index];
 		} else return dataset[index];
 	}
@@ -329,6 +274,7 @@ int convertArgToInt(char * str) {
 	else if (strcmp ("-radius", str) == 0) return 9;
 	else if (strcmp ("-wind", str) == 0) return 10;
 	else if (strcmp ("-vis", str) == 0) return 11;
+	else if (strcmp ("-export", str) == 0) return 12;
 	else return 0;
 }
 
@@ -362,7 +308,7 @@ int main(int argc, char *argv[]) {
 	char *inPath, *outPath = "out.csv", *windString = "RAND";
 	enum compass wind = RAND;
 	int windSet = 0, burningOnes = 3;
-	int radius = 1, vis = 0;
+	int radius = 1, vis = 0, exportIt = 0;
 
 	//commandline parameter parsing
 	for (int i=0; i<argc; i++) {
@@ -378,6 +324,7 @@ int main(int argc, char *argv[]) {
 			case 9: radius = atoi(argv[++i]); break;
 			case 10: windString = argv[++i]; windSet = 1; break;
 			case 11: vis = 1; break;
+			case 12: exportIt = 1; break;
 			default: break;
 		}
 	}
@@ -390,7 +337,7 @@ int main(int argc, char *argv[]) {
 	printf("it: %d, t: %d, normal: %f, lush: %f, initial fire cells: %d, radius: %d, wind direction: %d\n", it, t, normal, lush, burningOnes, radius, wind);
 	printf("=======================================\n");
 
-	if (t > 0) burning += t;
+	if (t > 0) burning -= (t > maxT) ? maxT : t;
 
 	dataType * dataIn = calloc(WIDTH*HEIGHT, sizeof(dataType));
 	dataType ** dataOut = malloc(it*sizeof(dataType*));
@@ -422,8 +369,6 @@ int main(int argc, char *argv[]) {
 		int width = 0, height = 0;
 		//int *inImage;
 		loadImage(inPath, &dataIn, &width, &height, 0);
-		printf("Converting input data...\n");
-		convertInputData(dataIn, WIDTH*HEIGHT);
 		setSomeTreesOnFire(dataIn, WIDTH*HEIGHT, burningOnes);
 	}
 
@@ -440,41 +385,43 @@ int main(int argc, char *argv[]) {
             ((end.tv_usec - begin.tv_usec)/1000000.0);
 	printf("Time CPU: %lf\n", timeSpentCPU);
 
-	printf("Exporting results...\n");
-	FILE* results;
-	FILE* paramsFile;
-	
-	if (outSet) {
-		results = fopen(outPath, "w");
-	} else {
-		char filename[1024];
-		snprintf(filename, sizeof(filename), "results_%dx%d_%d.csv", WIDTH, HEIGHT, it);
+	if (exportIt) {
+		printf("Exporting results...\n");
+		FILE* results;
+		FILE* paramsFile;
+		
+		if (outSet) {
+			results = fopen(outPath, "w");
+		} else {
+			char filename[1024];
+			snprintf(filename, sizeof(filename), "results_%dx%d_%d.csv", WIDTH, HEIGHT, it);
 
-		results = fopen(filename, "w");
-	}
-
-	char paramsFileName[1024];
-	snprintf(paramsFileName, sizeof(paramsFileName), "params_%dx%d_%d.csv", WIDTH, HEIGHT, it);
-
-	paramsFile = fopen(paramsFileName, "w");
-	
-	//exporting
-	for (int j = 0; j < it; j++) {
-
-		fprintf(paramsFile, "%d,%d\n", paramsOut[j][0], paramsOut[j][1]);
-
-		for(int i = 0; i < WIDTH*HEIGHT-1; ++i){
-			fprintf(results, "%u,", dataOut[j][i]);
+			results = fopen(filename, "w");
 		}
-		fprintf(results, "%u", dataOut[j][WIDTH*HEIGHT-1]);
 
-		fprintf(results, "\n");
-	}
-	
-	fclose(results);
-	fclose(paramsFile);
+		char paramsFileName[1024];
+		snprintf(paramsFileName, sizeof(paramsFileName), "params_%dx%d_%d.csv", WIDTH, HEIGHT, it);
 
-	printf("Exporting done.\n");
+		paramsFile = fopen(paramsFileName, "w");
+		
+		//exporting
+		for (int j = 0; j < it; j++) {
+
+			fprintf(paramsFile, "%d,%d\n", paramsOut[j][0], paramsOut[j][1]);
+
+			for(int i = 0; i < WIDTH*HEIGHT-1; ++i){
+				fprintf(results, "%u,", dataOut[j][i]);
+			}
+			fprintf(results, "%u", dataOut[j][WIDTH*HEIGHT-1]);
+
+			fprintf(results, "\n");
+		}
+		
+		fclose(results);
+		fclose(paramsFile);
+
+		printf("Exporting done.\n");
+	}	
 
 	if (vis) {
 		printf("Visualising...\n");
