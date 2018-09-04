@@ -131,9 +131,11 @@ void setSomeTreesOnFire(dataType *dataIn, int size, int burningOnes) {
 	int burningTrees = 0, randomIndex = 0;
 	int maxTries = 10000000, x = 0;
 
+	srand(time(NULL));
+
 	while (burningTrees < burningOnes && x < maxTries) {
 		randomIndex = floor(( (float) rand() / RAND_MAX) * ( (float) size));
-		if (getInflammability(dataIn[randomIndex]) > 0) {
+		if (getInflammability(dataIn[randomIndex]) > 2) {
 			//printf("index %d burning...\n", randomIndex);
 			dataIn[randomIndex] = burning;
 			burningTrees++;
@@ -164,12 +166,10 @@ int hasBurningNeighbors(int* dataset, int x, int y, int width, int height, int r
 	dataType *neighborhood = malloc((2*radius+1)*(2*radius+1)*sizeof(dataType));
 	neighborhood = getNeighbors(dataset, neighborhood, x, y, radius);
 
-	int moveUpDown = ((int) pow(-1, wind & 8)) * wind & 4;
-	int moveLeftRight = ((int) pow(-1, wind & 2)) * wind & 1;
+	int moveUpDown = (int) pow(-1, (wind & 8) >> 3) * (wind >> 2) & 1;
+	int moveLeftRight = (int) pow(-1, (wind & 2) >> 1) * wind & 1;
 
 	int centerCell = ((2*radius+1)*(2*radius+1)-1)/2;
-
-	//TODO - overflow check ?
 
 	if (wind % 2 == 0) { //vertical
 		for (int i = 2; i <= radius; i++) cnt += neighborhood[centerCell+moveUpDown*i*(2*radius+1)] < -1;
@@ -190,12 +190,15 @@ int hasBurningNeighbors(int* dataset, int x, int y, int width, int height, int r
 			}
 		}
 	} else {
-		for (int i = 2; i <= radius; i++) cnt += neighborhood[centerCell+moveUpDown*i+moveLeftRight*i] < -1; //diagonal
+		for (int i = 2; i <= radius; i++) cnt += neighborhood[centerCell+moveUpDown*i*(2*radius+1)+moveLeftRight*i] < -1; //diagonal
+
+		int diagIndex = 0;
 
 		for (int a = 2; a <= radius; a++) {
 			for (int b = 1; b < a; b++) {
-				cnt += neighborhood[centerCell+moveUpDown*a+moveLeftRight*a+moveUpDown*b*(2*radius+1)] < -1; //counting above/below ones
-				cnt += neighborhood[centerCell+moveUpDown*a+moveLeftRight*a+moveLeftRight*b] < -1;
+				diagIndex = centerCell+moveUpDown*a*(2*radius+1)+moveLeftRight*a;
+				cnt += neighborhood[diagIndex+(-1)*moveUpDown*b*(2*radius+1)] < -1; //times (-1) as we go in the opposite direction
+				cnt += neighborhood[diagIndex+(-1)*moveLeftRight*b] < -1;
 			}
 		}
 	}
@@ -220,8 +223,8 @@ int getNewCellState(int* dataset, int x, int y, int width, int height, int radiu
 		} else if(getInflammability(dataset[index]) > 0) { //tree normal
 			int burnState = hasBurningNeighbors(dataset, x, y, width, height, radius, wind);
 
-			if (burnState == -1) return burning + 1;
-			else if (burnState > 0) return burning -1;
+			if (burnState == -1) return burning;
+			else if (burnState > 1) return burning -1;
 			else return dataset[index];
 		} else return dataset[index];
 	}
@@ -231,6 +234,8 @@ void VectorsCPU(dataType *dataIn, dataType *dataOut, int* paramsOut, int radius,
 
 	enum compass windToGo;
 	int radiusToGo;
+
+	srand(time(NULL));
 
 	//printf("I'm here: %d\n", dataOut[index]);
 	if (wind == -1) windToGo = (int) rand() % (15 + 1 - 0) + 0;
@@ -245,7 +250,6 @@ void VectorsCPU(dataType *dataIn, dataType *dataOut, int* paramsOut, int radius,
 	for (int y = 0; y < HEIGHT; y++) {
 		for (int x = 0; x < WIDTH; x++) {
 			int index = y*WIDTH+x;
-
 			dataOut[index] = getNewCellState(dataIn, x, y, WIDTH, HEIGHT, radiusToGo, windToGo);
 		}
 	}
@@ -333,9 +337,10 @@ int main(int argc, char *argv[]) {
 		wind = convertWindToEnum(windString);
 	}
 
-	printf("==============PARAMETERS===============\n");
-	printf("it: %d, t: %d, normal: %f, lush: %f, initial fire cells: %d, radius: %d, wind direction: %d\n", it, t, normal, lush, burningOnes, radius, wind);
-	printf("=======================================\n");
+	printf("=============================PARAMETERS==============================\n");
+	printf("it: %d, t: %d, initial fire cells: %d, radius: %d, wind direction: %d\n", it, t, burningOnes, radius, wind);
+	if (!inSet) printf("normal: %f, lush: %f\n", normal, lush);
+	printf("=====================================================================\n");
 
 	if (t > 0) burning -= (t > maxT) ? maxT : t;
 
@@ -367,7 +372,6 @@ int main(int argc, char *argv[]) {
 	} else {
 		printf("Loading image...\n");
 		int width = 0, height = 0;
-		//int *inImage;
 		loadImage(inPath, &dataIn, &width, &height, 0);
 		setSomeTreesOnFire(dataIn, WIDTH*HEIGHT, burningOnes);
 	}
