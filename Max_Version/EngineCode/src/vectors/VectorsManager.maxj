@@ -1,0 +1,61 @@
+package vectors;
+
+import com.maxeler.maxcompiler.v2.build.EngineParameters;
+import com.maxeler.maxcompiler.v2.managers.custom.CustomManager;
+import com.maxeler.maxcompiler.v2.managers.custom.blocks.KernelBlock;
+import com.maxeler.maxcompiler.v2.managers.engine_interfaces.CPUTypes;
+import com.maxeler.maxcompiler.v2.managers.engine_interfaces.EngineInterface;
+import com.maxeler.maxcompiler.v2.managers.engine_interfaces.InterfaceParam;
+import com.maxeler.maxcompiler.v2.kernelcompiler.KernelConfiguration;
+
+class VectorsManager extends CustomManager {
+	
+	private static int width = 2560, height = 1440;
+
+	VectorsManager(EngineParameters engineParameters) {
+		super(engineParameters);
+
+		KernelBlock kernel = addKernel(new VectorsKernel(makeKernelParameters("ForestFire"), width, height));	
+
+		kernel.getInput("inData") <== addStreamFromCPU("inData");
+		kernel.getInput("inRandom") <== addStreamFromCPU("inRandom");
+		addStreamToCPU("outData") <== kernel.getOutput("outData");
+	}
+
+	static EngineInterface interfaceDefault() {
+	
+		EngineInterface ei = new EngineInterface();
+		InterfaceParam size = ei.addParam("dataSize", CPUTypes.UINT64);
+
+		InterfaceParam prop_f = ei.addParam("prop_f", CPUTypes.FLOAT);
+		InterfaceParam prop_p = ei.addParam("prop_p", CPUTypes.FLOAT);
+		InterfaceParam t = ei.addParam("t", CPUTypes.UINT8);
+		
+		ei.setTicks("ForestFire", size);
+
+		ei.setScalar("ForestFire", "prop_f", prop_f);
+		ei.setScalar("ForestFire", "prop_p", prop_p);
+		ei.setScalar("ForestFire", "t", t);
+		
+		ei.setStream("inData", CPUTypes.UINT8, size * CPUTypes.UINT8.sizeInBytes());
+		ei.setStream("inRandom", CPUTypes.FLOAT, size * CPUTypes.FLOAT.sizeInBytes());	
+		ei.setStream("outData", CPUTypes.UINT8, size * CPUTypes.UINT8.sizeInBytes());
+
+		return ei;
+
+	}
+
+	public static void main(String[] args) {
+		EngineParameters params = new EngineParameters(args);
+		VectorsManager manager = new VectorsManager(params);
+
+		KernelConfiguration currKConf = manager.getCurrentKernelConfig();
+		currKConf.optimization.setCEPipelining(2);
+		
+		manager.addMaxFileConstant("width", width);
+		manager.addMaxFileConstant("height", height);
+		manager.createSLiCinterface(interfaceDefault());
+		manager.build();
+	}
+
+}
