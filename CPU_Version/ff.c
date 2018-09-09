@@ -29,38 +29,38 @@ enum compass {S = 0b1100, SW = 0b1101, W = 0b0001, NW = 0b0101, N = 0b0100, NE =
 dataType* getNeighbors(dataType *dataSet, dataType *neighborhood, int x, int y, int radius) {
 	int neighSize = (2*radius+1)*(2*radius+1);
 
-	int centeredIndex = (neighSize-1)/2;
-	int dsIndex = y*WIDTH+x;
+	int centeredIdx = (neighSize-1)/2;
+	int dsIdx = y*WIDTH+x;
 
-	neighborhood[centeredIndex] = dataSet[dsIndex]; //<-- center cell
+	neighborhood[centeredIdx] = dataSet[dsIdx]; //<-- center cell
 
 	//cross around center cell -> 4*r
 	for (int i=1; i <= radius; i++) {
-		neighborhood[centeredIndex-i*(2*radius+1)] = ((y - i) < 0) ? 1 //any number higher than $burning is okay here
-				: dataSet[dsIndex-i*WIDTH]; //above
-		neighborhood[centeredIndex+i*(2*radius+1)] = ((y + i) >= HEIGHT) ? 1
-				: dataSet[dsIndex+i*WIDTH]; //below
-		neighborhood[centeredIndex-i] = ((x - i) < 0) ? 1
-				: dataSet[dsIndex-i]; //left
-		neighborhood[centeredIndex+i] = ((x + i) >= WIDTH) ? 1
-				: dataSet[dsIndex+i]; // right
+		neighborhood[centeredIdx-i*(2*radius+1)] = ((y - i) < 0) ? 1 //any number higher than $burning is okay here
+				: dataSet[dsIdx-i*WIDTH]; //above
+		neighborhood[centeredIdx+i*(2*radius+1)] = ((y + i) >= HEIGHT) ? 1
+				: dataSet[dsIdx+i*WIDTH]; //below
+		neighborhood[centeredIdx-i] = ((x - i) < 0) ? 1
+				: dataSet[dsIdx-i]; //left
+		neighborhood[centeredIdx+i] = ((x + i) >= WIDTH) ? 1
+				: dataSet[dsIdx+i]; // right
 	}
 
 	//squares around x -> 4*r^2
 	for (int i=1; i <= radius; i++) {
 		for (int j=1; j <= radius; j++) {
 
-			neighborhood[centeredIndex-i*(2*radius+1)-j] = ((y - i) < 0 || (x - j) < 0) ? 1 :
-				dataSet[dsIndex-i*WIDTH-j]; //above left
+			neighborhood[centeredIdx-i*(2*radius+1)-j] = ((y - i) < 0 || (x - j) < 0) ? 1 :
+				dataSet[dsIdx-i*WIDTH-j]; //above left
 
-			neighborhood[centeredIndex-i*(2*radius+1)+j] = ((y - i) < 0 || (x + j) >= WIDTH) ? 1 :
-				dataSet[dsIndex-i*WIDTH+j]; //above right
+			neighborhood[centeredIdx-i*(2*radius+1)+j] = ((y - i) < 0 || (x + j) >= WIDTH) ? 1 :
+				dataSet[dsIdx-i*WIDTH+j]; //above right
 
-			neighborhood[centeredIndex+i*(2*radius+1)-j] = ((y + i) >= HEIGHT || (x - j) < 0) ? 1 :
-				dataSet[dsIndex+i*WIDTH-j]; //below left
+			neighborhood[centeredIdx+i*(2*radius+1)-j] = ((y + i) >= HEIGHT || (x - j) < 0) ? 1 :
+				dataSet[dsIdx+i*WIDTH-j]; //below left
 
-			neighborhood[centeredIndex+i*(2*radius+1)+j] = ((y + i) >= HEIGHT || (x + j) >= WIDTH) ? 1 :
-				dataSet[dsIndex+i*WIDTH+j]; //below right
+			neighborhood[centeredIdx+i*(2*radius+1)+j] = ((y + i) >= HEIGHT || (x + j) >= WIDTH) ? 1 :
+				dataSet[dsIdx+i*WIDTH+j]; //below right
 		}
 	}
 
@@ -99,43 +99,43 @@ void init(dataType *a, float normal, float lush, int burningOnes) {
 
 	for (int i=0; i<WIDTH*HEIGHT; i++) a[i] = 0;
 
-	int randomIndex;
+	int randomIdx;
 	srand(time(NULL));
 
 	int items = floor(WIDTH*HEIGHT*normal);
 
 	// filled ones (normal)
 	for (int i=0; i<items; i++) {
-		randomIndex = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
-		a[randomIndex] = 2;
+		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
+		a[randomIdx] = 2;
 	}
 
 	int itemsLush = floor(WIDTH*HEIGHT*lush);
 
 	// filled ones (lush)
 	for (int i=0; i<itemsLush; i++) {
-		randomIndex = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
-		a[randomIndex] = 1;
+		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
+		a[randomIdx] = 1;
 	}
 
 	// number of burning ones
 	for (int i=0; i<burningOnes; i++) {
-		randomIndex = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
-		a[randomIndex] = burning;
+		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
+		a[randomIdx] = burning;
 	}
 }
 
 void setSomeTreesOnFire(dataType *dataIn, int size, int burningOnes) {
-	int burningTrees = 0, randomIndex = 0;
+	int burningTrees = 0, randomIdx = 0;
 	int maxTries = 10000000, x = 0;
 
 	srand(time(NULL));
 
 	while (burningTrees < burningOnes && x < maxTries) {
-		randomIndex = floor(( (float) rand() / RAND_MAX) * ( (float) size));
-		if (getInflammability(dataIn[randomIndex]) > 2) {
-			//printf("index %d burning...\n", randomIndex);
-			dataIn[randomIndex] = burning;
+		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) size));
+		if (getInflammability(dataIn[randomIdx]) > 2) {
+			//printf("Idx %d burning...\n", randomIdx);
+			dataIn[randomIdx] = burning;
 			burningTrees++;
 		}
 		x++;
@@ -145,16 +145,16 @@ void setSomeTreesOnFire(dataType *dataIn, int size, int burningOnes) {
 int hasBurningNeighbors(int* dataset, int x, int y, int width, int height, int radius, enum compass wind) {
 
 	int cnt;
-	int index = y*width+x;
+	int idx = y*width+x;
 
-	cnt = (y - 1 >= 0) ? dataset[index - WIDTH] < -1 : 0;
-	cnt += (y - 1 >= 0 && x + 1 < width) ? dataset[index - WIDTH + 1] < -1 : 0;
-	cnt += (x + 1 < width) ? dataset[index + 1] < -1 : 0;
-	cnt += (y + 1 < height && x + 1 < width) ? dataset[index + WIDTH + 1] < -1 : 0;
-	cnt += (y + 1 < height) ? dataset[index + WIDTH] < -1 : 0;
-	cnt += (y + 1 < height && x - 1 >= 0) ? dataset[index + WIDTH - 1] < -1 : 0;
-	cnt += (x - 1 >= 0) ? dataset[index - 1] < -1 : 0;
-	cnt += (y - 1 >= 0 && x - 1 >= 0) ? dataset[index - WIDTH - 1] < -1 : 0;
+	cnt = (y - 1 >= 0) ? dataset[idx - WIDTH] < -1 : 0;
+	cnt += (y - 1 >= 0 && x + 1 < width) ? dataset[idx - WIDTH + 1] < -1 : 0;
+	cnt += (x + 1 < width) ? dataset[idx + 1] < -1 : 0;
+	cnt += (y + 1 < height && x + 1 < width) ? dataset[idx + WIDTH + 1] < -1 : 0;
+	cnt += (y + 1 < height) ? dataset[idx + WIDTH] < -1 : 0;
+	cnt += (y + 1 < height && x - 1 >= 0) ? dataset[idx + WIDTH - 1] < -1 : 0;
+	cnt += (x - 1 >= 0) ? dataset[idx - 1] < -1 : 0;
+	cnt += (y - 1 >= 0 && x - 1 >= 0) ? dataset[idx - WIDTH - 1] < -1 : 0;
 
 	if (cnt > 6) return -1; //full fire
 
@@ -190,13 +190,13 @@ int hasBurningNeighbors(int* dataset, int x, int y, int width, int height, int r
 	} else {
 		for (int i = 2; i <= radius; i++) cnt += neighborhood[centerCell+moveUpDown*i*(2*radius+1)+moveLeftRight*i] < -1; //diagonal
 
-		int diagIndex = 0;
+		int diagIdx = 0;
 
 		for (int a = 2; a <= radius; a++) {
 			for (int b = 1; b < a; b++) {
-				diagIndex = centerCell+moveUpDown*a*(2*radius+1)+moveLeftRight*a;
-				cnt += neighborhood[diagIndex+(-1)*moveUpDown*b*(2*radius+1)] < -1; //times (-1) as we go in the opposite direction
-				cnt += neighborhood[diagIndex+(-1)*moveLeftRight*b] < -1;
+				diagIdx = centerCell+moveUpDown*a*(2*radius+1)+moveLeftRight*a;
+				cnt += neighborhood[diagIdx+(-1)*moveUpDown*b*(2*radius+1)] < -1; //times (-1) as we go in the opposite direction
+				cnt += neighborhood[diagIdx+(-1)*moveLeftRight*b] < -1;
 			}
 		}
 	}
@@ -208,23 +208,23 @@ int hasBurningNeighbors(int* dataset, int x, int y, int width, int height, int r
 
 int getNewCellState(int* dataset, int x, int y, int width, int height, int radius, enum compass wind) {
 
-	int index = y*width+x;
+	int idx = y*width+x;
 
-	if (dataset[index] < -1) return dataset[index] + 1;
+	if (dataset[idx] < -1) return dataset[idx] + 1;
 	else {
-		if (getInflammability(dataset[index]) > 3) { //tree dry
+		if (getInflammability(dataset[idx]) > 3) { //tree dry
 			int burnState = hasBurningNeighbors(dataset, x, y, width, height, radius, wind);
 
 			if (burnState == -1) return burning + 1;
 			else if (burnState > 0) return burning;
-			else return dataset[index];
-		} else if(getInflammability(dataset[index]) > 0) { //tree normal
+			else return dataset[idx];
+		} else if(getInflammability(dataset[idx]) > 0) { //tree normal
 			int burnState = hasBurningNeighbors(dataset, x, y, width, height, radius, wind);
 
 			if (burnState == -1) return burning;
 			else if (burnState > 1) return burning -1;
-			else return dataset[index];
-		} else return dataset[index];
+			else return dataset[idx];
+		} else return dataset[idx];
 	}
 }
 
@@ -235,7 +235,7 @@ void VectorsCPU(dataType *dataIn, dataType *dataOut, int* paramsOut, int radius,
 
 	srand(time(NULL));
 
-	//printf("I'm here: %d\n", dataOut[index]);
+	//printf("I'm here: %d\n", dataOut[idx]);
 	if (wind == -1) windToGo = (int) rand() % (15 + 1 - 0) + 0;
 	else windToGo = wind;
 
@@ -247,8 +247,8 @@ void VectorsCPU(dataType *dataIn, dataType *dataOut, int* paramsOut, int radius,
 
 	for (int y = 0; y < HEIGHT; y++) {
 		for (int x = 0; x < WIDTH; x++) {
-			int index = y*WIDTH+x;
-			dataOut[index] = getNewCellState(dataIn, x, y, WIDTH, HEIGHT, radiusToGo, windToGo);
+			int idx = y*WIDTH+x;
+			dataOut[idx] = getNewCellState(dataIn, x, y, WIDTH, HEIGHT, radiusToGo, windToGo);
 		}
 	}
 }
@@ -257,8 +257,8 @@ void printDataset(int *dataset, int width, int height) {
 	printf("\n");
 	for (int y = 1; y + 1 < height; y++) {
 		for (int x = 1; x + 1 < width; x++) {
-			int index = y*width+x;
-			printf("%d ", dataset[index]);
+			int idx = y*width+x;
+			printf("%d ", dataset[idx]);
 		}
 		printf("\n");
 	}
@@ -374,7 +374,7 @@ int main(int argc, char *argv[]) {
 		setSomeTreesOnFire(dataIn, WIDTH*HEIGHT, burningOnes);
 	}
 
-	if (!outSet) {
+	if (!outSet && exportIt) {
 		printf("WARNING: No output path (param: -out) set. Default is used.\n");
 	}
 

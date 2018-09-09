@@ -27,16 +27,31 @@ void startVisualisation(int width, int height, int iterations, dataType **dataOu
 	int it;
 	int currentCell;
 
+	dataType* image = calloc(width*height, sizeof(dataType));
+	int currentColor = 0, hasChanged = 0;
+
 	for (it = 0; it < iterations; ++it) {
 
-		for (int j=0; j<height; j++) {
-			for (int k=0; k<width; k++) {
-				currentCell = dataOut[it][j*width+k];
+		hasChanged = 0;
+
+		for (int j=0; j<height; ++j) {
+			for (int k=0; k<width; ++k) {
+				int idx = j * width + k;
+				currentCell = dataOut[it][idx];
 				int colorToDraw = getColorForRendering(currentCell);
-				SDL_SetRenderDrawColor(Main_Renderer, colorToDraw >> 16, colorToDraw >> 8 & 0xFF, colorToDraw & 0xFF, 255);
-				SDL_RenderDrawPoint(Main_Renderer, k, j);
+
+				if (image[idx] != colorToDraw) {
+					if (currentColor != colorToDraw) {
+						hasChanged = 1;
+						SDL_SetRenderDrawColor(Main_Renderer, colorToDraw >> 16, colorToDraw >> 8 & 0xFF, colorToDraw & 0xFF, 255);
+						currentColor = colorToDraw;
+					}
+					SDL_RenderDrawPoint(Main_Renderer, k, j);
+					image[idx] = colorToDraw;
+				}
 			}
 		}
+
 
 		SDL_RenderPresent(Main_Renderer);
 
@@ -46,7 +61,14 @@ void startVisualisation(int width, int height, int iterations, dataType **dataOu
 			SDL_PollEvent( &event );
 			SDL_Delay(1);
 		}
+
+		if(!hasChanged) {
+			printf("Completed after %d iterations.\n", it);
+			break;
+		}
 	}
+
+	free(image);
 
 	SDL_DestroyRenderer(Main_Renderer);
 	SDL_DestroyWindow(Main_Window);
