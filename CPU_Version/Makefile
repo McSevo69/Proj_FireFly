@@ -1,7 +1,7 @@
 CC := gcc
 CFLAGS := -Wall -O3 -pedantic -std=c99
 OBJECTS := ff.c ppmIO.c visualizer.c colors.c
-LIBRARIES := -lm -lSDL2 -lSDL2_ttf
+LIBRARIES := -lm -lSDL2 -lSDL2_ttf -lSDL2_image
 
 .Phony:
 all : main

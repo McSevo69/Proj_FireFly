@@ -228,18 +228,82 @@ int getNewCellState(int* dataset, int x, int y, int width, int height, int radiu
 	}
 }
 
-void VectorsCPU(dataType *dataIn, dataType *dataOut, int* paramsOut, int radius, enum compass wind) {
+/**
+ * Transition matrix
+ * 
+ *
+ **/
+int getWindStrength(int prevWind) {
+	srand(time(NULL));
+
+	double randNr = (double) rand() / (double) RAND_MAX;
+
+	switch(prevWind) {
+		case 1: 
+				if (randNr <= 0.5) {
+					return 1;
+				} else if (randNr <= 0.8) {
+					return 2;
+				} else return 3;
+		case 2: 
+				if (randNr <= 0.5) {
+					return 1;
+				} else if (randNr <= 0.8) {
+					return 2;
+				} else return 3;
+		case 3:
+				if (randNr <= 0.25) {
+					return 1;
+				} else if (randNr <= 0.5) {
+					return 2;
+				} else if (randNr <= 0.75) {
+					return 3;
+				} else return 4;
+		case 4: 
+				if (randNr <= 0.25) {
+					return 2;
+				} else if (randNr <= 0.5) {
+					return 3;
+				} else return 4;
+		default: return 3;
+	}
+}
+
+/**
+ * 
+ *
+ **/
+int getWindDirection(int prevWindDir) {
+	srand(time(NULL));
+
+	int randNr = (int) rand() % 11;
+
+	switch(randNr) {
+		case 0: return 0b1100;
+		case 1: return 0b1101;
+		case 2: return 0b0001;
+		case 3: return 0b0101;
+		case 4: return 0b0100;
+		case 5: return 0b0111;
+		case 6: return 0b0011;
+		case 7: return 0b1111;
+		default: return prevWindDir;
+	}
+}
+
+void VectorsCPU(dataType *dataIn, dataType *dataOut, int* paramsIn, int* paramsOut, int radius, enum compass wind, int itCnt) {
 
 	enum compass windToGo;
 	int radiusToGo;
 
-	srand(time(NULL));
+	//srand(time(NULL));
 
 	//printf("I'm here: %d\n", dataOut[idx]);
-	if (wind == -1) windToGo = (int) rand() % (15 + 1 - 0) + 0;
+	if (wind == -1) windToGo = (itCnt % 10 == 0) ? getWindDirection(paramsIn[0]) : paramsIn[0];
 	else windToGo = wind;
 
-	if (radius == 0) radiusToGo = (int) rand() % (4 + 1 - 1) + 1;
+	//if (radius == 0) radiusToGo = (int) rand() % (3 + 1 - 0) + 1;
+	if (radius == 0) radiusToGo = (itCnt % 10 == 0) ? getWindStrength(paramsIn[1]) : paramsIn[1];
 	else radiusToGo = radius;
 
 	paramsOut[0] = windToGo;
@@ -380,8 +444,8 @@ int main(int argc, char *argv[]) {
 
 	printf("Running CPU...\n");
 	gettimeofday(&begin, NULL);
-	VectorsCPU(dataIn, dataOut[0], paramsOut[0], radius, wind);
-	for (int i=1; i<it; i++) VectorsCPU(dataOut[i-1], dataOut[i], paramsOut[i], radius, wind);
+	VectorsCPU(dataIn, dataOut[0], paramsOut[0], paramsOut[0], radius, wind, 0);
+	for (int i=1; i<it; i++) VectorsCPU(dataOut[i-1], dataOut[i], paramsOut[i-1], paramsOut[i], radius, wind, i);
 	gettimeofday(&end, NULL);
 	timeSpentCPU += (end.tv_sec - begin.tv_sec) +
             ((end.tv_usec - begin.tv_usec)/1000000.0);
