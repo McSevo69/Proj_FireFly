@@ -45,6 +45,11 @@ int getInflammability(int color) {
 		case 0x2e4b23: return 4;
 		case 0x35512c: return 4;
 		case 0x375035: return 3;
+		case 0x273825: return 1;
+		case 0x507166: return 2;
+		case 0x67937f: return 3;
+		case 0xa8d6c8: return 4;
+		case 0x768d8a: return 5;
 		default: return 0;
 	}
 }

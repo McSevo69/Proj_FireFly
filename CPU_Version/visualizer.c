@@ -127,6 +127,19 @@ void startVisualisation(int width, int height, int iterations, dataType **dataOu
 		}
 	}
 
+	char ch;
+	printf("Press ENTER for closing...");
+
+	while(1) {
+		ch = fgetc(stdin);
+		if(ch==0x0A) break;
+
+		SDL_RenderPresent(Main_Renderer);		
+		SDL_Event event;
+		SDL_PollEvent( &event );
+		SDL_Delay(1);		
+	};
+
 	free(image);
 
 	SDL_DestroyTexture(windImg);

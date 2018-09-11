@@ -95,7 +95,7 @@ const char* getfield(char* line, int num) {
 }
 
 //initialization
-void init(dataType *a, float normal, float lush, int burningOnes) {
+void init(dataType *a, float normal, float dry, int burningOnes) {
 
 	for (int i=0; i<WIDTH*HEIGHT; i++) a[i] = 0;
 
@@ -107,21 +107,15 @@ void init(dataType *a, float normal, float lush, int burningOnes) {
 	// filled ones (normal)
 	for (int i=0; i<items; i++) {
 		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
-		a[randomIdx] = 2;
+		a[randomIdx] = getTreeColor(1);
 	}
 
-	int itemsLush = floor(WIDTH*HEIGHT*lush);
+	int itemsDry = floor(WIDTH*HEIGHT*dry);
 
-	// filled ones (lush)
-	for (int i=0; i<itemsLush; i++) {
+	// filled ones dry
+	for (int i=0; i<itemsDry; i++) {
 		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
-		a[randomIdx] = 1;
-	}
-
-	// number of burning ones
-	for (int i=0; i<burningOnes; i++) {
-		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
-		a[randomIdx] = burning;
+		a[randomIdx] = getTreeColor(5);
 	}
 }
 
@@ -328,19 +322,52 @@ void printDataset(int *dataset, int width, int height) {
 	}
 }
 
+void showHelpMessage(char *argv[]) {
+	printf("=============================USAGE===================================\n");
+	printf("%s [options]\n", argv[0]);
+	printf("Simulation options:\n");
+	printf("  -i | --iterations <INT>\tNumber of iterations to calculate\n");
+	printf("  -f | --firecells <INT>\tInitial random fire cells\n");
+	printf("  -r | --radius <INT>\t\tWind strength (max 4, 0=random)\n");
+	printf("  -w | --wind <DIR>\t\tWind direction (N, NE, E, ..., RAND)\n");
+	printf("  -t | --time <INT>\t\tFire duration (default=1)\n");
+	printf("Options for random datasets:\n");
+	printf("  -n | --normal <FLOAT>\t\tNormal tree ratio\n");
+	printf("  -d | --dry <FLOAT>\t\tDry tree ratio\n");
+	printf("General options:\n");
+	printf("  -h | --help\t\t\tPrint help message\n");
+	printf("  -I | --inImage <PATH>\t\tPath for input image\n");
+	printf("  -B | --benchmark\t\tCompare CPU/DFE runtime results\n");
+	printf("  -v | --visualize\t\tVisualize results\n");
+	printf("  -X | --export\t\t\tExport results to csv\n");
+	printf("=====================================================================\n");
+}
+
 int convertArgToInt(char * str) {
-	if (strcmp ("-in", str) == 0) return 1;
-	else if (strcmp ("-out", str) == 0) return 2;
-	else if (strcmp ("-it", str) == 0) return 3;
-	else if (strcmp ("-benchmark", str) == 0) return 4;
+	if (strcmp ("--inImage", str) == 0) return 1;
+	else if (strcmp ("-I", str) == 0) return 1;
+	else if (strcmp ("--iterations", str) == 0) return 3;
+	else if (strcmp ("-i", str) == 0) return 3;
+	else if (strcmp ("--benchmark", str) == 0) return 4;
+	else if (strcmp ("-B", str) == 0) return 4;
+	else if (strcmp ("--time", str) == 0) return 5;
 	else if (strcmp ("-t", str) == 0) return 5;
-	else if (strcmp ("-b", str) == 0) return 6;
-	else if (strcmp ("-lush", str) == 0) return 7;
-	else if (strcmp ("-normal", str) == 0) return 8;
-	else if (strcmp ("-radius", str) == 0) return 9;
-	else if (strcmp ("-wind", str) == 0) return 10;
-	else if (strcmp ("-vis", str) == 0) return 11;
-	else if (strcmp ("-export", str) == 0) return 12;
+	else if (strcmp ("--firecells", str) == 0) return 6;
+	else if (strcmp ("-f", str) == 0) return 6;
+	else if (strcmp ("--normal", str) == 0) return 7;
+	else if (strcmp ("-n", str) == 0) return 7;
+	else if (strcmp ("--dry", str) == 0) return 8;
+	else if (strcmp ("-d", str) == 0) return 8;
+	else if (strcmp ("--radius", str) == 0) return 9;
+	else if (strcmp ("-r", str) == 0) return 9;
+	else if (strcmp ("--wind", str) == 0) return 10;
+	else if (strcmp ("-w", str) == 0) return 10;
+	else if (strcmp ("--visualize", str) == 0) return 11;
+	else if (strcmp ("-v", str) == 0) return 11;
+	else if (strcmp ("--export", str) == 0) return 12;
+	else if (strcmp ("-X", str) == 0) return 12;
+	else if (strcmp ("--help", str) == 0) return 13;
+	else if (strcmp ("-h", str) == 0) return 13;
 	else return 0;
 }
 
@@ -364,35 +391,43 @@ int main(int argc, char *argv[]) {
 
 	int it = 10, t = 0;  //t<-burn duration
 
-	printf("=================\n");
-	printf("Forest fire stream\n");
-	printf("Precision: %ld\n",sizeof(dataType)*8);
-	printf("=================\n");
+	printf("=====================================================================\n");
+	printf("          ### #### ##### ### #### ###  ### # ##### ###    \n");
+	printf("          #   #  # #  #  #   #     #   #   # #  #  #   \n");
+	printf("          ### #  # # #   ###  #    #   ### # # #   ### \n");
+	printf("          #   #  # #  #  #     #   #   #   # #  #  #\n");
+	printf("          #   #### #   # ### ####  #   #   # #   # ###\n");
+	printf("=====================================================================\n");
 
 	size_t benchmark = 0, inSet = 0, outSet = 0;
-	float normal = 0.4, lush = 0.1;
+	float normal = 0.2, dry = 0.35;
 	char *inPath, *outPath = "out.csv", *windString = "RAND";
 	enum compass wind = RAND;
 	int windSet = 0, burningOnes = 3;
-	int radius = 1, vis = 0, exportIt = 0;
+	int radius = 1, vis = 0, exportIt = 0, showHelp = 0;
 
 	//commandline parameter parsing
 	for (int i=0; i<argc; i++) {
 		switch(convertArgToInt(argv[i])) {
 			case 1: inPath = argv[++i]; inSet = 1; break;
-			case 2: outPath = argv[++i]; outSet = 1; break;
 			case 3: it = atoi(argv[++i]); break;
 			case 4: benchmark = 1; break;
 			case 5: t = atoi(argv[++i]); break;
 			case 6: burningOnes = atoi(argv[++i]); break;
-			case 7: lush = atof(argv[++i]); break;
+			case 7: dry = atof(argv[++i]); break;
 			case 8: normal = atof(argv[++i]); break;
 			case 9: radius = atoi(argv[++i]); break;
 			case 10: windString = argv[++i]; windSet = 1; break;
 			case 11: vis = 1; break;
 			case 12: exportIt = 1; break;
+			case 13: showHelp = 1; break;
 			default: break;
 		}
+	}
+
+	if (showHelp) {
+		showHelpMessage(argv);
+		return 0;
 	}
 
 	if (windSet) {
@@ -401,7 +436,7 @@ int main(int argc, char *argv[]) {
 
 	printf("=============================PARAMETERS==============================\n");
 	printf("it: %d, t: %d, initial fire cells: %d, radius: %d, wind direction: %d\n", it, t, burningOnes, radius, wind);
-	if (!inSet) printf("normal: %f, lush: %f\n", normal, lush);
+	if (!inSet) printf("normal: %f, dry: %f\n", normal, dry);
 	printf("=====================================================================\n");
 
 	if (t > 0) burning -= (t > maxT) ? maxT : t;
@@ -414,13 +449,13 @@ int main(int argc, char *argv[]) {
 	for (int i=0; i<it; i++) paramsOut[i] = calloc(2, sizeof(int));
 
 	if (normal > 1 || normal < 0 ) {
-		printf("WARNING: parameter normal %f not in range [0, 1]\nDefault (0.4) is used.\n", normal);
+		printf("WARNING: parameter normal %f not in range [0, 1]\nDefault (0.2) is used.\n", normal);
 		normal = 0.4;
 	}
 
-	if (lush > 1 || lush < 0 ) {
-		printf("WARNING: parameter lush %f not in range [0, 1]\nDefault (0.1) is used.\n", lush);
-		lush = 0.1;
+	if (dry > 1 || dry < 0 ) {
+		printf("WARNING: parameter dry %f not in range [0, 1]\nDefault (0.35) is used.\n", dry);
+		dry = 0.35;
 	}
 
 	if (burningOnes < 1 || burningOnes >= WIDTH*HEIGHT) {
@@ -430,16 +465,13 @@ int main(int argc, char *argv[]) {
 
 	if (!inSet) {
 		printf("No input path (param: -in) set. Input data is generated.\n");
-		init(dataIn, normal, lush, burningOnes);
+		init(dataIn, normal, dry, burningOnes);
+		setSomeTreesOnFire(dataIn, WIDTH*HEIGHT, burningOnes);
 	} else {
 		printf("Loading image...\n");
 		int width = 0, height = 0;
 		loadImage(inPath, &dataIn, &width, &height, 0);
 		setSomeTreesOnFire(dataIn, WIDTH*HEIGHT, burningOnes);
-	}
-
-	if (!outSet && exportIt) {
-		printf("WARNING: No output path (param: -out) set. Default is used.\n");
 	}
 
 	printf("Running CPU...\n");
@@ -456,14 +488,10 @@ int main(int argc, char *argv[]) {
 		FILE* results;
 		FILE* paramsFile;
 
-		if (outSet) {
-			results = fopen(outPath, "w");
-		} else {
-			char filename[1024];
-			snprintf(filename, sizeof(filename), "results_%dx%d_%d.csv", WIDTH, HEIGHT, it);
+		char filename[1024];
+		snprintf(filename, sizeof(filename), "results_%dx%d_%d.csv", WIDTH, HEIGHT, it);
 
-			results = fopen(filename, "w");
-		}
+		results = fopen(filename, "w");
 
 		char paramsFileName[1024];
 		snprintf(paramsFileName, sizeof(paramsFileName), "params_%dx%d_%d.csv", WIDTH, HEIGHT, it);
