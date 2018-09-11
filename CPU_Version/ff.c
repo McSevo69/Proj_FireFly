@@ -158,8 +158,8 @@ int hasBurningNeighbors(int* dataset, int x, int y, int width, int height, int r
 	dataType *neighborhood = malloc((2*radius+1)*(2*radius+1)*sizeof(dataType));
 	neighborhood = getNeighbors(dataset, neighborhood, x, y, radius);
 
-	int moveUpDown = (int) pow(-1, (wind & 8) >> 3) * (wind >> 2) & 1;
-	int moveLeftRight = (int) pow(-1, (wind & 2) >> 1) * wind & 1;
+	int moveUpDown = (int) pow(-1, (wind & 8) >> 3) * ((wind >> 2) & 1);
+	int moveLeftRight = (int) pow(-1, (wind & 3) >> 1) * (wind & 1);
 
 	int centerCell = ((2*radius+1)*(2*radius+1)-1)/2;
 

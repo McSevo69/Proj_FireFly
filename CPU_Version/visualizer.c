@@ -66,6 +66,8 @@ void startVisualisation(int width, int height, int iterations, dataType **dataOu
 	SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width * SHAPE_SIZE, height * SHAPE_SIZE, 0);
 	Main_Renderer = SDL_CreateRenderer(Main_Window, -1, SDL_RENDERER_ACCELERATED);	
 
+	SDL_RenderClear(Main_Renderer);
+
 	/* now 'plotting'*/
 	int it;
 	int currentCell;
@@ -130,14 +132,11 @@ void startVisualisation(int width, int height, int iterations, dataType **dataOu
 	char ch;
 	printf("Press ENTER for closing...");
 
+	SDL_RenderClear(Main_Renderer);
+
 	while(1) {
 		ch = fgetc(stdin);
-		if(ch==0x0A) break;
-
-		SDL_RenderPresent(Main_Renderer);		
-		SDL_Event event;
-		SDL_PollEvent( &event );
-		SDL_Delay(1);		
+		if(ch==0x0A) break;	
 	};
 
 	free(image);
