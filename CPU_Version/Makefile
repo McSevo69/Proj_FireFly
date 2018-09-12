@@ -1,7 +1,8 @@
 CC := gcc
 CFLAGS := -Wall -O3 -pedantic -std=c99
 OBJECTS := ff.c ppmIO.c visualizer.c colors.c
-LIBRARIES := -lm -lSDL2 -lSDL2_ttf -lSDL2_image
+LIBRARIES := -lm -L/libs/lib -lSDL2 -lSDL2_image
+INCLUDE := -l/libs/include
 
 .Phony:
 all : main
@@ -10,7 +11,7 @@ main : $(OBJECTS)
 	$(CC) -o main $(OBJECTS) $(CFLAGS) $(LIBRARIES)
 
 %.o : %.c
-	$(CC) -o $@ -c $< $(CFLAGS) $(LIBRARIES)
+	$(CC) -o $@ -c $< $(CFLAGS) $(INCLUDE)
 
 clean:
 	for file in main *.o; do if [ -f $${file} ]; then rm $${file}; fi; done
