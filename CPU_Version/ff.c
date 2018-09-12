@@ -151,7 +151,7 @@ int hasBurningNeighbors(int* dataset, int x, int y, int width, int height, int r
 
 	if (cnt > 6) return -1; //full fire
 
-	if (wind & 5 == 0 || radius < 2) return cnt; //->no wind
+	if ((wind & 5) == 0 || radius < 2) return cnt; //->no wind
 
 	//NEIGHBORS
 	dataType *neighborhood = malloc((2*radius+1)*(2*radius+1)*sizeof(dataType));
@@ -336,7 +336,7 @@ void showHelpMessage(char *argv[]) {
 	printf("General options:\n");
 	printf("  -h | --help\t\t\tPrint help message\n");
 	printf("  -I | --inImage <PATH>\t\tPath for input image\n");
-	printf("  -B | --benchmark\t\tCompare CPU/DFE runtime results\n");
+	//printf("  -B | --benchmark\t\tCompare CPU/DFE runtime results\n");
 	printf("  -v | --visualize\t\tVisualize results\n");
 	printf("  -X | --export\t\t\tExport results to csv\n");
 	printf("=====================================================================\n");
@@ -347,8 +347,8 @@ int convertArgToInt(char * str) {
 	else if (strcmp ("-I", str) == 0) return 1;
 	else if (strcmp ("--iterations", str) == 0) return 3;
 	else if (strcmp ("-i", str) == 0) return 3;
-	else if (strcmp ("--benchmark", str) == 0) return 4;
-	else if (strcmp ("-B", str) == 0) return 4;
+	//else if (strcmp ("--benchmark", str) == 0) return 4;
+	//else if (strcmp ("-B", str) == 0) return 4;
 	else if (strcmp ("--time", str) == 0) return 5;
 	else if (strcmp ("-t", str) == 0) return 5;
 	else if (strcmp ("--firecells", str) == 0) return 6;
@@ -386,31 +386,32 @@ enum compass convertWindToEnum(char * str) {
 int main(int argc, char *argv[]) {
 	//time measurement
 	struct timeval begin, end;
-	double timeSpentCPU = 0, timeSpent = 0;
+	double timeSpentCPU = 0;
 
 	int it = 10, t = 0;  //t<-burn duration
 
 	printf("=====================================================================\n");
-	printf("          ### #### ##### ### #### ###   ### # ##### ###    \n");
-	printf("          #   #  # #  #  #   #     #    #   # #  #  #   \n");
-	printf("          ### #  # # #   ###  #    #    ### # # #   ### \n");
-	printf("          #   #  # #  #  #     #   #    #   # #  #  #\n");
-	printf("          #   #### #   # ### ####  #    #   # #   # ###\n");
+	printf("            ### #### ##### ### #### ###   ### # ##### ###            \n");
+	printf("            #   #  # #  #  #   #     #    #   # #  #  #              \n");
+	printf("            ### #  # # #   ###  #    #    ### # # #   ###            \n");
+	printf("            #   #  # #  #  #     #   #    #   # #  #  #              \n");
+	printf("            #   #### #   # ### ####  #    #   # #   # ###            \n");
 	printf("=====================================================================\n");
 
-	size_t benchmark = 0, inSet = 0, outSet = 0;
+	//size_t benchmark = 0;
+	size_t inSet = 0;
 	float normal = 0.2, dry = 0.35;
-	char *inPath, *outPath = "out.csv", *windString = "RAND";
+	char *inPath, *windString = "RAND";
 	enum compass wind = RAND;
-	int windSet = 0, burningOnes = 3;
-	int radius = 1, vis = 0, exportIt = 0, showHelp = 0;
+	size_t windSet = 0, burningOnes = 3;
+	size_t radius = 1, vis = 0, exportIt = 0, showHelp = 0;
 
 	//commandline parameter parsing
 	for (int i=0; i<argc; i++) {
 		switch(convertArgToInt(argv[i])) {
 			case 1: inPath = argv[++i]; inSet = 1; break;
 			case 3: it = atoi(argv[++i]); break;
-			case 4: benchmark = 1; break;
+			//case 4: benchmark = 1; break;
 			case 5: t = atoi(argv[++i]); break;
 			case 6: burningOnes = atoi(argv[++i]); break;
 			case 7: dry = atof(argv[++i]); break;
@@ -434,7 +435,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	printf("=============================PARAMETERS==============================\n");
-	printf("it: %d, t: %d, initial fire cells: %d, radius: %d, wind direction: %d\n", it, t, burningOnes, radius, wind);
+	printf("it: %d, t: %d, initial fire cells: %ld, radius: %ld, wind direction: %d\n", it, t, burningOnes, radius, wind);
 	if (!inSet) printf("normal: %f, dry: %f\n", normal, dry);
 	printf("=====================================================================\n");
 
@@ -458,7 +459,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (burningOnes < 1 || burningOnes >= WIDTH*HEIGHT) {
-		printf("WARNING: parameter -f/--firecells %d not in range [1, WIDTH*HEIGHT]\nDefault (3) is used.\n", burningOnes);
+		printf("WARNING: parameter -f/--firecells %ld not in range [1, WIDTH*HEIGHT]\nDefault (3) is used.\n", burningOnes);
 		burningOnes = 3;
 	}
 

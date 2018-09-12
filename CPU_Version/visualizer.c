@@ -54,8 +54,7 @@ void startVisualisation(int width, int height, int iterations, dataType **dataOu
 
 	SDL_Window* Main_Window;
 	SDL_Renderer* Main_Renderer;
-	SDL_Surface* Loading_Surf;
-
+	
 	SDL_Texture *windImg = NULL;
 	SDL_Rect texr; texr.x = width-100; texr.y = 20; texr.w = 80; texr.h = 80; 
 
