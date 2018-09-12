@@ -1,4 +1,0 @@
-/* GNU ld script
-*/
-OUTPUT_FORMAT(elf64-x86-64)
-GROUP ( /home/staubuntu/libs/lib/libm.so.6  AS_NEEDED ( /home/staubuntu/libs/lib/libmvec_nonshared.a /home/staubuntu/libs/lib/libmvec.so.1 ) )
