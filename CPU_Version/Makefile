@@ -1,8 +1,8 @@
-CC := gcc
+CC := gcc 
 CFLAGS := -Wall -O3 -pedantic -std=c99
 OBJECTS := ff.c ppmIO.c visualizer.c colors.c
-LIBRARIES := -lm -lSDL2 -lSDL2_image
-INCLUDE := -I. -I/libs/include/SDL2
+LIBRARIES := -lm -L/libs/lib -lSDL2 -lSDL2_image
+INCLUDE := -I. -I/libs/include
 
 .Phony:
 all : main

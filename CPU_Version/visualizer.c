@@ -8,6 +8,7 @@
 #include <time.h>
 
 #include "colors.h"
+#include "types.h"
 
 #define SHAPE_SIZE 1
 #define N_PATH "resources/north.png"
@@ -22,8 +23,6 @@
 #define LIGHTWIND_PATH "resources/lightwind.png"
 #define MEDIUMWIND_PATH "resources/mediumwind.png"
 #define STRONGWIND_PATH "resources/strongwind.png"
-
-typedef int dataType;
 
 char* getWindDirPath(int windCode) {
 	switch(windCode) {

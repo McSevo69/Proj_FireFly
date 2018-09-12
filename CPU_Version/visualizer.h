@@ -1,4 +1,4 @@
-typedef int dataType;
+#include "types.h"
 
 /**
  * \brief starts a visualisation

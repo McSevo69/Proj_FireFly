@@ -8,11 +8,10 @@
 #include "ppmIO.h"
 #include "visualizer.h"
 #include "colors.h"
+#include "types.h"
 
 #define HEIGHT 720
 #define WIDTH 1280
-
-typedef int dataType;
 
 static int burning = -2;
 static int maxT = 3;
