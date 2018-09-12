@@ -1,0 +1,4 @@
+/* GNU ld script
+*/
+OUTPUT_FORMAT(elf64-x86-64)
+GROUP ( /media/staubuntu/1742AA3D056519DC/Proj_FireFly/libs/lib/libm-2.27.a /media/staubuntu/1742AA3D056519DC/Proj_FireFly/libs/lib/libmvec.a )

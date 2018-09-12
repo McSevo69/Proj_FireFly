@@ -353,10 +353,10 @@ int convertArgToInt(char * str) {
 	else if (strcmp ("-t", str) == 0) return 5;
 	else if (strcmp ("--firecells", str) == 0) return 6;
 	else if (strcmp ("-f", str) == 0) return 6;
-	else if (strcmp ("--normal", str) == 0) return 7;
-	else if (strcmp ("-n", str) == 0) return 7;
-	else if (strcmp ("--dry", str) == 0) return 8;
-	else if (strcmp ("-d", str) == 0) return 8;
+	else if (strcmp ("--normal", str) == 0) return 8;
+	else if (strcmp ("-n", str) == 0) return 8;
+	else if (strcmp ("--dry", str) == 0) return 7;
+	else if (strcmp ("-d", str) == 0) return 7;
 	else if (strcmp ("--radius", str) == 0) return 9;
 	else if (strcmp ("-r", str) == 0) return 9;
 	else if (strcmp ("--wind", str) == 0) return 10;
@@ -391,11 +391,11 @@ int main(int argc, char *argv[]) {
 	int it = 10, t = 0;  //t<-burn duration
 
 	printf("=====================================================================\n");
-	printf("          ### #### ##### ### #### ###  ### # ##### ###    \n");
-	printf("          #   #  # #  #  #   #     #   #   # #  #  #   \n");
-	printf("          ### #  # # #   ###  #    #   ### # # #   ### \n");
-	printf("          #   #  # #  #  #     #   #   #   # #  #  #\n");
-	printf("          #   #### #   # ### ####  #   #   # #   # ###\n");
+	printf("          ### #### ##### ### #### ###   ### # ##### ###    \n");
+	printf("          #   #  # #  #  #   #     #    #   # #  #  #   \n");
+	printf("          ### #  # # #   ###  #    #    ### # # #   ### \n");
+	printf("          #   #  # #  #  #     #   #    #   # #  #  #\n");
+	printf("          #   #### #   # ### ####  #    #   # #   # ###\n");
 	printf("=====================================================================\n");
 
 	size_t benchmark = 0, inSet = 0, outSet = 0;
@@ -448,22 +448,22 @@ int main(int argc, char *argv[]) {
 	for (int i=0; i<it; i++) paramsOut[i] = calloc(2, sizeof(int));
 
 	if (normal > 1 || normal < 0 ) {
-		printf("WARNING: parameter normal %f not in range [0, 1]\nDefault (0.2) is used.\n", normal);
+		printf("WARNING: parameter -n/--normal %f not in range [0, 1]\nDefault (0.2) is used.\n", normal);
 		normal = 0.4;
 	}
 
 	if (dry > 1 || dry < 0 ) {
-		printf("WARNING: parameter dry %f not in range [0, 1]\nDefault (0.35) is used.\n", dry);
+		printf("WARNING: parameter -d/--dry %f not in range [0, 1]\nDefault (0.35) is used.\n", dry);
 		dry = 0.35;
 	}
 
 	if (burningOnes < 1 || burningOnes >= WIDTH*HEIGHT) {
-		printf("WARNING: parameter b %d not in range [1, WIDTH*HEIGHT]\nDefault (3) is used.\n", burningOnes);
+		printf("WARNING: parameter -f/--firecells %d not in range [1, WIDTH*HEIGHT]\nDefault (3) is used.\n", burningOnes);
 		burningOnes = 3;
 	}
 
 	if (!inSet) {
-		printf("No input path (param: -in) set. Input data is generated.\n");
+		printf("WARNING: parameter -I/--inImage not set. Input data is generated.\n");
 		init(dataIn, normal, dry, burningOnes);
 		setSomeTreesOnFire(dataIn, WIDTH*HEIGHT, burningOnes);
 	} else {
