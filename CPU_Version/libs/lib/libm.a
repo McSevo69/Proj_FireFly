@@ -1,0 +1,4 @@
+/* GNU ld script
+*/
+OUTPUT_FORMAT(elf64-x86-64)
+GROUP ( /home/staubuntu/libs/lib/libm-2.28.a /home/staubuntu/libs/lib/libmvec.a )
