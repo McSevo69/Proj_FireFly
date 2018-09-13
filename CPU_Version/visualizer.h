@@ -11,3 +11,10 @@
  */
 void startVisualisation(int width, int height, int iterations, dataType **dataOut, dataType **paramsOut);
 
+/**
+ * \brief starts a visualisation
+ *
+ * \param [in] fileName in format "results_WIDTHxHEIGHT_IT.csv"
+ */
+void startVisualisationFromFile(char* fileName);
+

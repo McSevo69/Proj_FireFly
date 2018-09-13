@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <time.h>
 #include <math.h>
 #include <string.h>
@@ -336,7 +337,7 @@ void showHelpMessage(char *argv[]) {
 	printf("General options:\n");
 	printf("  -h | --help\t\t\tPrint help message\n");
 	printf("  -I | --inImage <PATH>\t\tPath for input image\n");
-	//printf("  -B | --benchmark\t\tCompare CPU/DFE runtime results\n");
+	printf("  -R | --replay\t\tReplay simulation from csv file\n");
 	printf("  -v | --visualize\t\tVisualize results\n");
 	printf("  -X | --export\t\t\tExport results to csv\n");
 	printf("=====================================================================\n");
@@ -347,8 +348,8 @@ int convertArgToInt(char * str) {
 	else if (strcmp ("-I", str) == 0) return 1;
 	else if (strcmp ("--iterations", str) == 0) return 3;
 	else if (strcmp ("-i", str) == 0) return 3;
-	//else if (strcmp ("--benchmark", str) == 0) return 4;
-	//else if (strcmp ("-B", str) == 0) return 4;
+	else if (strcmp ("--replay", str) == 0) return 4;
+	else if (strcmp ("-R", str) == 0) return 4;
 	else if (strcmp ("--time", str) == 0) return 5;
 	else if (strcmp ("-t", str) == 0) return 5;
 	else if (strcmp ("--firecells", str) == 0) return 6;
@@ -398,20 +399,20 @@ int main(int argc, char *argv[]) {
 	printf("            #   #### #   # ### ####  #    #   # #   # ###            \n");
 	printf("=====================================================================\n");
 
-	//size_t benchmark = 0;
+	size_t csvIn = 0;
 	size_t inSet = 0;
 	float normal = 0.2, dry = 0.35;
-	char *inPath, *windString = "RAND";
+	char *inPath, *inCsvFile, *windString = "RAND";
 	enum compass wind = RAND;
 	size_t windSet = 0, burningOnes = 3;
 	size_t radius = 1, vis = 0, exportIt = 0, showHelp = 0;
 
 	//commandline parameter parsing
-	for (int i=0; i<argc; i++) {
+	for (int i=0; i<argc; ++i) {
 		switch(convertArgToInt(argv[i])) {
 			case 1: inPath = argv[++i]; inSet = 1; break;
 			case 3: it = atoi(argv[++i]); break;
-			//case 4: benchmark = 1; break;
+			case 4: csvIn = 1; inCsvFile = argv[++i]; break;
 			case 5: t = atoi(argv[++i]); break;
 			case 6: burningOnes = atoi(argv[++i]); break;
 			case 7: dry = atof(argv[++i]); break;
@@ -427,6 +428,12 @@ int main(int argc, char *argv[]) {
 
 	if (showHelp) {
 		showHelpMessage(argv);
+		return 0;
+	}
+
+	if (csvIn) {
+		startVisualisationFromFile(inCsvFile);
+		printf("Goodbye!\n");
 		return 0;
 	}
 
@@ -491,28 +498,47 @@ int main(int argc, char *argv[]) {
 		char filename[1024];
 		snprintf(filename, sizeof(filename), "results_%dx%d_%d.csv", WIDTH, HEIGHT, it);
 
-		results = fopen(filename, "w");
+		results = fopen(filename, "wb");
 
 		char paramsFileName[1024];
 		snprintf(paramsFileName, sizeof(paramsFileName), "params_%dx%d_%d.csv", WIDTH, HEIGHT, it);
 
-		paramsFile = fopen(paramsFileName, "w");
+		paramsFile = fopen(paramsFileName, "wb");
 
-		//exporting
-		for (int j = 0; j < it; j++) {
+		dataType* imageBuffer = malloc(WIDTH * HEIGHT * sizeof(dataType));
 
-			fprintf(paramsFile, "%d,%d\n", paramsOut[j][0], paramsOut[j][1]);
+		//exporting - first it		
+		fprintf(paramsFile, "%d,%d\n", paramsOut[0][0], paramsOut[0][1]);
 
-			for(int i = 0; i < WIDTH*HEIGHT-1; ++i){
-				fprintf(results, "%u,", dataOut[j][i]);
+		for(int i = 0; i < WIDTH*HEIGHT-1; ++i) {
+			fprintf(results, "%d,", dataOut[0][i]);
+			imageBuffer[i] = dataOut[0][i];
+		}
+		fprintf(results, "%d\n", dataOut[0][WIDTH*HEIGHT-1]);
+		imageBuffer[WIDTH*HEIGHT-1] = dataOut[0][WIDTH*HEIGHT-1];
+
+		for(int j = 1; j < it; ++j) {
+
+			for(int i = 0; i < WIDTH*HEIGHT-1; ++i) {
+				if (imageBuffer[i] != dataOut[j][i]) {
+					fprintf(results, "%i,", dataOut[j][i]);
+					imageBuffer[i] = dataOut[0][i];
+				} else fprintf(results, " ,");			
 			}
-			fprintf(results, "%u", dataOut[j][WIDTH*HEIGHT-1]);
+
+			if (imageBuffer[WIDTH*HEIGHT-1] != dataOut[j][WIDTH*HEIGHT-1]) {
+				fprintf(results, "%i,", dataOut[j][WIDTH*HEIGHT-1]);
+				imageBuffer[WIDTH*HEIGHT-1] = dataOut[0][WIDTH*HEIGHT-1];
+			} else fprintf(results, " ,");
 
 			fprintf(results, "\n");
-		}
+			fprintf(paramsFile, "%d,%d\n", paramsOut[0][0], paramsOut[0][1]);
+
+		}	
 
 		fclose(results);
 		fclose(paramsFile);
+		free(imageBuffer);
 
 		printf("Exporting done.\n");
 	}

@@ -144,3 +144,81 @@ void startVisualisation(int width, int height, int iterations, dataType **dataOu
 	SDL_Quit();
 
 }
+
+void startVisualisationFromFile(char* fileName) {
+	
+	//File must be opened before strtok operations are done
+	FILE* fstream = fopen(fileName, "r");
+	
+	if(fstream == NULL) {
+		printf("ERROR: file opening failed.\n");
+		return;
+	}
+
+	//reading in width/height/it from file name
+	char *token;
+	int width, height, it;
+
+	token = strtok(fileName, "_");
+	token = strtok(NULL, "x");
+	width = atoi(token);
+
+	token = strtok(NULL, "_");
+	height = atoi(token);
+
+	token = strtok(NULL, ".");
+	it = atoi(token);
+
+	char buffer[8000000];
+	char *ptr;
+
+	char *record,*line;
+	int x = -1, y = -1, numBuf;
+	
+	dataType ** dataOut = (dataType **) malloc(it*sizeof(dataType*));
+	for (int i=0; i<it; ++i) dataOut[i] = calloc(width*height, sizeof(dataType));
+
+	int ** paramsOut = (int **) malloc(it*sizeof(int*));
+	for (int i=0; i<it; ++i) paramsOut[i] = calloc(2, sizeof(int));
+
+	while((line = fgets(buffer, sizeof(buffer), fstream)) !=NULL && x++ < it) {
+		y = -1;		
+		record = strtok(line, ",");
+		while(y++ < width*height && record != NULL) {
+			numBuf = strtoul(record, &ptr, 10);
+			dataOut[x][y] = (numBuf != 0) ? numBuf : dataOut[0][y];
+							
+			record = strtok(NULL, ",");			
+		}
+	}
+
+	fclose(fstream);
+	printf("Results file loading successful...\n");
+
+	char paramsFileName[1024];
+	snprintf(paramsFileName, sizeof(paramsFileName), "params_%dx%d_%d.csv", width, height, it);
+
+	//File must be opened before strtok operations are done
+	FILE* pstream = fopen(paramsFileName, "r");
+	
+	if(pstream == NULL) {
+		printf("WARNING: Could not open params file.\n");
+		startVisualisation(width, height, it, dataOut, paramsOut);
+		return;
+	}
+
+	x = -1;
+	while((line = fgets(buffer, sizeof(buffer), pstream)) !=NULL && x++ < it) {
+		y = -1;		
+		record = strtok(line, ",");
+		while(y++ < width*height && record != NULL) {
+			paramsOut[x][y] = strtoul(record, &ptr, 10);	
+			record = strtok(NULL, ",");		
+		}
+	}
+
+	fclose(pstream);
+	printf("Params file loading successful...\n");
+
+	startVisualisation(width, height, it, dataOut, paramsOut);
+}
