@@ -81,23 +81,10 @@ float verifyResults(int *outVector, int *expectedVector, int size) {
 	return 100.0 - ((float) errors/ (float) size)*100;
 }
 
-//csv reading taken from: https://ideone.com/l23He
-const char* getfield(char* line, int num) {
-	const char* tok;
-	for (tok = strtok(line, ",");
-			tok && *tok;
-			tok = strtok(NULL, ",\n"))
-	{
-		if (!--num)
-			return tok;
-	}
-	return NULL;
-}
-
 //initialization
 void init(dataType *a, float normal, float dry, int burningOnes) {
 
-	for (int i=0; i<WIDTH*HEIGHT; i++) a[i] = 0;
+	for (int i=0; i<WIDTH*HEIGHT; ++i) a[i] = 0;
 
 	int randomIdx;
 	srand(time(NULL));
@@ -105,7 +92,7 @@ void init(dataType *a, float normal, float dry, int burningOnes) {
 	int items = floor(WIDTH*HEIGHT*normal);
 
 	// filled ones (normal)
-	for (int i=0; i<items; i++) {
+	for (int i=0; i<items; ++i) {
 		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
 		a[randomIdx] = getTreeColor(1);
 	}
@@ -113,9 +100,26 @@ void init(dataType *a, float normal, float dry, int burningOnes) {
 	int itemsDry = floor(WIDTH*HEIGHT*dry);
 
 	// filled ones dry
-	for (int i=0; i<itemsDry; i++) {
+	for (int i=0; i<itemsDry; ++i) {
 		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
 		a[randomIdx] = getTreeColor(5);
+	}
+}
+
+void makeItRealistic(dataType *dataIn, int width, int height, float rate) {
+	
+	int randomIdx, normalisedOnes = 0, maxTries = 10000000, x = 0;
+	srand(time(NULL));
+	
+	int items = floor(width*height*rate);	
+
+	while (normalisedOnes < items && x < maxTries) {
+		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) height*width));
+		if (getInflammability(dataIn[randomIdx]) > 0) {
+			dataIn[randomIdx] = 0x052200; //dark green
+			normalisedOnes++;
+		}
+		x++;
 	}
 }
 
@@ -128,7 +132,6 @@ void setSomeTreesOnFire(dataType *dataIn, int size, int burningOnes) {
 	while (burningTrees < burningOnes && x < maxTries) {
 		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) size));
 		if (getInflammability(dataIn[randomIdx]) > 2) {
-			//printf("Idx %d burning...\n", randomIdx);
 			dataIn[randomIdx] = burning;
 			burningTrees++;
 		}
@@ -206,16 +209,16 @@ int getNewCellState(int* dataset, int x, int y, int width, int height, int radiu
 
 	if (dataset[idx] < -1) return dataset[idx] + 1;
 	else {
-		if (getInflammability(dataset[idx]) > 3) { //tree dry
+		if (getInflammability(dataset[idx]) > 2) { //tree dry
 			int burnState = hasBurningNeighbors(dataset, x, y, width, height, radius, wind);
 
 			if (burnState == -1) return burning + 1;
-			else if (burnState > 0) return burning;
+			else if (burnState > 0) return burning + 1;
 			else return dataset[idx];
 		} else if(getInflammability(dataset[idx]) > 0) { //tree normal
 			int burnState = hasBurningNeighbors(dataset, x, y, width, height, radius, wind);
 
-			if (burnState == -1) return burning;
+			if (burnState == -1) return burning + 1;
 			else if (burnState > 1) return burning -1;
 			else return dataset[idx];
 		} else return dataset[idx];
@@ -331,13 +334,14 @@ void showHelpMessage(char *argv[]) {
 	printf("  -r | --radius <INT>\t\tWind strength (max 4, 0=random)\n");
 	printf("  -w | --wind <DIR>\t\tWind direction (N, NE, E, ..., RAND)\n");
 	printf("  -t | --time <INT>\t\tFire duration (default=1)\n");
+	printf("  -n | --noise <FLOAT>\t\tNoise ratio for input images.\n");
 	printf("Options for random datasets:\n");
-	printf("  -n | --normal <FLOAT>\t\tNormal tree ratio\n");
+	printf("  -s | --standard <FLOAT>\t\tStandard tree ratio\n");
 	printf("  -d | --dry <FLOAT>\t\tDry tree ratio\n");
 	printf("General options:\n");
 	printf("  -h | --help\t\t\tPrint help message\n");
 	printf("  -I | --inImage <PATH>\t\tPath for input image\n");
-	printf("  -R | --replay\t\tReplay simulation from csv file\n");
+	printf("  -R | --replay <PATH>\t\tReplay simulation from csv file\n");
 	printf("  -v | --visualize\t\tVisualize results\n");
 	printf("  -X | --export\t\t\tExport results to csv\n");
 	printf("=====================================================================\n");
@@ -346,6 +350,8 @@ void showHelpMessage(char *argv[]) {
 int convertArgToInt(char * str) {
 	if (strcmp ("--inImage", str) == 0) return 1;
 	else if (strcmp ("-I", str) == 0) return 1;
+	else if (strcmp ("--noise", str) == 0) return 2;
+	else if (strcmp ("-n", str) == 0) return 2;
 	else if (strcmp ("--iterations", str) == 0) return 3;
 	else if (strcmp ("-i", str) == 0) return 3;
 	else if (strcmp ("--replay", str) == 0) return 4;
@@ -354,8 +360,8 @@ int convertArgToInt(char * str) {
 	else if (strcmp ("-t", str) == 0) return 5;
 	else if (strcmp ("--firecells", str) == 0) return 6;
 	else if (strcmp ("-f", str) == 0) return 6;
-	else if (strcmp ("--normal", str) == 0) return 8;
-	else if (strcmp ("-n", str) == 0) return 8;
+	else if (strcmp ("--standard", str) == 0) return 8;
+	else if (strcmp ("-s", str) == 0) return 8;
 	else if (strcmp ("--dry", str) == 0) return 7;
 	else if (strcmp ("-d", str) == 0) return 7;
 	else if (strcmp ("--radius", str) == 0) return 9;
@@ -401,16 +407,17 @@ int main(int argc, char *argv[]) {
 
 	size_t csvIn = 0;
 	size_t inSet = 0;
-	float normal = 0.2, dry = 0.35;
+	float normal = 0.2, dry = 0.35, noiseRatio = 0;
 	char *inPath, *inCsvFile, *windString = "RAND";
 	enum compass wind = RAND;
-	size_t windSet = 0, burningOnes = 3;
+	size_t windSet = 0, burningOnes = 3, noiseDesired = 0;
 	size_t radius = 1, vis = 0, exportIt = 0, showHelp = 0;
 
 	//commandline parameter parsing
 	for (int i=0; i<argc; ++i) {
 		switch(convertArgToInt(argv[i])) {
 			case 1: inPath = argv[++i]; inSet = 1; break;
+			case 2: noiseDesired = 1; noiseRatio = atof(argv[++i]); break;
 			case 3: it = atoi(argv[++i]); break;
 			case 4: csvIn = 1; inCsvFile = argv[++i]; break;
 			case 5: t = atoi(argv[++i]); break;
@@ -432,6 +439,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (csvIn) {
+		printf("Loading file %s ...\n", inCsvFile);
 		startVisualisationFromFile(inCsvFile);
 		printf("Goodbye!\n");
 		return 0;
@@ -456,7 +464,7 @@ int main(int argc, char *argv[]) {
 	for (int i=0; i<it; i++) paramsOut[i] = calloc(2, sizeof(int));
 
 	if (normal > 1 || normal < 0 ) {
-		printf("WARNING: parameter -n/--normal %f not in range [0, 1]\nDefault (0.2) is used.\n", normal);
+		printf("WARNING: parameter -s/--standard %f not in range [0, 1]\nDefault (0.2) is used.\n", normal);
 		normal = 0.4;
 	}
 
@@ -470,6 +478,11 @@ int main(int argc, char *argv[]) {
 		burningOnes = 3;
 	}
 
+	if (noiseRatio < 0 || noiseRatio > 1) {
+		printf("WARNING: parameter -n/--noise %f not in range [0, 1]\nDefault (0.0) is used.\n", noiseRatio);
+		burningOnes = 3;
+	}
+
 	if (!inSet) {
 		printf("WARNING: parameter -I/--inImage not set. Input data is generated.\n");
 		init(dataIn, normal, dry, burningOnes);
@@ -478,6 +491,7 @@ int main(int argc, char *argv[]) {
 		printf("Loading image...\n");
 		int width = 0, height = 0;
 		loadImage(inPath, &dataIn, &width, &height, 0);
+		if (noiseDesired) makeItRealistic(dataIn, width, height, noiseRatio);
 		setSomeTreesOnFire(dataIn, WIDTH*HEIGHT, burningOnes);
 	}
 
@@ -532,7 +546,7 @@ int main(int argc, char *argv[]) {
 			} else fprintf(results, " ,");
 
 			fprintf(results, "\n");
-			fprintf(paramsFile, "%d,%d\n", paramsOut[0][0], paramsOut[0][1]);
+			fprintf(paramsFile, "%d,%d\n", paramsOut[j][0], paramsOut[j][1]);
 
 		}	
 
