@@ -16,6 +16,7 @@
 
 static int burning = -2;
 static int maxT = 3;
+static int maxWind = 4;
 
 //bits representing index
 //4 bits: SIGN|TOPDOWN|SIGN|LEFTRIGHT
@@ -107,11 +108,11 @@ void init(dataType *a, float normal, float dry, int burningOnes) {
 }
 
 void makeItRealistic(dataType *dataIn, int width, int height, float rate) {
-	
+
 	int randomIdx, normalisedOnes = 0, maxTries = 10000000, x = 0;
 	srand(time(NULL));
-	
-	int items = floor(width*height*rate);	
+
+	int items = floor(width*height*rate);
 
 	while (normalisedOnes < items && x < maxTries) {
 		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) height*width));
@@ -227,7 +228,7 @@ int getNewCellState(int* dataset, int x, int y, int width, int height, int radiu
 
 /**
  * Transition matrix
- * 
+ *
  *
  **/
 int getWindStrength(int prevWind) {
@@ -236,13 +237,13 @@ int getWindStrength(int prevWind) {
 	double randNr = (double) rand() / (double) RAND_MAX;
 
 	switch(prevWind) {
-		case 1: 
+		case 1:
 				if (randNr <= 0.5) {
 					return 1;
 				} else if (randNr <= 0.8) {
 					return 2;
 				} else return 3;
-		case 2: 
+		case 2:
 				if (randNr <= 0.5) {
 					return 1;
 				} else if (randNr <= 0.8) {
@@ -256,7 +257,7 @@ int getWindStrength(int prevWind) {
 				} else if (randNr <= 0.75) {
 					return 3;
 				} else return 4;
-		case 4: 
+		case 4:
 				if (randNr <= 0.25) {
 					return 2;
 				} else if (randNr <= 0.5) {
@@ -267,7 +268,7 @@ int getWindStrength(int prevWind) {
 }
 
 /**
- * 
+ *
  *
  **/
 int getWindDirection(int prevWindDir) {
@@ -326,17 +327,17 @@ void printDataset(int *dataset, int width, int height) {
 }
 
 void showHelpMessage(char *argv[]) {
-	printf("=============================USAGE===================================\n");
+	printf("==============================USAGE==================================\n");
 	printf("%s [options]\n", argv[0]);
 	printf("Simulation options:\n");
 	printf("  -i | --iterations <INT>\tNumber of iterations to calculate\n");
 	printf("  -f | --firecells <INT>\tInitial random fire cells\n");
-	printf("  -r | --radius <INT>\t\tWind strength (max 4, 0=random)\n");
+	printf("  -r | --radius <INT>\t\tWind strength (max: %d, 0=random)\n", maxWind);
 	printf("  -w | --wind <DIR>\t\tWind direction (N, NE, E, ..., RAND)\n");
-	printf("  -t | --time <INT>\t\tFire duration (default=1)\n");
+	printf("  -t | --time <INT>\t\tAdditional fire duration (max: %d)\n", maxT);
 	printf("  -n | --noise <FLOAT>\t\tNoise ratio for input images.\n");
 	printf("Options for random datasets:\n");
-	printf("  -s | --standard <FLOAT>\t\tStandard tree ratio\n");
+	printf("  -s | --standard <FLOAT>\tStandard tree ratio\n");
 	printf("  -d | --dry <FLOAT>\t\tDry tree ratio\n");
 	printf("General options:\n");
 	printf("  -h | --help\t\t\tPrint help message\n");
@@ -408,7 +409,7 @@ int main(int argc, char *argv[]) {
 	size_t csvIn = 0;
 	size_t inSet = 0;
 	float normal = 0.2, dry = 0.35, noiseRatio = 0;
-	char *inPath, *inCsvFile, *windString = "RAND";
+	char *inPath = "in.ppm", *inCsvFile = "in.csv", *windString = "RAND";
 	enum compass wind = RAND;
 	size_t windSet = 0, burningOnes = 3, noiseDesired = 0;
 	size_t radius = 1, vis = 0, exportIt = 0, showHelp = 0;
@@ -521,7 +522,7 @@ int main(int argc, char *argv[]) {
 
 		dataType* imageBuffer = malloc(WIDTH * HEIGHT * sizeof(dataType));
 
-		//exporting - first it		
+		//exporting - first it
 		fprintf(paramsFile, "%d,%d\n", paramsOut[0][0], paramsOut[0][1]);
 
 		for(int i = 0; i < WIDTH*HEIGHT-1; ++i) {
@@ -532,12 +533,11 @@ int main(int argc, char *argv[]) {
 		imageBuffer[WIDTH*HEIGHT-1] = dataOut[0][WIDTH*HEIGHT-1];
 
 		for(int j = 1; j < it; ++j) {
-
 			for(int i = 0; i < WIDTH*HEIGHT-1; ++i) {
 				if (imageBuffer[i] != dataOut[j][i]) {
 					fprintf(results, "%i,", dataOut[j][i]);
 					imageBuffer[i] = dataOut[0][i];
-				} else fprintf(results, " ,");			
+				} else fprintf(results, " ,");
 			}
 
 			if (imageBuffer[WIDTH*HEIGHT-1] != dataOut[j][WIDTH*HEIGHT-1]) {
@@ -547,8 +547,7 @@ int main(int argc, char *argv[]) {
 
 			fprintf(results, "\n");
 			fprintf(paramsFile, "%d,%d\n", paramsOut[j][0], paramsOut[j][1]);
-
-		}	
+		}
 
 		fclose(results);
 		fclose(paramsFile);
