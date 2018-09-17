@@ -198,7 +198,7 @@ void startVisualisationFromFile(char* fileName) {
 	char paramsFileName[1024];
 	snprintf(paramsFileName, sizeof(paramsFileName), "params_%dx%d_%d.csv", width, height, it);
 
-	//File must be opened before strtok operations are done
+	//Params file
 	FILE* pstream = fopen(paramsFileName, "r");
 	
 	if(pstream == NULL) {
@@ -211,7 +211,7 @@ void startVisualisationFromFile(char* fileName) {
 	while((line = fgets(buffer, sizeof(buffer), pstream)) !=NULL && x++ < it) {
 		y = -1;		
 		record = strtok(line, ",");
-		while(y++ < width*height && record != NULL) {
+		while(y++ < 2 && record != NULL) {
 			paramsOut[x][y] = strtoul(record, &ptr, 10);	
 			record = strtok(NULL, ",");		
 		}

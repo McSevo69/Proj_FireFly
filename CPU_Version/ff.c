@@ -208,8 +208,7 @@ int getNewCellState(int* dataset, int x, int y, int width, int height, int radiu
 
 	int idx = y*width+x;
 
-	if (dataset[idx] < -1) return dataset[idx] + 1;
-	else {
+	if (dataset[idx] > 0) {
 		if (getInflammability(dataset[idx]) > 2) { //tree dry
 			int burnState = hasBurningNeighbors(dataset, x, y, width, height, radius, wind);
 
@@ -223,94 +222,129 @@ int getNewCellState(int* dataset, int x, int y, int width, int height, int radiu
 			else if (burnState > 1) return burning -1;
 			else return dataset[idx];
 		} else return dataset[idx];
+	} else return (dataset[idx] < -1) ? dataset[idx] + 1 : dataset[idx];
+	
+}
+
+/**
+ * Transition matrix could be added
+ *
+ *
+ **/
+int getWindStrength(int prevWind, int itCnt, int windChangeIntervall) {
+	
+	if (itCnt % windChangeIntervall) {
+		return (prevWind == 0) ? 0 : prevWind;
+	} else {
+		srand(time(NULL));
+
+		double randNr = (double) rand() / (double) RAND_MAX;
+
+		switch(prevWind) {
+			case 1:
+					if (randNr <= 0.5) {
+						return 1;
+					} else if (randNr <= 0.8) {
+						return 2;
+					} else return 3;
+			case 2:
+					if (randNr <= 0.5) {
+						return 1;
+					} else if (randNr <= 0.8) {
+						return 2;
+					} else return 3;
+			case 3:
+					if (randNr <= 0.25) {
+						return 1;
+					} else if (randNr <= 0.5) {
+						return 2;
+					} else if (randNr <= 0.75) {
+						return 3;
+					} else return 4;
+			case 4:
+					if (randNr <= 0.25) {
+						return 2;
+					} else if (randNr <= 0.5) {
+						return 3;
+					} else return 4;
+			default: return 3;
+		}
 	}
 }
 
 /**
- * Transition matrix
  *
  *
  **/
-int getWindStrength(int prevWind) {
-	srand(time(NULL));
+int getWindDirection(int prevWindDir, int itCnt, int windChangeIntervall) {
 
-	double randNr = (double) rand() / (double) RAND_MAX;
+	if (itCnt % windChangeIntervall) {
+		return (prevWindDir == -1) ? 0 : prevWindDir;
+	} else {
+		srand(time(NULL));
 
-	switch(prevWind) {
-		case 1:
-				if (randNr <= 0.5) {
-					return 1;
-				} else if (randNr <= 0.8) {
-					return 2;
-				} else return 3;
-		case 2:
-				if (randNr <= 0.5) {
-					return 1;
-				} else if (randNr <= 0.8) {
-					return 2;
-				} else return 3;
-		case 3:
-				if (randNr <= 0.25) {
-					return 1;
-				} else if (randNr <= 0.5) {
-					return 2;
-				} else if (randNr <= 0.75) {
-					return 3;
-				} else return 4;
-		case 4:
-				if (randNr <= 0.25) {
-					return 2;
-				} else if (randNr <= 0.5) {
-					return 3;
-				} else return 4;
-		default: return 3;
-	}
+		int randNr = (int) rand() % 11;
+
+		switch(randNr) {
+			case 0: return 0b1100;
+			case 1: return 0b1101;
+			case 2: return 0b0001;
+			case 3: return 0b0101;
+			case 4: return 0b0100;
+			case 5: return 0b0111;
+			case 6: return 0b0011;
+			case 7: return 0b1111;
+			default: return prevWindDir;
+		}
+	}	
 }
 
-/**
- *
- *
- **/
-int getWindDirection(int prevWindDir) {
-	srand(time(NULL));
+void initParams(int** params, char* file, int iterations) {
+	char buffer[8000000];
+	char *ptr;
 
-	int randNr = (int) rand() % 11;
+	char *record,*line;
+	int x = -1, y = -1;
 
-	switch(randNr) {
-		case 0: return 0b1100;
-		case 1: return 0b1101;
-		case 2: return 0b0001;
-		case 3: return 0b0101;
-		case 4: return 0b0100;
-		case 5: return 0b0111;
-		case 6: return 0b0011;
-		case 7: return 0b1111;
-		default: return prevWindDir;
+	FILE* pstream = fopen(file, "r");
+
+	if(pstream == NULL) {
+		printf("WARNING: Could not open params file.\n");
+		return;
 	}
+
+	x = -1;
+	while((line = fgets(buffer, sizeof(buffer), pstream)) !=NULL && x++ < iterations) {
+		y = -1;		
+		record = strtok(line, ",");
+		while(y++ < 2 && record != NULL) {
+			params[x][y] = strtoul(record, &ptr, 10);	
+			record = strtok(NULL, ",");		
+		}
+	}
+
+	fclose(pstream);
+	printf("Params file loading successful...\n");
 }
 
-void VectorsCPU(dataType *dataIn, dataType *dataOut, int* paramsIn, int* paramsOut, int radius, enum compass wind, int itCnt) {
+void VectorsCPU(dataType *dataIn, dataType *dataOut, int* paramsIn, int* paramsOut, 
+		size_t paramsGiven, int windStrength, enum compass windDir, int windChangeIntervall, int itCnt) {
 
-	enum compass windToGo;
-	int radiusToGo;
+	enum compass wind = (paramsGiven) ? paramsIn[0] : windDir;
+	wind = (wind == -1) ? getWindDirection(paramsIn[0], itCnt, windChangeIntervall) : wind;
 
-	//srand(time(NULL));
-
-	//printf("I'm here: %d\n", dataOut[idx]);
-	if (wind == -1) windToGo = (itCnt % 10 == 0) ? getWindDirection(paramsIn[0]) : paramsIn[0];
-	else windToGo = wind;
-
-	//if (radius == 0) radiusToGo = (int) rand() % (3 + 1 - 0) + 1;
-	if (radius == 0) radiusToGo = (itCnt % 10 == 0) ? getWindStrength(paramsIn[1]) : paramsIn[1];
-	else radiusToGo = radius;
-
-	paramsOut[0] = windToGo;
-	paramsOut[1] = radiusToGo;
+	int radius = (paramsGiven) ? paramsIn[1] : windStrength;
+	radius = (radius == 0) ? getWindStrength(paramsIn[1], itCnt, windChangeIntervall) : radius; //if no file is given, paramsIn are the previous settings
+	
+	if (!paramsGiven) {
+		paramsOut[0] = wind;
+		paramsOut[1] = radius;
+	}
 
 	for (int y = 0; y < HEIGHT; y++) {
 		for (int x = 0; x < WIDTH; x++) {
 			int idx = y*WIDTH+x;
-			dataOut[idx] = getNewCellState(dataIn, x, y, WIDTH, HEIGHT, radiusToGo, windToGo);
+			dataOut[idx] = getNewCellState(dataIn, x, y, WIDTH, HEIGHT, radius, wind);
 		}
 	}
 }
@@ -334,6 +368,7 @@ void showHelpMessage(char *argv[]) {
 	printf("  -f | --firecells <INT>\tInitial random fire cells\n");
 	printf("  -r | --radius <INT>\t\tWind strength (max: %d, 0=random)\n", maxWind);
 	printf("  -w | --wind <DIR>\t\tWind direction (N, NE, E, ..., RAND)\n");
+	printf("  -c | --changetime <INT>\tWind changing intervall (default: 10)\n");
 	printf("  -t | --time <INT>\t\tAdditional fire duration (max: %d)\n", maxT);
 	printf("  -n | --noise <FLOAT>\t\tNoise ratio for input images.\n");
 	printf("Options for random datasets:\n");
@@ -342,6 +377,7 @@ void showHelpMessage(char *argv[]) {
 	printf("General options:\n");
 	printf("  -h | --help\t\t\tPrint help message\n");
 	printf("  -I | --inImage <PATH>\t\tPath for input image\n");
+	printf("  -P | --params <PATH>\t\tPath for input params file\n");
 	printf("  -R | --replay <PATH>\t\tReplay simulation from csv file\n");
 	printf("  -v | --visualize\t\tVisualize results\n");
 	printf("  -X | --export\t\t\tExport results to csv\n");
@@ -361,10 +397,10 @@ int convertArgToInt(char * str) {
 	else if (strcmp ("-t", str) == 0) return 5;
 	else if (strcmp ("--firecells", str) == 0) return 6;
 	else if (strcmp ("-f", str) == 0) return 6;
-	else if (strcmp ("--standard", str) == 0) return 8;
-	else if (strcmp ("-s", str) == 0) return 8;
 	else if (strcmp ("--dry", str) == 0) return 7;
 	else if (strcmp ("-d", str) == 0) return 7;
+	else if (strcmp ("--standard", str) == 0) return 8;
+	else if (strcmp ("-s", str) == 0) return 8;	
 	else if (strcmp ("--radius", str) == 0) return 9;
 	else if (strcmp ("-r", str) == 0) return 9;
 	else if (strcmp ("--wind", str) == 0) return 10;
@@ -375,6 +411,10 @@ int convertArgToInt(char * str) {
 	else if (strcmp ("-X", str) == 0) return 12;
 	else if (strcmp ("--help", str) == 0) return 13;
 	else if (strcmp ("-h", str) == 0) return 13;
+	else if (strcmp ("--params", str) == 0) return 14;
+	else if (strcmp ("-P", str) == 0) return 14;
+	else if (strcmp ("--changetime", str) == 0) return 15;
+	else if (strcmp ("-c", str) == 0) return 15;
 	else return 0;
 }
 
@@ -406,13 +446,14 @@ int main(int argc, char *argv[]) {
 	printf("            #   #### #   # ### ####  #    #   # #   # ###            \n");
 	printf("=====================================================================\n");
 
-	size_t csvIn = 0;
-	size_t inSet = 0;
+	size_t csvIn = 0, inSet = 0, paramsGiven = 0;
 	float normal = 0.2, dry = 0.35, noiseRatio = 0;
-	char *inPath = "in.ppm", *inCsvFile = "in.csv", *windString = "RAND";
+	char *inPath = "in.ppm", *inCsvFile = "in.csv", 
+		*windString = "RAND", *paramsInPath = "params.csv";
 	enum compass wind = RAND;
 	size_t windSet = 0, burningOnes = 3, noiseDesired = 0;
 	size_t radius = 1, vis = 0, exportIt = 0, showHelp = 0;
+	size_t windChangeIntervall = 10;
 
 	//commandline parameter parsing
 	for (int i=0; i<argc; ++i) {
@@ -430,6 +471,8 @@ int main(int argc, char *argv[]) {
 			case 11: vis = 1; break;
 			case 12: exportIt = 1; break;
 			case 13: showHelp = 1; break;
+			case 14: paramsInPath = argv[++i]; paramsGiven = 1; break;
+			case 15: windChangeIntervall = atoi(argv[++i]); break;
 			default: break;
 		}
 	}
@@ -451,8 +494,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	printf("=============================PARAMETERS==============================\n");
-	printf("it: %d, t: %d, initial fire cells: %ld, radius: %ld, wind direction: %d\n", it, t, burningOnes, radius, wind);
-	if (!inSet) printf("normal: %f, dry: %f\n", normal, dry);
+	printf("iterations: %d, additional burn time: %d, initial fire cells: %ld\nradius: %ld, wind direction: %d, wind change intervall: %zu\n",
+		it, t, burningOnes, radius, wind, windChangeIntervall);
+	if (!inSet) printf("normal ratio: %f, dry ratio: %f\n", normal, dry);
 	printf("=====================================================================\n");
 
 	if (t > 0) burning -= (t > maxT) ? maxT : t;
@@ -464,6 +508,8 @@ int main(int argc, char *argv[]) {
 	int ** paramsOut = malloc(it*sizeof(int*));
 	for (int i=0; i<it; i++) paramsOut[i] = calloc(2, sizeof(int));
 
+	if (paramsGiven) initParams(paramsOut, paramsInPath, it);
+
 	if (normal > 1 || normal < 0 ) {
 		printf("WARNING: parameter -s/--standard %f not in range [0, 1]\nDefault (0.2) is used.\n", normal);
 		normal = 0.4;
@@ -474,8 +520,8 @@ int main(int argc, char *argv[]) {
 		dry = 0.35;
 	}
 
-	if (burningOnes < 1 || burningOnes >= WIDTH*HEIGHT) {
-		printf("WARNING: parameter -f/--firecells %ld not in range [1, WIDTH*HEIGHT]\nDefault (3) is used.\n", burningOnes);
+	if (burningOnes < 0 || burningOnes >= WIDTH*HEIGHT) {
+		printf("WARNING: parameter -f/--firecells %ld not in range [0, WIDTH*HEIGHT]\nDefault (3) is used.\n", burningOnes);
 		burningOnes = 3;
 	}
 
@@ -487,19 +533,20 @@ int main(int argc, char *argv[]) {
 	if (!inSet) {
 		printf("WARNING: parameter -I/--inImage not set. Input data is generated.\n");
 		init(dataIn, normal, dry, burningOnes);
-		setSomeTreesOnFire(dataIn, WIDTH*HEIGHT, burningOnes);
+		if (burningOnes > 0) setSomeTreesOnFire(dataIn, WIDTH*HEIGHT, burningOnes);
 	} else {
 		printf("Loading image...\n");
 		int width = 0, height = 0;
 		loadImage(inPath, &dataIn, &width, &height, 0);
 		if (noiseDesired) makeItRealistic(dataIn, width, height, noiseRatio);
-		setSomeTreesOnFire(dataIn, WIDTH*HEIGHT, burningOnes);
+		if (burningOnes > 0) setSomeTreesOnFire(dataIn, WIDTH*HEIGHT, burningOnes);
 	}
 
 	printf("Running CPU...\n");
 	gettimeofday(&begin, NULL);
-	VectorsCPU(dataIn, dataOut[0], paramsOut[0], paramsOut[0], radius, wind, 0);
-	for (int i=1; i<it; i++) VectorsCPU(dataOut[i-1], dataOut[i], paramsOut[i-1], paramsOut[i], radius, wind, i);
+	VectorsCPU(dataIn, dataOut[0], paramsOut[0], paramsOut[0], paramsGiven, radius, wind, windChangeIntervall, 0);
+	for (int i=1; i<it; i++) 
+		VectorsCPU(dataOut[i-1], dataOut[i], paramsOut[i-1], paramsOut[i], paramsGiven, radius, wind, windChangeIntervall, i);
 	gettimeofday(&end, NULL);
 	timeSpentCPU += (end.tv_sec - begin.tv_sec) +
             ((end.tv_usec - begin.tv_usec)/1000000.0);
