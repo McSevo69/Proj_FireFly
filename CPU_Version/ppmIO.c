@@ -48,7 +48,7 @@ void loadImage(
 	int pixel = 0;
 	int currComponent = 0;
 
-	for (int i = 0; i < ((*width) * (*height) * 3); i++) {
+	for (int i = 0; i < ((*width) * (*height) * 3); ++i) {
 		int v;
 		int got = fscanf(file, "%d", &v);
 		if (got == 0) {
@@ -97,7 +97,7 @@ void writeImage(char *filename, int *data, int width, int height, int grayscale)
 	fprintf(file, "%d %d\n", width, height);
 	fprintf(file, "255\n");
 
-	for (int i = 0; i < width * height; i++) {
+	for (int i = 0; i < width * height; ++i) {
 		if (grayscale) {
 			//	if (data[i] > 255)
 			//		printf("Warning: Out of range data. %d at pixel %d\n.", data[i], i);
@@ -106,7 +106,7 @@ void writeImage(char *filename, int *data, int width, int height, int grayscale)
 			//		printf("Warning: Data < 0. %d at pixel %d\n.", data[i], i);
 			data[i] = data[i] < 0 ? 0 : data[i];
 
-			for (int j = 0; j < 3; j++)
+			for (int j = 0; j < 3; ++j)
 				fprintf(file, "%d\n", (int) data[i]);
 		} else {
 			fprintf(file, "%d\n", ((int) data[i]) >> 16);

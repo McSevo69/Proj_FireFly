@@ -5,6 +5,7 @@
 #include <math.h>
 #include <string.h>
 #include <sys/time.h>
+#include <stdbool.h>
 
 #include "ppmIO.h"
 #include "visualizer.h"
@@ -36,7 +37,7 @@ dataType* getNeighbors(dataType *dataSet, dataType *neighborhood, int x, int y, 
 	neighborhood[centeredIdx] = dataSet[dsIdx]; //<-- center cell
 
 	//cross around center cell -> 4*r
-	for (int i=1; i <= radius; i++) {
+	for (int i=1; i <= radius; ++i) {
 		neighborhood[centeredIdx-i*(2*radius+1)] = ((y - i) < 0) ? 1 //any number higher than $burning is okay here
 				: dataSet[dsIdx-i*WIDTH]; //above
 		neighborhood[centeredIdx+i*(2*radius+1)] = ((y + i) >= HEIGHT) ? 1
@@ -48,8 +49,8 @@ dataType* getNeighbors(dataType *dataSet, dataType *neighborhood, int x, int y, 
 	}
 
 	//squares around x -> 4*r^2
-	for (int i=1; i <= radius; i++) {
-		for (int j=1; j <= radius; j++) {
+	for (int i = 1; i <= radius; ++i) {
+		for (int j = 1; j <= radius; ++j) {
 
 			neighborhood[centeredIdx-i*(2*radius+1)-j] = ((y - i) < 0 || (x - j) < 0) ? 1 :
 				dataSet[dsIdx-i*WIDTH-j]; //above left
@@ -70,10 +71,10 @@ dataType* getNeighbors(dataType *dataSet, dataType *neighborhood, int x, int y, 
 
 float verifyResults(int *outVector, int *expectedVector, int size) {
 	int errors = 0;
-	for (int i = 0; i < size; i++) {
+	for (int i = 0; i < size; ++i) {
 		if (outVector[i] != expectedVector[i]) {
 			printf("%d != %d \n", outVector[i], expectedVector[i]);
-			errors++;
+			++errors;
 		}
 	}
 
@@ -170,28 +171,28 @@ int hasBurningNeighbors(int* dataset, int x, int y, int width, int height, int r
 	if (wind % 2 == 0) { //vertical
 		for (int i = 2; i <= radius; i++) cnt += neighborhood[centerCell+moveUpDown*i*(2*radius+1)] < -1;
 
-		for (int a = 2; a <= radius; a++) {
-			for (int b = 1; b < a; b++) {
+		for (int a = 2; a <= radius; ++a) {
+			for (int b = 1; b < a; ++b) {
 				cnt += neighborhood[centerCell+moveUpDown*a*(2*radius+1)+b] < -1; //counting left/right ones
 				cnt += neighborhood[centerCell+moveUpDown*a*(2*radius+1)-b] < -1;
 			}
 		}
 	} else if (wind % 8 <= 3) { //horizontal
-		for (int i = 2; i <= radius; i++) cnt += neighborhood[centerCell+moveLeftRight*i] < -1;
+		for (int i = 2; i <= radius; ++i) cnt += neighborhood[centerCell+moveLeftRight*i] < -1;
 
-		for (int a = 2; a <= radius; a++) {
-			for (int b = 1; b < a; b++) {
+		for (int a = 2; a <= radius; ++a) {
+			for (int b = 1; b < a; ++b) {
 				cnt += neighborhood[centerCell+moveLeftRight*a+b*(2*radius+1)] < -1; //counting above/below ones
 				cnt += neighborhood[centerCell+moveLeftRight*a-b*(2*radius+1)] < -1;
 			}
 		}
 	} else {
-		for (int i = 2; i <= radius; i++) cnt += neighborhood[centerCell+moveUpDown*i*(2*radius+1)+moveLeftRight*i] < -1; //diagonal
+		for (int i = 2; i <= radius; ++i) cnt += neighborhood[centerCell+moveUpDown*i*(2*radius+1)+moveLeftRight*i] < -1; //diagonal
 
 		int diagIdx = 0;
 
-		for (int a = 2; a <= radius; a++) {
-			for (int b = 1; b < a; b++) {
+		for (int a = 2; a <= radius; ++a) {
+			for (int b = 1; b < a; ++b) {
 				diagIdx = centerCell+moveUpDown*a*(2*radius+1)+moveLeftRight*a;
 				cnt += neighborhood[diagIdx+(-1)*moveUpDown*b*(2*radius+1)] < -1; //times (-1) as we go in the opposite direction
 				cnt += neighborhood[diagIdx+(-1)*moveLeftRight*b] < -1;
@@ -328,7 +329,7 @@ void initParams(int** params, char* file, int iterations) {
 }
 
 void VectorsCPU(dataType *dataIn, dataType *dataOut, int* paramsIn, int* paramsOut, 
-		size_t paramsGiven, int windStrength, enum compass windDir, int windChangeIntervall, int itCnt) {
+		bool paramsGiven, int windStrength, enum compass windDir, int windChangeIntervall, int itCnt) {
 
 	enum compass wind = (paramsGiven) ? paramsIn[0] : windDir;
 	wind = (wind == -1) ? getWindDirection(paramsIn[0], itCnt, windChangeIntervall) : wind;
@@ -341,8 +342,8 @@ void VectorsCPU(dataType *dataIn, dataType *dataOut, int* paramsIn, int* paramsO
 		paramsOut[1] = radius;
 	}
 
-	for (int y = 0; y < HEIGHT; y++) {
-		for (int x = 0; x < WIDTH; x++) {
+	for (int y = 0; y < HEIGHT; ++y) {
+		for (int x = 0; x < WIDTH; ++x) {
 			int idx = y*WIDTH+x;
 			dataOut[idx] = getNewCellState(dataIn, x, y, WIDTH, HEIGHT, radius, wind);
 		}
@@ -351,8 +352,8 @@ void VectorsCPU(dataType *dataIn, dataType *dataOut, int* paramsIn, int* paramsO
 
 void printDataset(int *dataset, int width, int height) {
 	printf("\n");
-	for (int y = 1; y + 1 < height; y++) {
-		for (int x = 1; x + 1 < width; x++) {
+	for (int y = 1; y + 1 < height; ++y) {
+		for (int x = 1; x + 1 < width; ++x) {
 			int idx = y*width+x;
 			printf("%d ", dataset[idx]);
 		}
@@ -446,14 +447,13 @@ int main(int argc, char *argv[]) {
 	printf("            #   #### #   # ### ####  #    #   # #   # ###            \n");
 	printf("=====================================================================\n");
 
-	size_t csvIn = 0, inSet = 0, paramsGiven = 0;
 	float normal = 0.2, dry = 0.35, noiseRatio = 0;
 	char *inPath = "in.ppm", *inCsvFile = "in.csv", 
 		*windString = "RAND", *paramsInPath = "params.csv";
 	enum compass wind = RAND;
-	size_t windSet = 0, burningOnes = 3, noiseDesired = 0;
-	size_t radius = 1, vis = 0, exportIt = 0, showHelp = 0;
-	size_t windChangeIntervall = 10;
+	size_t burningOnes = 3, radius = 1, windChangeIntervall = 10;
+	bool inSet = 0, paramsGiven = 0, csvIn = 0, windSet = 0,
+		noiseDesired = 0, exportIt = 0, showHelp = 0, vis = 0;
 
 	//commandline parameter parsing
 	for (int i=0; i<argc; ++i) {
@@ -503,10 +503,10 @@ int main(int argc, char *argv[]) {
 
 	dataType * dataIn = calloc(WIDTH*HEIGHT, sizeof(dataType));
 	dataType ** dataOut = malloc(it*sizeof(dataType*));
-	for (int i=0; i<it; i++) dataOut[i] = calloc(WIDTH*HEIGHT, sizeof(dataType));
+	for (int i=0; i<it; ++i) dataOut[i] = calloc(WIDTH*HEIGHT, sizeof(dataType));
 
 	int ** paramsOut = malloc(it*sizeof(int*));
-	for (int i=0; i<it; i++) paramsOut[i] = calloc(2, sizeof(int));
+	for (int i=0; i<it; ++i) paramsOut[i] = calloc(2, sizeof(int));
 
 	if (paramsGiven) initParams(paramsOut, paramsInPath, it);
 
@@ -545,7 +545,7 @@ int main(int argc, char *argv[]) {
 	printf("Running CPU...\n");
 	gettimeofday(&begin, NULL);
 	VectorsCPU(dataIn, dataOut[0], paramsOut[0], paramsOut[0], paramsGiven, radius, wind, windChangeIntervall, 0);
-	for (int i=1; i<it; i++) 
+	for (int i=1; i<it; ++i) 
 		VectorsCPU(dataOut[i-1], dataOut[i], paramsOut[i-1], paramsOut[i], paramsGiven, radius, wind, windChangeIntervall, i);
 	gettimeofday(&end, NULL);
 	timeSpentCPU += (end.tv_sec - begin.tv_sec) +
@@ -609,10 +609,10 @@ int main(int argc, char *argv[]) {
 	}
 
 	free(dataIn);
-	for (int i=0; i<it; i++) free(dataOut[i]);
+	for (int i=0; i<it; ++i) free(dataOut[i]);
 	free(dataOut);
 
-	for (int i=0; i<it; i++) free(paramsOut[i]);
+	for (int i=0; i<it; ++i) free(paramsOut[i]);
 	free(paramsOut);
 
 	printf("Goodbye!\n");
