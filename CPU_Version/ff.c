@@ -315,7 +315,7 @@ void initParams(int** params, char* file, int iterations) {
 	}
 
 	x = -1;
-	while((line = fgets(buffer, sizeof(buffer), pstream)) !=NULL && x++ < iterations) {
+	while((line = fgets(buffer, sizeof(buffer), pstream)) !=NULL && ++x < iterations) {
 		y = -1;		
 		record = strtok(line, ",");
 		while(y++ < 2 && record != NULL) {
@@ -328,24 +328,23 @@ void initParams(int** params, char* file, int iterations) {
 	printf("Params file loading successful...\n");
 }
 
-void VectorsCPU(dataType *dataIn, dataType *dataOut, int* paramsIn, int* paramsOut, 
-		bool paramsGiven, int windStrength, enum compass windDir, int windChangeIntervall, int itCnt) {
+void manageParams(int* paramsIn, int* paramsOut, int windStrength,
+		enum compass windDir, int windChangeIntervall, int itCnt) {
 
-	enum compass wind = (paramsGiven) ? paramsIn[0] : windDir;
-	wind = (wind == -1) ? getWindDirection(paramsIn[0], itCnt, windChangeIntervall) : wind;
+	enum compass wind = (windDir == -1) ? getWindDirection(paramsIn[0], itCnt, windChangeIntervall) : windDir;
 
-	int radius = (paramsGiven) ? paramsIn[1] : windStrength;
-	radius = (radius == 0) ? getWindStrength(paramsIn[1], itCnt, windChangeIntervall) : radius; //if no file is given, paramsIn are the previous settings
+	int radius = (windStrength == 0) ? getWindStrength(paramsIn[1], itCnt, windChangeIntervall) : windStrength; //paramsIn are the previous settings	
 	
-	if (!paramsGiven) {
-		paramsOut[0] = wind;
-		paramsOut[1] = radius;
-	}
+	paramsOut[0] = wind;
+	paramsOut[1] = radius;
 
+}
+
+void VectorsCPU(dataType *dataIn, dataType *dataOut, int* paramsIn) {
 	for (int y = 0; y < HEIGHT; ++y) {
 		for (int x = 0; x < WIDTH; ++x) {
 			int idx = y*WIDTH+x;
-			dataOut[idx] = getNewCellState(dataIn, x, y, WIDTH, HEIGHT, radius, wind);
+			dataOut[idx] = getNewCellState(dataIn, x, y, WIDTH, HEIGHT, paramsIn[1], paramsIn[0]);
 		}
 	}
 }
@@ -544,9 +543,14 @@ int main(int argc, char *argv[]) {
 
 	printf("Running CPU...\n");
 	gettimeofday(&begin, NULL);
-	VectorsCPU(dataIn, dataOut[0], paramsOut[0], paramsOut[0], paramsGiven, radius, wind, windChangeIntervall, 0);
-	for (int i=1; i<it; ++i) 
-		VectorsCPU(dataOut[i-1], dataOut[i], paramsOut[i-1], paramsOut[i], paramsGiven, radius, wind, windChangeIntervall, i);
+	if (!paramsGiven)
+		manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
+	VectorsCPU(dataIn, dataOut[0], paramsOut[0]);
+	for (int i=1; i<it; ++i) {
+		if (!paramsGiven)
+			manageParams(paramsOut[i-1], paramsOut[i], radius, wind, windChangeIntervall, i);
+		VectorsCPU(dataOut[i-1], dataOut[i], paramsOut[i]);
+	}		
 	gettimeofday(&end, NULL);
 	timeSpentCPU += (end.tv_sec - begin.tv_sec) +
             ((end.tv_usec - begin.tv_usec)/1000000.0);
