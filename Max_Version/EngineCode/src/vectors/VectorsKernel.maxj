@@ -5,11 +5,22 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEType;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
-import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.KernelMath;
+//import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.KernelMath;
 
 class VectorsKernel extends Kernel {
 
 	static final DFEType dataType=dfeInt(4);
+
+	/*
+	https://github.com/custom-computing-ic/smcgen/blob/master/robot_localisation/src/KMath.maxj
+	static DFEVar exp(DFEVar x) {
+			return KernelMath.exp(x);
+	}
+
+	static DFEVar pow(DFEVar x, double pow, double minX, double maxX) {
+			Range inputRange = new Range(pow * Math.min(minX,maxX), pow * Math.max(minX,maxX));
+			return exp(log(x, inputRange) * pow);
+	}*/
 
 	DFEVar[] getNeighbors(DFEVar binaryImage, DFEVar x, DFEVar y, int width, int height, int radius) {
 		int neighSize = (2*radius+1)*(2*radius+1);
@@ -54,10 +65,13 @@ class VectorsKernel extends Kernel {
 
 	DFEVar willBurnDueToWind(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
 		
-		DFEVar[] neighborhood = getNeighbors(streamIn, neighborhood, x, y, width, height, maxRadius);
+		DFEVar[] neighborhood = getNeighbors(streamIn, x, y, width, height, maxRadius);
 
-		DFEVar moveUpDown = KernelMath.pow2(-1, (wind & 8) >> 3) * ((wind >> 2) & 1);
-		DFEVar moveLeftRight = KernelMath.pow2(-1, (wind & 3) >> 1) * (wind & 1);
+		DFEVar moveUpDownSign = ((wind & 8) >> 3 == 1) ? constant.var(dataType, -1) : constant.var(dataType, 1);
+		DFEVar moveUpDown = moveUpDownSign * ((wind >> 2) & 1);
+
+		DFEVar moveLeftRightSign = ((wind & 3) >> 1) == 1) ? constant.var(dataType, -1) : constant.var(dataType, 1);
+		DFEVar moveLeftRight = moveLeftRightSign * (wind & 1);
 
 		int centerCell = ((2*maxRadius+1)*(2*maxRadius+1)-1)/2;
 
