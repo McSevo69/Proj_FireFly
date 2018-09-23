@@ -10,7 +10,7 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.KernelConfiguration;
 
 class VectorsManager extends CustomManager {
 	
-	private static int width = 2560, height = 1440, maxRadius = 4;
+	private static int width = 2560, height = 1440, maxRadius = 4, burning = -2;
 
 	VectorsManager(EngineParameters engineParameters) {
 		super(engineParameters);
@@ -34,7 +34,6 @@ class VectorsManager extends CustomManager {
 
 		ei.setScalar("ForestFire", "windDir", windDir);
 		ei.setScalar("ForestFire", "windStrength", windStrength);
-		ei.setScalar("ForestFire", "burningState", burningState);
 		
 		ei.setStream("inData", CPUTypes.UINT8, size * CPUTypes.INT32.sizeInBytes());	
 		ei.setStream("outData", CPUTypes.UINT8, size * CPUTypes.INT32.sizeInBytes());
@@ -52,6 +51,7 @@ class VectorsManager extends CustomManager {
 		
 		manager.addMaxFileConstant("width", width);
 		manager.addMaxFileConstant("height", height);
+		manager.addMaxFileConstant("burning", burning);
 		manager.createSLiCinterface(interfaceDefault());
 		manager.build();
 	}
