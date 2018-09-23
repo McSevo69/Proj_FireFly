@@ -5,6 +5,7 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEType;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.KernelMath;
 
 class VectorsKernel extends Kernel {
 
@@ -51,12 +52,12 @@ class VectorsKernel extends Kernel {
 		return neighbors;
 	}
 
-	DFEVar willBurnDueToWind(DFEVAR streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
+	DFEVar willBurnDueToWind(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
 		
-		DFEVar[] neighborhood = getNeighbors(dataset, neighborhood, x, y, width, height, maxRadius);
+		DFEVar[] neighborhood = getNeighbors(streamIn, neighborhood, x, y, width, height, maxRadius);
 
-		int moveUpDown = (int) pow(-1, (wind & 8) >> 3) * ((wind >> 2) & 1);
-		int moveLeftRight = (int) pow(-1, (wind & 3) >> 1) * (wind & 1);
+		DFEVar moveUpDown = KernelMath.pow2(-1, (wind & 8) >> 3) * ((wind >> 2) & 1);
+		DFEVar moveLeftRight = KernelMath.pow2(-1, (wind & 3) >> 1) * (wind & 1);
 
 		int centerCell = ((2*maxRadius+1)*(2*maxRadius+1)-1)/2;
 
