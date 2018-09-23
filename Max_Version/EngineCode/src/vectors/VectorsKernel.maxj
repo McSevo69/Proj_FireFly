@@ -5,22 +5,10 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEType;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
-//import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.KernelMath;
 
 class VectorsKernel extends Kernel {
 
 	static final DFEType dataType=dfeInt(4);
-
-	/*
-	https://github.com/custom-computing-ic/smcgen/blob/master/robot_localisation/src/KMath.maxj
-	static DFEVar exp(DFEVar x) {
-			return KernelMath.exp(x);
-	}
-
-	static DFEVar pow(DFEVar x, double pow, double minX, double maxX) {
-			Range inputRange = new Range(pow * Math.min(minX,maxX), pow * Math.max(minX,maxX));
-			return exp(log(x, inputRange) * pow);
-	}*/
 
 	DFEVar[] getNeighbors(DFEVar binaryImage, DFEVar x, DFEVar y, int width, int height, int radius) {
 		int neighSize = (2*radius+1)*(2*radius+1);
@@ -67,17 +55,17 @@ class VectorsKernel extends Kernel {
 		
 		DFEVar[] neighborhood = getNeighbors(streamIn, x, y, width, height, maxRadius);
 
-		DFEVar moveUpDownSign = ((wind & 8) >> 3 == 1) ? constant.var(dataType, -1) : constant.var(dataType, 1);
+		DFEVar moveUpDownSign = (((wind & 8) >> 3).eq(constant.var(dataType, 1))) ? constant.var(dataType, -1) : constant.var(dataType, 1);
 		DFEVar moveUpDown = moveUpDownSign * ((wind >> 2) & 1);
 
-		DFEVar moveLeftRightSign = ((wind & 3) >> 1 == 1) ? constant.var(dataType, -1) : constant.var(dataType, 1);
+		DFEVar moveLeftRightSign = (((wind & 3).eq(constant.var(dataType, 1))) ? constant.var(dataType, -1) : constant.var(dataType, 1);
 		DFEVar moveLeftRight = moveLeftRightSign * (wind & 1);
 
 		int centerCell = ((2*maxRadius+1)*(2*maxRadius+1)-1)/2;
 
 		DFEVar cnt;
 
-		if (wind % 2 == 0) { //vertical
+		if ((wind % 2).eq(constant.var(dataType, 0))) { //vertical
 			for (int i = 2; i <= maxRadius; i++) cnt = (neighborhood[centerCell+moveUpDown*i*(2*radius+1)] < -1 & i <= radius) ? constant.var(dataType, 1) : 0;
 
 			for (int a = 2; a <= maxRadius; ++a) {
@@ -123,7 +111,7 @@ class VectorsKernel extends Kernel {
 		cnt += (x - 1 >= 0 & stream.offset(streamIn, -1) < -1) ? constant.var(dataType, 1) : 0;
 		cnt += (y - 1 >= 0 & x - 1 >= 0 & stream.offset(streamIn, -width -1) < -1) ? constant.var(dataType, 1) : 0;
 
-		return (cnt > 6) ? constant.var(dataType, -1) : (cnt > 0 | radius < 2 | (wind & 5) == 0) ? 
+		return (cnt > 6) ? constant.var(dataType, -1) : (cnt > 0 | radius < 2 | (wind & 5) === 0) ? 
 			cnt : willBurnDueToWind(streamIn, x, y, width, height, wind, radius, maxRadius);
 	}
 
@@ -131,8 +119,8 @@ class VectorsKernel extends Kernel {
 		
 		DFEVar burnState = hasBurningNeighbors(streamIn, x, y, width, height, wind, radius, maxRadius);
 
-		DFEVar resultDry = (burnstate == -1 | burnState > 1) ? burning + 1 : streamIn;
-		DFEVar resultNormal = (burnState == -1) ? burning + 1 : (burnState > 1) ? burning -1 : streamIn;
+		DFEVar resultDry = (burnstate === -1 | burnState > 1) ? burning + 1 : streamIn;
+		DFEVar resultNormal = (burnState === -1) ? burning + 1 : (burnState > 1) ? burning -1 : streamIn;
 
 		DFEVar inState = (streamIn > 2) ? constant.var(dfeUInt(2), 0) : (streamIn > 0) ? 1 : (streamIn < -1) ? 2 : 3;	
 
