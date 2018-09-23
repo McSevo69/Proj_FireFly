@@ -10,15 +10,14 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.KernelConfiguration;
 
 class VectorsManager extends CustomManager {
 	
-	private static int width = 2560, height = 1440;
+	private static int width = 2560, height = 1440, maxRadius = 4;
 
 	VectorsManager(EngineParameters engineParameters) {
 		super(engineParameters);
 
-		KernelBlock kernel = addKernel(new VectorsKernel(makeKernelParameters("ForestFire"), width, height));	
+		KernelBlock kernel = addKernel(new VectorsKernel(makeKernelParameters("ForestFire"), width, height, maxRadius));	
 
 		kernel.getInput("inData") <== addStreamFromCPU("inData");
-		kernel.getInput("inRandom") <== addStreamFromCPU("inRandom");
 		addStreamToCPU("outData") <== kernel.getOutput("outData");
 	}
 
@@ -27,19 +26,18 @@ class VectorsManager extends CustomManager {
 		EngineInterface ei = new EngineInterface();
 		InterfaceParam size = ei.addParam("dataSize", CPUTypes.UINT64);
 
-		InterfaceParam prop_f = ei.addParam("prop_f", CPUTypes.FLOAT);
-		InterfaceParam prop_p = ei.addParam("prop_p", CPUTypes.FLOAT);
-		InterfaceParam t = ei.addParam("t", CPUTypes.UINT8);
+		InterfaceParam windDir = ei.addParam("windDir", CPUTypes.UINT8);
+		InterfaceParam windStrength = ei.addParam("windStrength", CPUTypes.UINT8);
+		InterfaceParam burningState = ei.addParam("burningState", CPUTypes.INT8);
 		
 		ei.setTicks("ForestFire", size);
 
-		ei.setScalar("ForestFire", "prop_f", prop_f);
-		ei.setScalar("ForestFire", "prop_p", prop_p);
-		ei.setScalar("ForestFire", "t", t);
+		ei.setScalar("ForestFire", "windDir", windDir);
+		ei.setScalar("ForestFire", "windStrength", windStrength);
+		ei.setScalar("ForestFire", "burningState", burningState);
 		
-		ei.setStream("inData", CPUTypes.UINT8, size * CPUTypes.UINT8.sizeInBytes());
-		ei.setStream("inRandom", CPUTypes.FLOAT, size * CPUTypes.FLOAT.sizeInBytes());	
-		ei.setStream("outData", CPUTypes.UINT8, size * CPUTypes.UINT8.sizeInBytes());
+		ei.setStream("inData", CPUTypes.UINT8, size * CPUTypes.INT32.sizeInBytes());	
+		ei.setStream("outData", CPUTypes.UINT8, size * CPUTypes.INT32.sizeInBytes());
 
 		return ei;
 

@@ -1,6 +1,6 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-typedef int dataType;
+typedef short dataType;
 
 #endif

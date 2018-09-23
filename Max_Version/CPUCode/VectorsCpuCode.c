@@ -97,31 +97,31 @@ float verifyResults(int *outVector, int *expectedVector, int size) {
 }
 
 //initialization
-void init(dataType *a, float normal, float dry, int burningOnes) {
+void init(int *a, float normal, float dry, int burningOnes) {
 
-	for (int i=0; i<Vectors_width*Vectors_height; ++i) a[i] = 0;
+	for (int i=0; i<WIDTH*HEIGHT; ++i) a[i] = 0;
 
 	int randomIdx;
 	srand(time(NULL));
 
-	int items = floor(Vectors_width*Vectors_height*normal);
+	int items = floor(WIDTH*HEIGHT*normal);
 
 	// filled ones (normal)
 	for (int i=0; i<items; ++i) {
-		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) Vectors_width*Vectors_height));
-		a[randomIdx] = getTreeColor(1);
+		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
+		a[randomIdx] = getTreeColor(2);
 	}
 
-	int itemsDry = floor(Vectors_width*Vectors_height*dry);
+	int itemsDry = floor(WIDTH*HEIGHT*dry);
 
 	// filled ones dry
 	for (int i=0; i<itemsDry; ++i) {
-		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) Vectors_width*Vectors_height));
+		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
 		a[randomIdx] = getTreeColor(5);
 	}
 }
 
-void makeItRealistic(dataType *dataIn, int width, int height, float rate) {
+void makeItRealistic(int *dataIn, int width, int height, float rate) {
 
 	int randomIdx, normalisedOnes = 0, maxTries = 10000000, x = 0;
 	srand(time(NULL));
@@ -130,7 +130,7 @@ void makeItRealistic(dataType *dataIn, int width, int height, float rate) {
 
 	while (normalisedOnes < items && x < maxTries) {
 		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) height*width));
-		if (getInflammability(dataIn[randomIdx]) > 0) {
+		if (dataIn[randomIdx] > 0) {
 			dataIn[randomIdx] = 0x052200; //dark green
 			normalisedOnes++;
 		}
@@ -146,7 +146,7 @@ void setSomeTreesOnFire(dataType *dataIn, int size, int burningOnes) {
 
 	while (burningTrees < burningOnes && x < maxTries) {
 		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) size));
-		if (getInflammability(dataIn[randomIdx]) > 2) {
+		if (dataIn[randomIdx] > 2) {
 			dataIn[randomIdx] = burning;
 			burningTrees++;
 		}
@@ -154,19 +154,19 @@ void setSomeTreesOnFire(dataType *dataIn, int size, int burningOnes) {
 	}
 }
 
-int hasBurningNeighbors(int* dataset, int x, int y, int width, int height, int radius, enum compass wind) {
+int hasBurningNeighbors(dataType* dataset, int x, int y, int width, int height, int radius, enum compass wind) {
 
 	int cnt;
 	int idx = y*width+x;
 
-	cnt = (y - 1 >= 0) ? dataset[idx - Vectors_width] < -1 : 0;
-	cnt += (y - 1 >= 0 && x + 1 < width) ? dataset[idx - Vectors_width + 1] < -1 : 0;
+	cnt = (y - 1 >= 0) ? dataset[idx - WIDTH] < -1 : 0;
+	cnt += (y - 1 >= 0 && x + 1 < width) ? dataset[idx - WIDTH + 1] < -1 : 0;
 	cnt += (x + 1 < width) ? dataset[idx + 1] < -1 : 0;
-	cnt += (y + 1 < height && x + 1 < width) ? dataset[idx + Vectors_width + 1] < -1 : 0;
-	cnt += (y + 1 < height) ? dataset[idx + Vectors_width] < -1 : 0;
-	cnt += (y + 1 < height && x - 1 >= 0) ? dataset[idx + Vectors_width - 1] < -1 : 0;
+	cnt += (y + 1 < height && x + 1 < width) ? dataset[idx + WIDTH + 1] < -1 : 0;
+	cnt += (y + 1 < height) ? dataset[idx + WIDTH] < -1 : 0;
+	cnt += (y + 1 < height && x - 1 >= 0) ? dataset[idx + WIDTH - 1] < -1 : 0;
 	cnt += (x - 1 >= 0) ? dataset[idx - 1] < -1 : 0;
-	cnt += (y - 1 >= 0 && x - 1 >= 0) ? dataset[idx - Vectors_width - 1] < -1 : 0;
+	cnt += (y - 1 >= 0 && x - 1 >= 0) ? dataset[idx - WIDTH - 1] < -1 : 0;
 
 	if (cnt > 6) return -1; //full fire
 
@@ -218,26 +218,29 @@ int hasBurningNeighbors(int* dataset, int x, int y, int width, int height, int r
 	return cnt;
 }
 
-int getNewCellState(int* dataset, int x, int y, int width, int height, int radius, enum compass wind) {
+int getNewCellState(dataType* dataset, int x, int y, int width, int height, int radius, enum compass wind) {
 
 	int idx = y*width+x;
 
-	if (dataset[idx] > 0) {
-		if (getInflammability(dataset[idx]) > 2) { //tree dry
-			int burnState = hasBurningNeighbors(dataset, x, y, width, height, radius, wind);
+	if (dataset[idx] > 2) { //tree dry
+		int burnState = hasBurningNeighbors(dataset, x, y, width, height, radius, wind);
 
-			if (burnState == -1) return burning + 1;
-			else if (burnState > 0) return burning + 1;
-			else return dataset[idx];
-		} else if(getInflammability(dataset[idx]) > 0) { //tree normal
-			int burnState = hasBurningNeighbors(dataset, x, y, width, height, radius, wind);
+		if (burnState == -1) return burning + 1;
+		else if (burnState > 0) return burning + 1;
+		else return dataset[idx];
+	} else if(dataset[idx] > 0) { //tree normal
+		int burnState = hasBurningNeighbors(dataset, x, y, width, height, radius, wind);
 
-			if (burnState == -1) return burning + 1;
-			else if (burnState > 1) return burning -1;
-			else return dataset[idx];
-		} else return dataset[idx];
+		if (burnState == -1) return burning + 1;
+		else if (burnState > 1) return burning -1;
+		else return dataset[idx];
 	} else return (dataset[idx] < -1) ? dataset[idx] + 1 : dataset[idx];
 	
+}
+
+void transformInputImage(int* datasetIn, dataType* datasetOut, int width, int height) {	
+	for (int i=0; i<width*height; ++i)
+		datasetOut[i] = getInflammability(datasetIn[i]);	
 }
 
 /**
@@ -313,7 +316,7 @@ int getWindDirection(int prevWindDir, int itCnt, int windChangeIntervall) {
 	}	
 }
 
-void initParams(int** params, char* file, int iterations) {
+void initParams(dataType** params, char* file, int iterations) {
 	char buffer[8000000];
 	char *ptr;
 
@@ -328,7 +331,7 @@ void initParams(int** params, char* file, int iterations) {
 	}
 
 	x = -1;
-	while((line = fgets(buffer, sizeof(buffer), pstream)) !=NULL && x++ < iterations) {
+	while((line = fgets(buffer, sizeof(buffer), pstream)) !=NULL && ++x < iterations) {
 		y = -1;		
 		record = strtok(line, ",");
 		while(y++ < 2 && record != NULL) {
@@ -341,8 +344,7 @@ void initParams(int** params, char* file, int iterations) {
 	printf("Params file loading successful...\n");
 }
 
-
-void manageParams(int* paramsIn, int* paramsOut, int windStrength,
+void manageParams(dataType* paramsIn, dataType* paramsOut, int windStrength,
 		enum compass windDir, int windChangeIntervall, int itCnt) {
 
 	enum compass wind = (windDir == -1) ? getWindDirection(paramsIn[0], itCnt, windChangeIntervall) : windDir;
@@ -354,12 +356,11 @@ void manageParams(int* paramsIn, int* paramsOut, int windStrength,
 
 }
 
-void VectorsCPU(dataType *dataIn, dataType *dataOut, int* paramsIn) {
-
-	for (int y = 0; y < Vectors_height; ++y) {
-		for (int x = 0; x < Vectors_width; ++x) {
-			int idx = y*Vectors_width+x;
-			dataOut[idx] = getNewCellState(dataIn, x, y, Vectors_width, Vectors_height, radius, wind);
+void VectorsCPU(dataType *dataIn, dataType *dataOut, dataType* paramsIn) {
+	for (int y = 0; y < HEIGHT; ++y) {
+		for (int x = 0; x < WIDTH; ++x) {
+			int idx = y*WIDTH+x;
+			dataOut[idx] = getNewCellState(dataIn, x, y, WIDTH, HEIGHT, paramsIn[1], paramsIn[0]);
 		}
 	}
 }
@@ -515,7 +516,8 @@ int main(int argc, char *argv[]) {
 
 	if (t > 0) burning -= (t > maxT) ? maxT : t;
 
-	dataType * dataIn = calloc(Vectors_width*Vectors_height, sizeof(dataType));
+	int * dataIn = calloc(Vectors_width*Vectors_height, sizeof(int));
+	dataType * dataBuffer = calloc(WIDTH*HEIGHT, sizeof(dataType));
 	dataType ** dataOutDFE = malloc(it*sizeof(dataType*));
 	for (int i=0; i<it; ++i) dataOutDFE[i] = calloc(Vectors_width*Vectors_height, sizeof(dataType));
 
@@ -547,22 +549,24 @@ int main(int argc, char *argv[]) {
 	if (!inSet) {
 		printf("WARNING: parameter -I/--inImage not set. Input data is generated.\n");
 		init(dataIn, normal, dry, burningOnes);
-		if (burningOnes > 0) setSomeTreesOnFire(dataIn, Vectors_width*Vectors_height, burningOnes);
+		transformInputImage(dataIn, dataBuffer, Vectors_width, Vectors_height);
 	} else {
 		printf("Loading image...\n");
 		int width = 0, height = 0;
 		loadImage(inPath, &dataIn, &width, &height, 0);
 		if (noiseDesired) makeItRealistic(dataIn, width, height, noiseRatio);
-		if (burningOnes > 0) setSomeTreesOnFire(dataIn, Vectors_width*Vectors_height, burningOnes);
+		transformInputImage(dataIn, dataBuffer, width, height);	
 	}
+
+	if (burningOnes > 0) setSomeTreesOnFire(dataBuffer, Vectors_width*Vectors_height, burningOnes);
 	
 	printf("Running DFE...\n");
 	gettimeofday(&begin, NULL);	
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
-	Vectors(Vectors_width*Vectors_height, radius, wind, dataIn, dataOutDFE[0]);
+	Vectors(Vectors_width*Vectors_height, radius, wind, burning, dataIn, dataOutDFE[0]);
 	for (int i=1; i<it; ++i) {
 		if (!paramsGiven) manageParams(paramsOut[i-1], paramsOut[i], radius, wind, windChangeIntervall, i);
-		Vectors(Vectors_width*Vectors_height, radius, wind, dataOutDFE[i-1], dataOutDFE[i]);
+		Vectors(Vectors_width*Vectors_height, radius, wind, burning, dataOutDFE[i-1], dataOutDFE[i]);
 	}
 	gettimeofday(&end, NULL);
 	timeSpent += (end.tv_sec - begin.tv_sec) +
@@ -600,10 +604,8 @@ int main(int argc, char *argv[]) {
 		snprintf(filename, sizeof(filename), "benchmark_%dx%d_%d.csv", Vectors_width, Vectors_height, it);
 		time_res = fopen(filename, "a");
 		fprintf(time_res, "%d, %d, %d, %f, %f, %f, %f\n", Vectors_width, Vectors_height, it, timeSpentCPU, timeSpent, timeSpentCPU/timeSpent, acc);
-		fclose(time_res);
-		
+		fclose(time_res);		
 	}
-
 
 	if (exportIt) {
 		printf("Exporting results...\n");
@@ -625,6 +627,12 @@ int main(int argc, char *argv[]) {
 		//exporting - first it
 		fprintf(paramsFile, "%d,%d\n", paramsOut[0][0], paramsOut[0][1]);
 
+		//printing dataIn as well
+		for(int i = 0; i < WIDTH*HEIGHT-1; ++i) {
+			fprintf(results, "%d,", dataIn[i]);
+		}
+		fprintf(results, "%d\n", dataIn[WIDTH*HEIGHT-1]);
+
 		for(int i = 0; i < Vectors_width*Vectors_height-1; ++i) {
 			fprintf(results, "%d,", dataOut[0][i]);
 			imageBuffer[i] = dataOut[0][i];
@@ -634,13 +642,13 @@ int main(int argc, char *argv[]) {
 
 		for(int j = 1; j < it; ++j) {
 			for(int i = 0; i < Vectors_width*Vectors_height-1; ++i) {
-				if (imageBuffer[i] != dataOut[j][i]) {
+				if (imageBuffer[i] != dataOut[j][i] && imageBuffer != 0) {
 					fprintf(results, "%i,", dataOut[j][i]);
 					imageBuffer[i] = dataOut[0][i];
 				} else fprintf(results, " ,");
 			}
 
-			if (imageBuffer[Vectors_width*Vectors_height-1] != dataOut[j][Vectors_width*Vectors_height-1]) {
+			if (imageBuffer[Vectors_width*Vectors_height-1] != dataOut[j][Vectors_width*Vectors_height-1] && imageBuffer != 0) {
 				fprintf(results, "%i,", dataOut[j][Vectors_width*Vectors_height-1]);
 				imageBuffer[Vectors_width*Vectors_height-1] = dataOut[0][Vectors_width*Vectors_height-1];
 			} else fprintf(results, " ,");
@@ -657,6 +665,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	free(dataIn);
+	free(dataBuffer);
 	for (int i=0; i<it; ++i) free(dataOutDFE[i]);
 	free(dataOutDFE);
 

@@ -1,3 +1,5 @@
+#include "types.h"
+
 //scale: 0 - lush, 5 - dry
 int getTreeColor(int identifier){
 	switch(identifier) {
@@ -11,7 +13,7 @@ int getTreeColor(int identifier){
 }
 
 //0 not burnable, 5 highly inflammable
-int getInflammability(int color) {
+dataType getInflammability(int color) {
 	switch(color) {
 		case 0x061a11: return 0;
 		case 0x0b1c1d: return 0;
@@ -55,13 +57,15 @@ int getInflammability(int color) {
 }
 
 int getColorForRendering(int identifier) {
-	switch(identifier) {
+	//"normalising"
+	int id = (identifier < -6) ? -6 : identifier;
+	switch(id) {
 		case -6: return 0xffe808;
 		case -5: return 0xffce00;
 		case -4: return 0xff9a00;
 		case -3: return 0xff5a00;
 		case -2: return 0xff0000;
 		case -1: return 0x373a24;
-		default: return identifier;
+		default: return id;
 	}
 }

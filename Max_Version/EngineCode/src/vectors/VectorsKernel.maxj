@@ -8,10 +8,97 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
 
 class VectorsKernel extends Kernel {
 
-	static final DFEType dataType=dfeInt(32), floatType=dfeFloat(8,24);
+	static final DFEType dataType=dfeInt(4);
 
-	//number of 0,1 patterns
-	DFEVar willBurn(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar rand) {
+	DFEVar[] getNeighbors(DFEVar binaryImage, DFEVar x, DFEVar y, int width, int radius) {
+		int neighSize = (2*radius+1)*(2*radius+1);
+
+		DFEVar[] neighbors = new DFEVar[neighSize];
+
+		int centeredIdx = (neighSize-1)/2;
+		int dsIdx = y*width+x;
+
+		neighbors[centeredIdx] = binaryImage; //<-- center cell
+
+		//cross around center cell -> 4*r
+		for (int i=1; i <= radius; ++i) {
+			neighbors[centeredIdx-i*(2*radius+1)] = ((y - i) < 0) ? constant.var(dataType, 1) //any number higher than $burning is okay here
+					: stream.offset(binaryImage, -i*width); //above
+			neighbors[centeredIdx+i*(2*radius+1)] = ((y + i) >= height) ? constant.var(dataType, 1)
+					: stream.offset(binaryImage,+i*width); //below
+			neighbors[centeredIdx-i] = ((x - i) < 0) ? constant.var(dataType, 1)
+					: stream.offset(binaryImage,-i); //left
+			neighbors[centeredIdx+i] = ((x + i) >= width) ? constant.var(dataType, 1)
+					: stream.offset(binaryImage,+i); // right
+		}
+
+		//squares around x -> 4*r^2
+		for (int i = 1; i <= radius; ++i) {
+			for (int j = 1; j <= radius; ++j) {
+				neighbors[centeredIdx-i*(2*radius+1)-j] = ((y - i) < 0 || (x - j) < 0) ? constant.var(dataType, 1) :
+					stream.offset(binaryImage,-i*width-j); //above left
+
+				neighbors[centeredIdx-i*(2*radius+1)+j] = ((y - i) < 0 || (x + j) >= width) ? constant.var(dataType, 1) :
+					stream.offset(binaryImage,-i*width+j); //above right
+
+				neighbors[centeredIdx+i*(2*radius+1)-j] = ((y + i) >= height || (x - j) < 0) ? constant.var(dataType, 1) :
+					stream.offset(binaryImage,+i*width-j); //below left
+
+				neighbors[centeredIdx+i*(2*radius+1)+j] = ((y + i) >= height || (x + j) >= width) ? constant.var(dataType, 1) :
+					stream.offset(binaryImage,+i*width+j); //below right
+			}
+		}
+
+		return neighbors;
+	}
+
+	DFEVar willBurnDueToWind(DFEVAR streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
+		
+		DFEVar[] neighborhood = getNeighbors(dataset, neighborhood, x, y, width, maxRadius);
+
+		int moveUpDown = (int) pow(-1, (wind & 8) >> 3) * ((wind >> 2) & 1);
+		int moveLeftRight = (int) pow(-1, (wind & 3) >> 1) * (wind & 1);
+
+		int centerCell = ((2*maxRadius+1)*(2*maxRadius+1)-1)/2;
+
+		DFEVar cnt;
+
+		if (wind % 2 == 0) { //vertical
+			for (int i = 2; i <= maxRadius; i++) cnt = (neighborhood[centerCell+moveUpDown*i*(2*radius+1)] < -1 & i <= radius) ? constant.var(dataType, 1) : 0;
+
+			for (int a = 2; a <= maxRadius; ++a) {
+				for (int b = 1; b < a; ++b) {
+					cnt += (neighborhood[centerCell+moveUpDown*a*(2*maxRadius+1)+b] < -1 & a <= radius) ? constant.var(dataType, 1) : 0; //counting left/right ones
+					cnt += (neighborhood[centerCell+moveUpDown*a*(2*maxRadius+1)-b] < -1 & a <= radius) ? constant.var(dataType, 1) : 0;
+				}
+			}
+		} else if (wind % 8 <= 3) { //horizontal
+			for (int i = 2; i <= maxRadius; ++i) cnt = (neighborhood[centerCell+moveLeftRight*i] < -1 & i <= radius) ? constant.var(dataType, 1) : 0;
+
+			for (int a = 2; a <= maxRadius; ++a) {
+				for (int b = 1; b < a; ++b) {
+					cnt += (neighborhood[centerCell+moveLeftRight*a+b*(2*maxRadius+1)] < -1 & a <= radius) ? constant.var(dataType, 1) : 0; //counting above/below ones
+					cnt += (neighborhood[centerCell+moveLeftRight*a-b*(2*maxRadius+1)] < -1 & a <= radius) ? constant.var(dataType, 1) : 0;
+				}
+			}
+		} else {
+			for (int i = 2; i <= maxRadius; ++i) cnt = (neighborhood[centerCell+moveUpDown*i*(2*maxRadius+1)+moveLeftRight*i] < -1 & i <= radius) ? constant.var(dataType, 1) : 0; //diagonal
+
+			int diagIdx = 0;
+
+			for (int a = 2; a <= maxRadius; ++a) {
+				for (int b = 1; b < a; ++b) {
+					diagIdx = centerCell+moveUpDown*a*(2*maxRadius+1)+moveLeftRight*a;
+					cnt += (neighborhood[diagIdx+(-1)*moveUpDown*b*(2*maxRadius+1)] < -1 & a <= radius) ? constant.var(dataType, 1) : 0; //times (-1) as we go in the opposite direction
+					cnt += (neighborhood[diagIdx+(-1)*moveLeftRight*b] < -1 & a <= radius) ? constant.var(dataType, 1) : 0;
+				}
+			}
+		}
+
+		return cnt;
+	}
+
+	DFEVar hasBurningNeighbors(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
 
 		DFEVar cnt = (y - 1 >= 0) ? (stream.offset(streamIn, -width) > 2 ? constant.var(dataType, 1) :
 			constant.var(dataType, 0)) : constant.var(dataType, 0);
@@ -23,31 +110,31 @@ class VectorsKernel extends Kernel {
 		cnt += (x - 1 >= 0) ? (stream.offset(streamIn, -1) > 2 ? constant.var(dataType, 1) : 0): 0;
 		cnt += (y - 1 >= 0 & x - 1 >= 0) ? (stream.offset(streamIn, -width -1) > 2 ? constant.var(dataType, 1) : 0): 0;
 
-		return (cnt >= 1 | io.scalarInput("prop_f", floatType) > rand) ?
-			io.scalarInput("t", dataType) : constant.var(dataType, 0);
+		return (cnt > 6) ? constant.var(dataType, -1) : (cnt > 0 || radius < 2 || (wind & 5) == 0) ? 
+			cnt : willBurnDueToWind(streamIn, x, y, width, height, wind, radius, maxRadius);
 	}
 
-	DFEVar willGrow(DFEVar rand) {
-		return (io.scalarInput("prop_p", floatType) > rand) ?
-			constant.var(dataType, 0) : constant.var(dataType, 1);
+	DFEVar getNewCellState(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
+		
+		DFEVar burnState = hasBurningNeighbors(streamIn, x, y, width, height, wind, radius, maxRadius);
+
+		DFE resultDry = (burnstate == -1 | burnState > 1) ? burning + 1 : streamIn;
+		DFE resultNormal = (burnState == -1) ? burning + 1 : (burnState > 1) ? burning -1 : streamIn;
+
+		DFE inState = (stream > 2) ? constant.var(dfeUInt(2), 0) : (stream > 0) ? 1 : (stream < -1) ? 2 : 3;	
+
+		return control.mux(inState, resultDry, resultNormal, streamIn + 1, streamIn);	
 	}
 
-	DFEVar getNewCellState(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar rand) {
-
-		DFEVar state = (streamIn > 2) ? constant.var(dfeUInt(2), 2) : streamIn.cast(dfeUInt(2));
-
-		return control.mux(state,
-				willBurn(streamIn, x, y, width, height, rand),
-				willGrow(rand),
-				streamIn - 1);
-	}
-
-	VectorsKernel(KernelParameters parameters, int width, int height) {
+	VectorsKernel(KernelParameters parameters, int width, int height, int maxRadius) {
 		super(parameters);
 
 		// Input
 		DFEVar streamIn = io.input("inData", dataType);
-		DFEVar rand = io.input("inRandom", floatType);
+
+		DFEVar windDir = io.scalarInput("windDir", dataType);
+		DFEVar windStrength = io.scalarInput("windStrength", dataType);
+		DFEVar burningState = io.scalarInput("burningState", dataType);
 
 		//counters
 		CounterChain chain = control.count.makeCounterChain();
@@ -58,7 +145,7 @@ class VectorsKernel extends Kernel {
 		x_cnt = x_cnt.cast(dfeUInt(32));
 
 		//Output
-		io.output("outData", getNewCellState(streamIn, x_cnt, y_cnt, width, height, rand), dataType);
+		io.output("outData", getNewCellState(streamIn, x_cnt, y_cnt, width, height, windDir, windStrength, maxRadius), dataType);
 
 	}
 }
