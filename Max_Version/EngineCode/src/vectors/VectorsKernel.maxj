@@ -70,7 +70,7 @@ class VectorsKernel extends Kernel {
 		DFEVar moveUpDownSign = ((wind & 8) >> 3 == 1) ? constant.var(dataType, -1) : constant.var(dataType, 1);
 		DFEVar moveUpDown = moveUpDownSign * ((wind >> 2) & 1);
 
-		DFEVar moveLeftRightSign = ((wind & 3) >> 1) == 1) ? constant.var(dataType, -1) : constant.var(dataType, 1);
+		DFEVar moveLeftRightSign = ((wind & 3) >> 1 == 1) ? constant.var(dataType, -1) : constant.var(dataType, 1);
 		DFEVar moveLeftRight = moveLeftRightSign * (wind & 1);
 
 		int centerCell = ((2*maxRadius+1)*(2*maxRadius+1)-1)/2;
@@ -114,14 +114,14 @@ class VectorsKernel extends Kernel {
 
 	DFEVar hasBurningNeighbors(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
 
-		DFEVar cnt = (y - 1 >= 0) ? (stream.offset(streamIn, -width) < -1) ? constant.var(dataType, 1) : constant.var(dataType, 0);
-		cnt += (y - 1 >= 0 & x + 1 < width) ? (stream.offset(streamIn, -width + 1) < -1) ? constant.var(dataType, 1) : 0;
-		cnt += (x + 1 < width) ? (stream.offset(streamIn, +1) < -1) ? constant.var(dataType, 1) : 0;
-		cnt += (y + 1 < height & x + 1 < width) ? (stream.offset(streamIn, +width +1) < -1) ? constant.var(dataType, 1) : 0;
-		cnt += (y + 1 < height) ? (stream.offset(streamIn, +width) < -1) ? constant.var(dataType, 1) : 0;
-		cnt += (y + 1 < height & x - 1 >= 0) ? (stream.offset(streamIn, +width -1) < -1) ? constant.var(dataType, 1) : 0;
-		cnt += (x - 1 >= 0) ? (stream.offset(streamIn, -1) < -1) ? constant.var(dataType, 1) : 0;
-		cnt += (y - 1 >= 0 & x - 1 >= 0) ? (stream.offset(streamIn, -width -1) < -1) ? constant.var(dataType, 1) : 0;
+		DFEVar cnt = (y - 1 >= 0 & stream.offset(streamIn, -width) < -1) ? constant.var(dataType, 1) : constant.var(dataType, 0);
+		cnt += (y - 1 >= 0 & x + 1 < width & stream.offset(streamIn, -width + 1) < -1) ? constant.var(dataType, 1) : 0;
+		cnt += (x + 1 < width & stream.offset(streamIn, +1) < -1) ? constant.var(dataType, 1) : 0;
+		cnt += (y + 1 < height & x + 1 < width & stream.offset(streamIn, +width +1) < -1) ? constant.var(dataType, 1) : 0;
+		cnt += (y + 1 < height & stream.offset(streamIn, +width) < -1) ? constant.var(dataType, 1) : 0;
+		cnt += (y + 1 < height & x - 1 >= 0 & stream.offset(streamIn, +width -1) < -1) ? constant.var(dataType, 1) : 0;
+		cnt += (x - 1 >= 0 & stream.offset(streamIn, -1) < -1) ? constant.var(dataType, 1) : 0;
+		cnt += (y - 1 >= 0 & x - 1 >= 0 & stream.offset(streamIn, -width -1) < -1) ? constant.var(dataType, 1) : 0;
 
 		return (cnt > 6) ? constant.var(dataType, -1) : (cnt > 0 | radius < 2 | (wind & 5) == 0) ? 
 			cnt : willBurnDueToWind(streamIn, x, y, width, height, wind, radius, maxRadius);
