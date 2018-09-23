@@ -34,16 +34,16 @@ class VectorsKernel extends Kernel {
 		//squares around x -> 4*r^2
 		for (int i = 1; i <= radius; ++i) {
 			for (int j = 1; j <= radius; ++j) {
-				neighbors[centeredIdx-i*(2*radius+1)-j] = ((y - i) < 0 || (x - j) < 0) ? constant.var(dataType, 1) :
+				neighbors[centeredIdx-i*(2*radius+1)-j] = ((y - i) < 0 | (x - j) < 0) ? constant.var(dataType, 1) :
 					stream.offset(binaryImage,-i*width-j); //above left
 
-				neighbors[centeredIdx-i*(2*radius+1)+j] = ((y - i) < 0 || (x + j) >= width) ? constant.var(dataType, 1) :
+				neighbors[centeredIdx-i*(2*radius+1)+j] = ((y - i) < 0 | (x + j) >= width) ? constant.var(dataType, 1) :
 					stream.offset(binaryImage,-i*width+j); //above right
 
-				neighbors[centeredIdx+i*(2*radius+1)-j] = ((y + i) >= height || (x - j) < 0) ? constant.var(dataType, 1) :
+				neighbors[centeredIdx+i*(2*radius+1)-j] = ((y + i) >= height | (x - j) < 0) ? constant.var(dataType, 1) :
 					stream.offset(binaryImage,+i*width-j); //below left
 
-				neighbors[centeredIdx+i*(2*radius+1)+j] = ((y + i) >= height || (x + j) >= width) ? constant.var(dataType, 1) :
+				neighbors[centeredIdx+i*(2*radius+1)+j] = ((y + i) >= height | (x + j) >= width) ? constant.var(dataType, 1) :
 					stream.offset(binaryImage,+i*width+j); //below right
 			}
 		}
@@ -108,7 +108,7 @@ class VectorsKernel extends Kernel {
 		cnt += (x - 1 >= 0) ? (stream.offset(streamIn, -1) < -1) ? constant.var(dataType, 1) : 0;
 		cnt += (y - 1 >= 0 & x - 1 >= 0) ? (stream.offset(streamIn, -width -1) < -1) ? constant.var(dataType, 1) : 0;
 
-		return (cnt > 6) ? constant.var(dataType, -1) : (cnt > 0 || radius < 2 || (wind & 5) == 0) ? 
+		return (cnt > 6) ? constant.var(dataType, -1) : (cnt > 0 | radius < 2 | (wind & 5) == 0) ? 
 			cnt : willBurnDueToWind(streamIn, x, y, width, height, wind, radius, maxRadius);
 	}
 

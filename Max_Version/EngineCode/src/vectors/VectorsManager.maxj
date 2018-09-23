@@ -15,7 +15,7 @@ class VectorsManager extends CustomManager {
 	VectorsManager(EngineParameters engineParameters) {
 		super(engineParameters);
 
-		KernelBlock kernel = addKernel(new VectorsKernel(makeKernelParameters("ForestFire"), width, height, maxRadius));	
+		KernelBlock kernel = addKernel(new VectorsKernel(makeKernelParameters("ForestFire"), width, height, maxRadius, burning));	
 
 		kernel.getInput("inData") <== addStreamFromCPU("inData");
 		addStreamToCPU("outData") <== kernel.getOutput("outData");
@@ -28,7 +28,6 @@ class VectorsManager extends CustomManager {
 
 		InterfaceParam windDir = ei.addParam("windDir", CPUTypes.UINT8);
 		InterfaceParam windStrength = ei.addParam("windStrength", CPUTypes.UINT8);
-		InterfaceParam burningState = ei.addParam("burningState", CPUTypes.INT8);
 		
 		ei.setTicks("ForestFire", size);
 
