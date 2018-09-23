@@ -58,7 +58,7 @@ class VectorsKernel extends Kernel {
 		DFEVar moveUpDownSign = (((wind & 8) >> 3).eq(constant.var(dataType, 1))) ? constant.var(dataType, -1) : constant.var(dataType, 1);
 		DFEVar moveUpDown = moveUpDownSign * ((wind >> 2) & 1);
 
-		DFEVar moveLeftRightSign = (((wind & 3).eq(constant.var(dataType, 1))) ? constant.var(dataType, -1) : constant.var(dataType, 1);
+		DFEVar moveLeftRightSign = ((wind & 3).eq(constant.var(dataType, 1))) ? constant.var(dataType, -1) : constant.var(dataType, 1);
 		DFEVar moveLeftRight = moveLeftRightSign * (wind & 1);
 
 		int centerCell = ((2*maxRadius+1)*(2*maxRadius+1)-1)/2;
@@ -119,10 +119,11 @@ class VectorsKernel extends Kernel {
 		
 		DFEVar burnState = hasBurningNeighbors(streamIn, x, y, width, height, wind, radius, maxRadius);
 
-		DFEVar resultDry = (burnstate === -1 | burnState > 1) ? burning + 1 : streamIn;
+		DFEVar resultDry = (burnState === -1 | burnState > 1) ? burning + 1 : streamIn;
 		DFEVar resultNormal = (burnState === -1) ? burning + 1 : (burnState > 1) ? burning -1 : streamIn;
 
-		DFEVar inState = (streamIn > 2) ? constant.var(dfeUInt(2), 0) : (streamIn > 0) ? 1 : (streamIn < -1) ? 2 : 3;	
+		DFEVar inState = (streamIn > 2) ? constant.var(dfeUInt(2), 0) :
+			((streamIn > 0) ? constant.var(dfeUInt(2), 1) : (streamIn < -1) ? constant.var(dfeUInt(2), 2) : constant.var(dfeUInt(2), 3));	
 
 		return control.mux(inState, resultDry, resultNormal, streamIn + 1, streamIn);	
 	}
