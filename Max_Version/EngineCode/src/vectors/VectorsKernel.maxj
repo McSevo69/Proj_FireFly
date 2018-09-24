@@ -99,7 +99,7 @@ class VectorsKernel extends Kernel {
 		
 		DFEVar[] neighborhood = getNeighbors(streamIn, x, y, width, height, maxRadius);
 
-		return control.mux(wind, getWindResult(neighborhood, radius, maxRadius, 0), getWindResult(neighborhood, radius, maxRadius, 1),
+		return control.mux(wind.cast(dfeUInt(4)), getWindResult(neighborhood, radius, maxRadius, 0), getWindResult(neighborhood, radius, maxRadius, 1),
 			getWindResult(neighborhood, radius, maxRadius, 2), getWindResult(neighborhood, radius, maxRadius, 3),
 			getWindResult(neighborhood, radius, maxRadius, 4), getWindResult(neighborhood, radius, maxRadius, 5),
 			getWindResult(neighborhood, radius, maxRadius, 6), getWindResult(neighborhood, radius, maxRadius, 7),
