@@ -6,11 +6,11 @@ import com.maxeler.maxcompiler.v2.managers.custom.blocks.KernelBlock;
 import com.maxeler.maxcompiler.v2.managers.engine_interfaces.CPUTypes;
 import com.maxeler.maxcompiler.v2.managers.engine_interfaces.EngineInterface;
 import com.maxeler.maxcompiler.v2.managers.engine_interfaces.InterfaceParam;
-import com.maxeler.maxcompiler.v2.kernelcompiler.KernelConfiguration;
+//import com.maxeler.maxcompiler.v2.kernelcompiler.KernelConfiguration;
 
 class VectorsManager extends CustomManager {
 	
-	private static int width = 2560, height = 1440, maxRadius = 4;
+	private static int width = 1920, height = 1080, maxRadius = 4;
 
 	VectorsManager(EngineParameters engineParameters) {
 		super(engineParameters);
@@ -47,8 +47,8 @@ class VectorsManager extends CustomManager {
 		EngineParameters params = new EngineParameters(args);
 		VectorsManager manager = new VectorsManager(params);
 
-		KernelConfiguration currKConf = manager.getCurrentKernelConfig();
-		currKConf.optimization.setCEPipelining(2);
+		//KernelConfiguration currKConf = manager.getCurrentKernelConfig();
+		//currKConf.optimization.setCEPipelining(2);
 		
 		manager.addMaxFileConstant("width", width);
 		manager.addMaxFileConstant("height", height);
