@@ -17,7 +17,7 @@ class VectorsKernel extends Kernel {
 
 		int centeredIdx = (neighSize-1)/2;
 
-		neighbors[centeredIdx] = binaryImage; //<-- center cell
+		neighbors[centeredIdx] = constant.var(dataType, 0); //can be zero, since center cell isn't counted as neighbor
 
 		//cross around center cell -> 4*r
 		for (int i=1; i <= radius; ++i) {
@@ -90,15 +90,14 @@ class VectorsKernel extends Kernel {
 				}
 			}
 		}
-
 		return cnt;
-
 	}
 
 	DFEVar willBurnDueToWind(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
 		
 		DFEVar[] neighborhood = getNeighbors(streamIn, x, y, width, height, maxRadius);
 
+		//this is like transforming DFEVar to int
 		return control.mux(wind.cast(dfeUInt(4)), getWindResult(neighborhood, radius, maxRadius, 0), getWindResult(neighborhood, radius, maxRadius, 1),
 			getWindResult(neighborhood, radius, maxRadius, 2), getWindResult(neighborhood, radius, maxRadius, 3),
 			getWindResult(neighborhood, radius, maxRadius, 4), getWindResult(neighborhood, radius, maxRadius, 5),
