@@ -99,24 +99,24 @@ float verifyResults(int *outVector, int *expectedVector, int size) {
 //initialization
 void init(int *a, float normal, float dry, int burningOnes) {
 
-	for (int i=0; i<WIDTH*HEIGHT; ++i) a[i] = 0;
+	for (int i=0; i<Vectors_width*Vectors_height; ++i) a[i] = 0;
 
 	int randomIdx;
 	srand(time(NULL));
 
-	int items = floor(WIDTH*HEIGHT*normal);
+	int items = floor(Vectors_width*Vectors_height*normal);
 
 	// filled ones (normal)
 	for (int i=0; i<items; ++i) {
-		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
+		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) Vectors_width*Vectors_height));
 		a[randomIdx] = getTreeColor(2);
 	}
 
-	int itemsDry = floor(WIDTH*HEIGHT*dry);
+	int itemsDry = floor(Vectors_width*Vectors_height*dry);
 
 	// filled ones dry
 	for (int i=0; i<itemsDry; ++i) {
-		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) WIDTH*HEIGHT));
+		randomIdx = floor(( (float) rand() / RAND_MAX) * ( (float) Vectors_width*Vectors_height));
 		a[randomIdx] = getTreeColor(5);
 	}
 }
@@ -159,14 +159,14 @@ int hasBurningNeighbors(dataType* dataset, int x, int y, int width, int height, 
 	int cnt;
 	int idx = y*width+x;
 
-	cnt = (y - 1 >= 0) ? dataset[idx - WIDTH] < -1 : 0;
-	cnt += (y - 1 >= 0 && x + 1 < width) ? dataset[idx - WIDTH + 1] < -1 : 0;
+	cnt = (y - 1 >= 0) ? dataset[idx - Vectors_width] < -1 : 0;
+	cnt += (y - 1 >= 0 && x + 1 < width) ? dataset[idx - Vectors_width + 1] < -1 : 0;
 	cnt += (x + 1 < width) ? dataset[idx + 1] < -1 : 0;
-	cnt += (y + 1 < height && x + 1 < width) ? dataset[idx + WIDTH + 1] < -1 : 0;
-	cnt += (y + 1 < height) ? dataset[idx + WIDTH] < -1 : 0;
-	cnt += (y + 1 < height && x - 1 >= 0) ? dataset[idx + WIDTH - 1] < -1 : 0;
+	cnt += (y + 1 < height && x + 1 < width) ? dataset[idx + Vectors_width + 1] < -1 : 0;
+	cnt += (y + 1 < height) ? dataset[idx + Vectors_width] < -1 : 0;
+	cnt += (y + 1 < height && x - 1 >= 0) ? dataset[idx + Vectors_width - 1] < -1 : 0;
 	cnt += (x - 1 >= 0) ? dataset[idx - 1] < -1 : 0;
-	cnt += (y - 1 >= 0 && x - 1 >= 0) ? dataset[idx - WIDTH - 1] < -1 : 0;
+	cnt += (y - 1 >= 0 && x - 1 >= 0) ? dataset[idx - Vectors_width - 1] < -1 : 0;
 
 	if (cnt > 6) return -1; //full fire
 
@@ -357,10 +357,10 @@ void manageParams(dataType* paramsIn, dataType* paramsOut, int windStrength,
 }
 
 void VectorsCPU(dataType *dataIn, dataType *dataOut, dataType* paramsIn) {
-	for (int y = 0; y < HEIGHT; ++y) {
-		for (int x = 0; x < WIDTH; ++x) {
-			int idx = y*WIDTH+x;
-			dataOut[idx] = getNewCellState(dataIn, x, y, WIDTH, HEIGHT, paramsIn[1], paramsIn[0]);
+	for (int y = 0; y < Vectors_height; ++y) {
+		for (int x = 0; x < Vectors_width; ++x) {
+			int idx = y*Vectors_width+x;
+			dataOut[idx] = getNewCellState(dataIn, x, y, Vectors_width, Vectors_height, paramsIn[1], paramsIn[0]);
 		}
 	}
 }
@@ -394,7 +394,6 @@ void showHelpMessage(char *argv[]) {
 	printf("  -h | --help\t\t\tPrint help message\n");
 	printf("  -I | --inImage <PATH>\t\tPath for input image\n");
 	printf("  -P | --params <PATH>\t\tPath for input params file\n");
-	printf("  -R | --replay <PATH>\t\tReplay simulation from csv file\n");
 	printf("  -B | --benchmark\t\tCompare DFE/CPU results\n");
 	printf("  -X | --export\t\t\tExport results to csv\n");
 	printf("=====================================================================\n");
@@ -407,8 +406,6 @@ int convertArgToInt(char * str) {
 	else if (strcmp ("-n", str) == 0) return 2;
 	else if (strcmp ("--iterations", str) == 0) return 3;
 	else if (strcmp ("-i", str) == 0) return 3;
-	else if (strcmp ("--replay", str) == 0) return 4;
-	else if (strcmp ("-R", str) == 0) return 4;
 	else if (strcmp ("--time", str) == 0) return 5;
 	else if (strcmp ("-t", str) == 0) return 5;
 	else if (strcmp ("--firecells", str) == 0) return 6;
@@ -463,11 +460,11 @@ int main(int argc, char *argv[]) {
 	printf("=====================================================================\n");
 
 	float normal = 0.2, dry = 0.35, noiseRatio = 0;
-	char *inPath = "in.ppm", *inCsvFile = "in.csv", 
+	char *inPath = "in.ppm", 
 		*windString = "RAND", *paramsInPath = "params.csv";
 	enum compass wind = RAND;
 	size_t burningOnes = 3, radius = 1, windChangeIntervall = 10;
-	bool inSet = 0, paramsGiven = 0, csvIn = 0, windSet = 0,
+	bool inSet = 0, paramsGiven = 0, windSet = 0,
 		noiseDesired = 0, exportIt = 0, showHelp = 0, benchmarkIt = 0;
 
 	//commandline parameter parsing
@@ -476,7 +473,6 @@ int main(int argc, char *argv[]) {
 			case 1: inPath = argv[++i]; inSet = 1; break;
 			case 2: noiseDesired = 1; noiseRatio = atof(argv[++i]); break;
 			case 3: it = atoi(argv[++i]); break;
-			case 4: csvIn = 1; inCsvFile = argv[++i]; break;
 			case 5: t = atoi(argv[++i]); break;
 			case 6: burningOnes = atoi(argv[++i]); break;
 			case 7: dry = atof(argv[++i]); break;
@@ -497,13 +493,6 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
-	if (csvIn) {
-		printf("Loading file %s ...\n", inCsvFile);
-		startVisualisationFromFile(inCsvFile);
-		printf("Goodbye!\n");
-		return 0;
-	}
-
 	if (windSet) {
 		wind = convertWindToEnum(windString);
 	}
@@ -517,7 +506,7 @@ int main(int argc, char *argv[]) {
 	if (t > 0) burning -= (t > maxT) ? maxT : t;
 
 	int * dataIn = calloc(Vectors_width*Vectors_height, sizeof(int));
-	dataType * dataBuffer = calloc(WIDTH*HEIGHT, sizeof(dataType));
+	dataType * dataBuffer = calloc(Vectors_width*Vectors_height, sizeof(dataType));
 	dataType ** dataOutDFE = malloc(it*sizeof(dataType*));
 	for (int i=0; i<it; ++i) dataOutDFE[i] = calloc(Vectors_width*Vectors_height, sizeof(dataType));
 
@@ -563,10 +552,10 @@ int main(int argc, char *argv[]) {
 	printf("Running DFE...\n");
 	gettimeofday(&begin, NULL);	
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
-	Vectors(Vectors_width*Vectors_height, radius, wind, burning, dataIn, dataOutDFE[0]);
+	Vectors(Vectors_width*Vectors_height, radius, wind, dataIn, dataOutDFE[0]);
 	for (int i=1; i<it; ++i) {
 		if (!paramsGiven) manageParams(paramsOut[i-1], paramsOut[i], radius, wind, windChangeIntervall, i);
-		Vectors(Vectors_width*Vectors_height, radius, wind, burning, dataOutDFE[i-1], dataOutDFE[i]);
+		Vectors(Vectors_width*Vectors_height, radius, wind, dataOutDFE[i-1], dataOutDFE[i]);
 	}
 	gettimeofday(&end, NULL);
 	timeSpent += (end.tv_sec - begin.tv_sec) +
@@ -628,10 +617,10 @@ int main(int argc, char *argv[]) {
 		fprintf(paramsFile, "%d,%d\n", paramsOut[0][0], paramsOut[0][1]);
 
 		//printing dataIn as well
-		for(int i = 0; i < WIDTH*HEIGHT-1; ++i) {
+		for(int i = 0; i < Vectors_width*Vectors_height-1; ++i) {
 			fprintf(results, "%d,", dataIn[i]);
 		}
-		fprintf(results, "%d\n", dataIn[WIDTH*HEIGHT-1]);
+		fprintf(results, "%d\n", dataIn[Vectors_width*Vectors_height-1]);
 
 		for(int i = 0; i < Vectors_width*Vectors_height-1; ++i) {
 			fprintf(results, "%d,", dataOut[0][i]);
