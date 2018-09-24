@@ -84,7 +84,7 @@ float verifyResults(int *outVector, int *expectedVector, int size) {
 }
 
 //initialization
-void init(int *a, float normal, float dry, int burningOnes) {
+void init(int *a, float normal, float dry) {
 
 	for (int i=0; i<WIDTH*HEIGHT; ++i) a[i] = 0;
 
@@ -523,7 +523,7 @@ int main(int argc, char *argv[]) {
 		dry = 0.35;
 	}
 
-	if (burningOnes < 0 || burningOnes >= WIDTH*HEIGHT) {
+	if (burningOnes >= WIDTH*HEIGHT) {
 		printf("WARNING: parameter -f/--firecells %ld not in range [0, WIDTH*HEIGHT]\nDefault (3) is used.\n", burningOnes);
 		burningOnes = 3;
 	}
@@ -535,18 +535,17 @@ int main(int argc, char *argv[]) {
 
 	if (!inSet) {
 		printf("WARNING: parameter -I/--inImage not set. Input data is generated.\n");
-		init(dataIn, normal, dry, burningOnes);
-		transformInputImage(dataIn, dataBuffer, WIDTH, HEIGHT);
-		if (burningOnes > 0) setSomeTreesOnFire(dataBuffer, WIDTH*HEIGHT, burningOnes);
-		
+		init(dataIn, normal, dry);
+		transformInputImage(dataIn, dataBuffer, WIDTH, HEIGHT);		
 	} else {
 		printf("Loading image...\n");
 		int width = 0, height = 0;
 		loadImage(inPath, &dataIn, &width, &height, 0);
 		if (noiseDesired) makeItRealistic(dataIn, width, height, noiseRatio);
 		transformInputImage(dataIn, dataBuffer, width, height);		
-		if (burningOnes > 0) setSomeTreesOnFire(dataBuffer, WIDTH*HEIGHT, burningOnes);
 	}	
+
+	if (burningOnes > 0) setSomeTreesOnFire(dataBuffer, WIDTH*HEIGHT, burningOnes);
 
 	printf("Running CPU...\n");
 	gettimeofday(&begin, NULL);

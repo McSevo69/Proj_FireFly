@@ -6,8 +6,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define Vectors_height (1440)
-#define Vectors_width (2560)
+#define Vectors_height (1080)
+#define Vectors_width (1920)
 
 
 /*----------------------------------------------------------------------------*/
@@ -17,51 +17,20 @@ extern "C" {
 
 
 
-/**
- * \brief Basic static function for the interface 'default'.
- * 
- * \param [in] param_dataSize Interface Parameter "dataSize".
- * \param [in] param_prop_f Interface Parameter "prop_f".
- * \param [in] param_prop_p Interface Parameter "prop_p".
- * \param [in] param_t Interface Parameter "t".
- * \param [in] instream_inData The stream should be of size (param_dataSize * 1) bytes.
- * \param [in] instream_inRandom The stream should be of size (param_dataSize * 4) bytes.
- * \param [out] outstream_outData The stream should be of size (param_dataSize * 1) bytes.
- */
 void Vectors(
 	uint64_t param_dataSize,
-	float param_prop_f,
-	float param_prop_p,
-	uint8_t param_t,
-	const uint8_t *instream_inData,
-	const float *instream_inRandom,
-	uint8_t *outstream_outData);
+	uint8_t windStrength,
+	uint8_t windDir,
+	const int8_t *instream_inData,
+	int8_t *outstream_outData);
 
-/**
- * \brief Basic static non-blocking function for the interface 'default'.
- * 
- * Schedule to run on an engine and return immediately.
- * The status of the run can be checked either by ::max_wait or ::max_nowait;
- * note that one of these *must* be called, so that associated memory can be released.
- * 
- * 
- * \param [in] param_dataSize Interface Parameter "dataSize".
- * \param [in] param_prop_f Interface Parameter "prop_f".
- * \param [in] param_prop_p Interface Parameter "prop_p".
- * \param [in] param_t Interface Parameter "t".
- * \param [in] instream_inData The stream should be of size (param_dataSize * 1) bytes.
- * \param [in] instream_inRandom The stream should be of size (param_dataSize * 4) bytes.
- * \param [out] outstream_outData The stream should be of size (param_dataSize * 1) bytes.
- * \return A handle on the execution status, or NULL in case of error.
- */
+
 max_run_t *Vectors_nonblock(
 	uint64_t param_dataSize,
-	float param_prop_f,
-	float param_prop_p,
-	uint8_t param_t,
-	const uint8_t *instream_inData,
-	const float *instream_inRandom,
-	uint8_t *outstream_outData);
+	uint8_t windStrength,
+	uint8_t windDir,
+	const int8_t *instream_inData,
+	int8_t *outstream_outData);
 
 /**
  * \brief Advanced static interface, structure for the engine interface 'default'
@@ -69,11 +38,9 @@ max_run_t *Vectors_nonblock(
  */
 typedef struct { 
 	uint64_t param_dataSize; /**<  [in] Interface Parameter "dataSize". */
-	float param_prop_f; /**<  [in] Interface Parameter "prop_f". */
-	float param_prop_p; /**<  [in] Interface Parameter "prop_p". */
-	uint8_t param_t; /**<  [in] Interface Parameter "t". */
+	uint8_t windStrength;
+	uint8_t windDir;
 	const uint8_t *instream_inData; /**<  [in] The stream should be of size (param_dataSize * 1) bytes. */
-	const float *instream_inRandom; /**<  [in] The stream should be of size (param_dataSize * 4) bytes. */
 	uint8_t *outstream_outData; /**<  [out] The stream should be of size (param_dataSize * 1) bytes. */
 } Vectors_actions_t;
 

@@ -17,7 +17,7 @@ class VectorsKernel extends Kernel {
 
 		int centeredIdx = (neighSize-1)/2;
 
-		neighbors[centeredIdx] = constant.var(dataType, 0); //can be zero, since center cell isn't counted as neighbor
+		neighbors[centeredIdx] = constant.var(dataType, 0); //can be zero since center cell isn't counted as neighbor
 
 		//cross around center cell -> 4*r
 		for (int i=1; i <= radius; ++i) {
