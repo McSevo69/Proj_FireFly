@@ -552,10 +552,10 @@ int main(int argc, char *argv[]) {
 	printf("Running DFE...\n");
 	gettimeofday(&begin, NULL);	
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
-	Vectors(Vectors_width*Vectors_height, paramsOut[0][1], paramsOut[0][0], dataBuffer, dataOutDFE[0]);
+	Vectors(Vectors_width*Vectors_height, paramsOut[0][1], paramsOut[0][0], burning, dataBuffer, dataOutDFE[0]);
 	for (int i=1; i<it; ++i) {
 		if (!paramsGiven) manageParams(paramsOut[i-1], paramsOut[i], radius, wind, windChangeIntervall, i);
-		Vectors(Vectors_width*Vectors_height, paramsOut[i][1], paramsOut[i][0], dataOutDFE[i-1], dataOutDFE[i]);
+		Vectors(Vectors_width*Vectors_height, paramsOut[i][1], paramsOut[i][0], burning, dataOutDFE[i-1], dataOutDFE[i]);
 	}
 	gettimeofday(&end, NULL);
 	timeSpent += (end.tv_sec - begin.tv_sec) +

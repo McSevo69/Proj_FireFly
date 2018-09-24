@@ -123,7 +123,7 @@ class VectorsKernel extends Kernel {
 			cnt : willBurnDueToWind(streamIn, x, y, width, height, wind, radius, maxRadius);
 	}
 
-	DFEVar getNewCellState(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, int burning, DFEVar wind, DFEVar radius, int maxRadius) {
+	DFEVar getNewCellState(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar burning, DFEVar wind, DFEVar radius, int maxRadius) {
 		
 		DFEVar burnState = hasBurningNeighbors(streamIn, x, y, width, height, wind, radius, maxRadius);
 
@@ -136,7 +136,7 @@ class VectorsKernel extends Kernel {
 		return control.mux(inState, resultDry, resultNormal, streamIn + 1, streamIn);	
 	}
 
-	VectorsKernel(KernelParameters parameters, int width, int height, int maxRadius, int burning) {
+	VectorsKernel(KernelParameters parameters, int width, int height, int maxRadius) {
 		super(parameters);
 
 		// Input
@@ -144,6 +144,7 @@ class VectorsKernel extends Kernel {
 
 		DFEVar windDir = io.scalarInput("windDir", dataType);
 		DFEVar windStrength = io.scalarInput("windStrength", dataType);
+		DFEVar burning = io.scalarInput("burningState", dataType);
 
 		//counters
 		CounterChain chain = control.count.makeCounterChain();
