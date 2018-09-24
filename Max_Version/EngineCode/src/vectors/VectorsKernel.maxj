@@ -5,7 +5,6 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEType;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
-import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.KernelMath;
 
 class VectorsKernel extends Kernel {
 
@@ -58,10 +57,10 @@ class VectorsKernel extends Kernel {
 
 		int centerCell = ((2*maxRadius+1)*(2*maxRadius+1)-1)/2;
 
-		DFEVar cnt;
+		DFEVar cnt = constant.var(dataType, 0);
 
 		if (windDir % 2 == 0) { //vertical
-			for (int i = 2; i <= maxRadius; i++) cnt = (neighborhood[centerCell+moveUpDown*i*(2*maxRadius+1)] < -1 & i <= radius) ? constant.var(dataType, 1) : 0;
+			for (int i = 2; i <= maxRadius; i++) cnt += (neighborhood[centerCell+moveUpDown*i*(2*maxRadius+1)] < -1 & i <= radius) ? constant.var(dataType, 1) : 0;
 
 			for (int a = 2; a <= maxRadius; ++a) {
 				for (int b = 1; b < a; ++b) {
@@ -70,7 +69,7 @@ class VectorsKernel extends Kernel {
 				}
 			}
 		} else if (windDir % 8 <= 3) { //horizontal
-			for (int i = 2; i <= maxRadius; ++i) cnt = (neighborhood[centerCell+moveLeftRight*i] < -1 & i <= radius) ? constant.var(dataType, 1) : 0;
+			for (int i = 2; i <= maxRadius; ++i) cnt += (neighborhood[centerCell+moveLeftRight*i] < -1 & i <= radius) ? constant.var(dataType, 1) : 0;
 
 			for (int a = 2; a <= maxRadius; ++a) {
 				for (int b = 1; b < a; ++b) {
@@ -79,7 +78,7 @@ class VectorsKernel extends Kernel {
 				}
 			}
 		} else {
-			for (int i = 2; i <= maxRadius; ++i) cnt = (neighborhood[centerCell+moveUpDown*i*(2*maxRadius+1)+moveLeftRight*i] < -1 & i <= radius) ? constant.var(dataType, 1) : 0; //diagonal
+			for (int i = 2; i <= maxRadius; ++i) cnt += (neighborhood[centerCell+moveUpDown*i*(2*maxRadius+1)+moveLeftRight*i] < -1 & i <= radius) ? constant.var(dataType, 1) : 0; //diagonal
 
 			int diagIdx;
 
