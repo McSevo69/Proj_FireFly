@@ -510,8 +510,8 @@ int main(int argc, char *argv[]) {
 	dataType ** dataOutDFE = malloc(it*sizeof(dataType*));
 	for (int i=0; i<it; ++i) dataOutDFE[i] = calloc(Vectors_width*Vectors_height, sizeof(dataType));
 
-	int ** paramsOut = malloc(it*sizeof(int*));
-	for (int i=0; i<it; ++i) paramsOut[i] = calloc(2, sizeof(int));
+	dataType ** paramsOut = malloc(it*sizeof(dataType*));
+	for (int i=0; i<it; ++i) paramsOut[i] = calloc(2, sizeof(dataType));
 
 	if (paramsGiven) initParams(paramsOut, paramsInPath, it);
 
@@ -525,7 +525,7 @@ int main(int argc, char *argv[]) {
 		dry = 0.35;
 	}
 
-	if (burningOnes < 0 || burningOnes >= Vectors_width*Vectors_height) {
+	if (burningOnes >= Vectors_width*Vectors_height) {
 		printf("WARNING: parameter -f/--firecells %ld not in range [0, Vectors_width*Vectors_height]\nDefault (3) is used.\n", burningOnes);
 		burningOnes = 3;
 	}
