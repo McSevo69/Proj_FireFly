@@ -26,7 +26,7 @@ enum compass {S = 0b1100, SW = 0b1101, W = 0b0001, NW = 0b0101, N = 0b0100, NE =
 //full fire (all inner neighbors are burning) burns down quicker
 //wind strength = radius (flying sparks)
 
-float checkAccuracy(dataType** results, dataType** expected) {
+float checkAccuracy(dataType** results, dataType** expected, int it) {
 	int elements = 0, errors = 0;
 
 	for (int i=0; i < it; ++i) {
@@ -552,7 +552,7 @@ int main(int argc, char *argv[]) {
 	printf("Running DFE...\n");
 	gettimeofday(&begin, NULL);	
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
-	Vectors(Vectors_width*Vectors_height, radius, wind, dataIn, dataOutDFE[0]);
+	Vectors(Vectors_width*Vectors_height, radius, wind, dataBuffer, dataOutDFE[0]);
 	for (int i=1; i<it; ++i) {
 		if (!paramsGiven) manageParams(paramsOut[i-1], paramsOut[i], radius, wind, windChangeIntervall, i);
 		Vectors(Vectors_width*Vectors_height, radius, wind, dataOutDFE[i-1], dataOutDFE[i]);
@@ -569,7 +569,7 @@ int main(int argc, char *argv[]) {
 		printf("Running CPU...\n");
 		gettimeofday(&begin, NULL);
 		if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
-		VectorsCPU(dataIn, dataOut[0], paramsOut[0]);
+		VectorsCPU(dataBuffer, dataOut[0], paramsOut[0]);
 		for (int i=1; i<it; ++i) {
 			if (!paramsGiven) manageParams(paramsOut[i-1], paramsOut[i], radius, wind, windChangeIntervall, i);
 			VectorsCPU(dataOut[i-1], dataOut[i], paramsOut[i]);
@@ -583,7 +583,7 @@ int main(int argc, char *argv[]) {
 		for (int i=0; i<it; ++i) free(dataOut[i]);
 		free(dataOut);
 
-		float acc = checkAccuracy(dataOut, dataOutDFE);
+		float acc = checkAccuracy(dataOut, dataOutDFE, it);
 		printf("The accuracy measured is: %f\n", acc);
 		printf("Speedup: %f\n", timeSpentCPU/timeSpent);
 
