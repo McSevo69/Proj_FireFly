@@ -552,10 +552,10 @@ int main(int argc, char *argv[]) {
 	printf("Running DFE...\n");
 	gettimeofday(&begin, NULL);	
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
-	Vectors(Vectors_width*Vectors_height, radius, wind, dataBuffer, dataOutDFE[0]);
+	Vectors(Vectors_width*Vectors_height, paramsOut[0][1], paramsOut[0][0], dataBuffer, dataOutDFE[0]);
 	for (int i=1; i<it; ++i) {
 		if (!paramsGiven) manageParams(paramsOut[i-1], paramsOut[i], radius, wind, windChangeIntervall, i);
-		Vectors(Vectors_width*Vectors_height, radius, wind, dataOutDFE[i-1], dataOutDFE[i]);
+		Vectors(Vectors_width*Vectors_height, paramsOut[i][1], paramsOut[i][0], dataOutDFE[i-1], dataOutDFE[i]);
 	}
 	gettimeofday(&end, NULL);
 	timeSpent += (end.tv_sec - begin.tv_sec) +
@@ -580,9 +580,6 @@ int main(int argc, char *argv[]) {
 				((end.tv_usec - begin.tv_usec)/1000000.0);
 		printf("Time CPU: %lf\n", timeSpentCPU);
 
-		for (int i=0; i<it; ++i) free(dataOut[i]);
-		free(dataOut);
-
 		float acc = checkAccuracy(dataOut, dataOutDFE, it);
 		printf("The accuracy measured is: %f\n", acc);
 		printf("Speedup: %f\n", timeSpentCPU/timeSpent);
@@ -593,7 +590,10 @@ int main(int argc, char *argv[]) {
 		snprintf(filename, sizeof(filename), "benchmark_%dx%d_%d.csv", Vectors_width, Vectors_height, it);
 		time_res = fopen(filename, "a");
 		fprintf(time_res, "%d, %d, %d, %f, %f, %f, %f\n", Vectors_width, Vectors_height, it, timeSpentCPU, timeSpent, timeSpentCPU/timeSpent, acc);
-		fclose(time_res);		
+		fclose(time_res);	
+
+		for (int i=0; i<it; ++i) free(dataOut[i]);
+		free(dataOut);	
 	}
 
 	if (exportIt) {
@@ -623,23 +623,23 @@ int main(int argc, char *argv[]) {
 		fprintf(results, "%d\n", dataIn[Vectors_width*Vectors_height-1]);
 
 		for(int i = 0; i < Vectors_width*Vectors_height-1; ++i) {
-			fprintf(results, "%d,", dataOut[0][i]);
-			imageBuffer[i] = dataOut[0][i];
+			fprintf(results, "%d,", dataOutDFE[0][i]);
+			imageBuffer[i] = dataOutDFE[0][i];
 		}
-		fprintf(results, "%d\n", dataOut[0][Vectors_width*Vectors_height-1]);
-		imageBuffer[Vectors_width*Vectors_height-1] = dataOut[0][Vectors_width*Vectors_height-1];
+		fprintf(results, "%d\n", dataOutDFE[0][Vectors_width*Vectors_height-1]);
+		imageBuffer[Vectors_width*Vectors_height-1] = dataOutDFE[0][Vectors_width*Vectors_height-1];
 
 		for(int j = 1; j < it; ++j) {
 			for(int i = 0; i < Vectors_width*Vectors_height-1; ++i) {
-				if (imageBuffer[i] != dataOut[j][i] && imageBuffer != 0) {
-					fprintf(results, "%i,", dataOut[j][i]);
-					imageBuffer[i] = dataOut[0][i];
+				if (imageBuffer[i] != dataOutDFE[j][i] && imageBuffer != 0) {
+					fprintf(results, "%i,", dataOutDFE[j][i]);
+					imageBuffer[i] = dataOutDFE[0][i];
 				} else fprintf(results, " ,");
 			}
 
-			if (imageBuffer[Vectors_width*Vectors_height-1] != dataOut[j][Vectors_width*Vectors_height-1] && imageBuffer != 0) {
-				fprintf(results, "%i,", dataOut[j][Vectors_width*Vectors_height-1]);
-				imageBuffer[Vectors_width*Vectors_height-1] = dataOut[0][Vectors_width*Vectors_height-1];
+			if (imageBuffer[Vectors_width*Vectors_height-1] != dataOutDFE[j][Vectors_width*Vectors_height-1] && imageBuffer != 0) {
+				fprintf(results, "%i,", dataOutDFE[j][Vectors_width*Vectors_height-1]);
+				imageBuffer[Vectors_width*Vectors_height-1] = dataOutDFE[0][Vectors_width*Vectors_height-1];
 			} else fprintf(results, " ,");
 
 			fprintf(results, "\n");
