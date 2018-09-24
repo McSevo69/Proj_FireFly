@@ -8,7 +8,7 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
 
 class VectorsKernel extends Kernel {
 
-	static final DFEType dataType=dfeInt(4);
+	static final DFEType dataType=dfeInt(8);
 
 	DFEVar[] getNeighbors(DFEVar binaryImage, DFEVar x, DFEVar y, int width, int height, int radius) {
 		int neighSize = (2*radius+1)*(2*radius+1);
