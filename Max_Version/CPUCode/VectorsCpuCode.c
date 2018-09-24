@@ -460,8 +460,7 @@ int main(int argc, char *argv[]) {
 	printf("=====================================================================\n");
 
 	float normal = 0.2, dry = 0.35, noiseRatio = 0;
-	char *inPath = "in.ppm", 
-		*windString = "RAND", *paramsInPath = "params.csv";
+	char *inPath = "in.ppm", *windString = "RAND", *paramsInPath = "params.csv";
 	enum compass wind = RAND;
 	size_t burningOnes = 3, radius = 1, windChangeIntervall = 10;
 	bool inSet = 0, paramsGiven = 0, windSet = 0,
@@ -567,11 +566,9 @@ int main(int argc, char *argv[]) {
 		for (int i=0; i<it; ++i) dataOut[i] = calloc(Vectors_width*Vectors_height, sizeof(dataType));
 
 		printf("Running CPU...\n");
-		gettimeofday(&begin, NULL);
-		if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
+		gettimeofday(&begin, NULL);		
 		VectorsCPU(dataBuffer, dataOut[0], paramsOut[0]);
 		for (int i=1; i<it; ++i) {
-			if (!paramsGiven) manageParams(paramsOut[i-1], paramsOut[i], radius, wind, windChangeIntervall, i);
 			VectorsCPU(dataOut[i-1], dataOut[i], paramsOut[i]);
 		}
 			
