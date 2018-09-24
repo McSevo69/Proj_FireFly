@@ -5,6 +5,7 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEType;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.KernelMath;
 
 class VectorsKernel extends Kernel {
 
@@ -51,21 +52,15 @@ class VectorsKernel extends Kernel {
 		return neighbors;
 	}
 
-	DFEVar willBurnDueToWind(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
-		
-		DFEVar[] neighborhood = getNeighbors(streamIn, x, y, width, height, maxRadius);
-
-		DFEVar moveUpDownSign = (((wind & 8) >> 3).eq(constant.var(dataType, 1))) ? constant.var(dataType, -1) : constant.var(dataType, 1);
-		DFEVar moveUpDown = moveUpDownSign * ((wind >> 2) & 1);
-
-		DFEVar moveLeftRightSign = ((wind & 3).eq(constant.var(dataType, 1))) ? constant.var(dataType, -1) : constant.var(dataType, 1);
-		DFEVar moveLeftRight = moveLeftRightSign * (wind & 1);
+	DFEVar getWindResult(DFEVar[] neighborhood, DFEVar radius, int maxRadius, int windDir) {
+		int moveUpDown = (int) pow(-1, (windDir & 8) >> 3) * ((windDir >> 2) & 1);
+		int moveLeftRight = (int) pow(-1, (windDir & 3) >> 1) * (windDir & 1);
 
 		int centerCell = ((2*maxRadius+1)*(2*maxRadius+1)-1)/2;
 
 		DFEVar cnt;
 
-		if ((wind % 2).eq(constant.var(dataType, 0))) { //vertical
+		if (windDir % 2 == 0) { //vertical
 			for (int i = 2; i <= maxRadius; i++) cnt = (neighborhood[centerCell+moveUpDown*i*(2*radius+1)] < -1 & i <= radius) ? constant.var(dataType, 1) : 0;
 
 			for (int a = 2; a <= maxRadius; ++a) {
@@ -74,7 +69,7 @@ class VectorsKernel extends Kernel {
 					cnt += (neighborhood[centerCell+moveUpDown*a*(2*maxRadius+1)-b] < -1 & a <= radius) ? constant.var(dataType, 1) : 0;
 				}
 			}
-		} else if (wind % 8 <= 3) { //horizontal
+		} else if (windDir % 8 <= 3) { //horizontal
 			for (int i = 2; i <= maxRadius; ++i) cnt = (neighborhood[centerCell+moveLeftRight*i] < -1 & i <= radius) ? constant.var(dataType, 1) : 0;
 
 			for (int a = 2; a <= maxRadius; ++a) {
@@ -86,7 +81,7 @@ class VectorsKernel extends Kernel {
 		} else {
 			for (int i = 2; i <= maxRadius; ++i) cnt = (neighborhood[centerCell+moveUpDown*i*(2*maxRadius+1)+moveLeftRight*i] < -1 & i <= radius) ? constant.var(dataType, 1) : 0; //diagonal
 
-			int diagIdx = 0;
+			int diagIdx;
 
 			for (int a = 2; a <= maxRadius; ++a) {
 				for (int b = 1; b < a; ++b) {
@@ -98,6 +93,21 @@ class VectorsKernel extends Kernel {
 		}
 
 		return cnt;
+
+	}
+
+	DFEVar willBurnDueToWind(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
+		
+		DFEVar[] neighborhood = getNeighbors(streamIn, x, y, width, height, maxRadius);
+
+		return control.mux(wind, getWindResult(neighborhood, radius, maxRadius, 0), getWindResult(neighborhood, radius, maxRadius, 1),
+			getWindResult(neighborhood, radius, maxRadius, 2), getWindResult(neighborhood, radius, maxRadius, 3),
+			getWindResult(neighborhood, radius, maxRadius, 4), getWindResult(neighborhood, radius, maxRadius, 5),
+			getWindResult(neighborhood, radius, maxRadius, 6), getWindResult(neighborhood, radius, maxRadius, 7),
+			getWindResult(neighborhood, radius, maxRadius, 8), getWindResult(neighborhood, radius, maxRadius, 9),
+			getWindResult(neighborhood, radius, maxRadius, 10), getWindResult(neighborhood, radius, maxRadius, 11),
+			getWindResult(neighborhood, radius, maxRadius, 12), getWindResult(neighborhood, radius, maxRadius, 13),
+			getWindResult(neighborhood, radius, maxRadius, 14), getWindResult(neighborhood, radius, maxRadius, 15));		
 	}
 
 	DFEVar hasBurningNeighbors(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
