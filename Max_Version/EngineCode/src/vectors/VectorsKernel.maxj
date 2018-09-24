@@ -53,15 +53,15 @@ class VectorsKernel extends Kernel {
 	}
 
 	DFEVar getWindResult(DFEVar[] neighborhood, DFEVar radius, int maxRadius, int windDir) {
-		int moveUpDown = (int) pow(-1, (windDir & 8) >> 3) * ((windDir >> 2) & 1);
-		int moveLeftRight = (int) pow(-1, (windDir & 3) >> 1) * (windDir & 1);
+		int moveUpDown = (int) Math.pow(-1, (windDir & 8) >> 3) * ((windDir >> 2) & 1);
+		int moveLeftRight = (int) Math.pow(-1, (windDir & 3) >> 1) * (windDir & 1);
 
 		int centerCell = ((2*maxRadius+1)*(2*maxRadius+1)-1)/2;
 
 		DFEVar cnt;
 
 		if (windDir % 2 == 0) { //vertical
-			for (int i = 2; i <= maxRadius; i++) cnt = (neighborhood[centerCell+moveUpDown*i*(2*radius+1)] < -1 & i <= radius) ? constant.var(dataType, 1) : 0;
+			for (int i = 2; i <= maxRadius; i++) cnt = (neighborhood[centerCell+moveUpDown*i*(2*maxRadius+1)] < -1 & i <= radius) ? constant.var(dataType, 1) : 0;
 
 			for (int a = 2; a <= maxRadius; ++a) {
 				for (int b = 1; b < a; ++b) {
