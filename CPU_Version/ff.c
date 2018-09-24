@@ -12,8 +12,8 @@
 #include "colors.h"
 #include "types.h"
 
-#define HEIGHT 720
-#define WIDTH 1280
+#define HEIGHT 1280
+#define WIDTH 720
 
 static int burning = -2;
 static int maxT = 3;

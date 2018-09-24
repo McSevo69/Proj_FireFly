@@ -201,7 +201,7 @@ void startVisualisationFromFile(char* fileName) {
 	dataType ** paramsOut = (dataType **) malloc(it*sizeof(dataType*));
 	for (int i=0; i<it; ++i) paramsOut[i] = calloc(2, sizeof(dataType));
 
-	while((line = fgets(buffer, sizeof(buffer), fstream)) !=NULL && x++ < it) {
+	while((line = fgets(buffer, sizeof(buffer), fstream)) !=NULL && ++x < it) {
 		y = -1;		
 		record = strtok(line, ",");
 
@@ -227,7 +227,7 @@ void startVisualisationFromFile(char* fileName) {
 		printf("WARNING: Could not open params file.\n");
 	} else {
 		x = -1;
-		while((line = fgets(buffer, sizeof(buffer), pstream)) !=NULL && x++ < it) {
+		while((line = fgets(buffer, sizeof(buffer), pstream)) !=NULL && ++x < it) {
 			y = -1;		
 			record = strtok(line, ",");
 			while(y++ < 2 && record != NULL) {
