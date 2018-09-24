@@ -97,7 +97,7 @@ float verifyResults(int *outVector, int *expectedVector, int size) {
 }
 
 //initialization
-void init(int *a, float normal, float dry, int burningOnes) {
+void init(int *a, float normal, float dry) {
 
 	for (int i=0; i<Vectors_width*Vectors_height; ++i) a[i] = 0;
 
@@ -537,7 +537,7 @@ int main(int argc, char *argv[]) {
 
 	if (!inSet) {
 		printf("WARNING: parameter -I/--inImage not set. Input data is generated.\n");
-		init(dataIn, normal, dry, burningOnes);
+		init(dataIn, normal, dry);
 		transformInputImage(dataIn, dataBuffer, Vectors_width, Vectors_height);
 	} else {
 		printf("Loading image...\n");
