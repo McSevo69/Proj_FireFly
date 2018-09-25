@@ -22,7 +22,7 @@
 #define LIGHTWIND_PATH "resources/lightwind.png"
 #define MEDIUMWIND_PATH "resources/mediumwind.png"
 #define STRONGWIND_PATH "resources/strongwind.png"
-#define DELAY 50
+#define DELAY 500
 
 char* getWindDirPath(int windCode) {
 	switch(windCode) {
@@ -104,7 +104,7 @@ void startVisualisation(int width, int height, int iterations, int* dataIn, data
 				if (image[idx] != colorToDraw) {
 					if (currentColor != colorToDraw) {
 						hasChanged = 1;
-						SDL_SetRenderDrawColor(Main_Renderer, colorToDraw >> 16, colorToDraw >> 8 & 0xFF, colorToDraw & 0xFF, 255);
+						SDL_SetRenderDrawColor(Main_Renderer, colorToDraw >> 16, (colorToDraw >> 8) & 0xFF, colorToDraw & 0xFF, 255);
 						currentColor = colorToDraw;
 					}
 					SDL_RenderDrawPoint(Main_Renderer, k, j);
@@ -189,10 +189,10 @@ void startVisualisationFromFile(char* fileName) {
 	it = atoi(token);
 
 	char buffer[8000000];
-	char *ptr;
+	char* ptr;
 
 	char *record,*line;
-	int x = -2, y = -1, numBuf;
+	int x = -2, y = -1, numBuf = 0;
 	
 	int* dataIn = calloc(width*height, sizeof(int));
 	dataType ** dataOut = (dataType **) malloc(it*sizeof(dataType*));
@@ -205,9 +205,9 @@ void startVisualisationFromFile(char* fileName) {
 		y = -1;		
 		record = strtok(line, ",");
 
-		while(y++ < width*height && record != NULL) {
+		while(++y < width*height && record != NULL) {
 			numBuf = strtoul(record, &ptr, 10);
-			if (x>=0) dataOut[x][y] = (numBuf != 0) ? numBuf : dataIn[y];
+			if (x > -1) dataOut[x][y] = (numBuf < 0) ? (dataType) numBuf : 0;
 			else dataIn[y] = numBuf;
 							
 			record = strtok(NULL, ",");			
@@ -230,7 +230,7 @@ void startVisualisationFromFile(char* fileName) {
 		while((line = fgets(buffer, sizeof(buffer), pstream)) !=NULL && ++x < it) {
 			y = -1;		
 			record = strtok(line, ",");
-			while(y++ < 2 && record != NULL) {
+			while(++y < 2 && record != NULL) {
 				paramsOut[x][y] = strtoul(record, &ptr, 10);	
 				record = strtok(NULL, ",");		
 			}

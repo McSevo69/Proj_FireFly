@@ -12,8 +12,8 @@
 #include "colors.h"
 #include "types.h"
 
-#define HEIGHT 1280
-#define WIDTH 720
+#define HEIGHT 720
+#define WIDTH 1280
 
 static int burning = -2;
 static int maxT = 3;
@@ -585,28 +585,32 @@ int main(int argc, char *argv[]) {
 		//printing dataIn as well
 		for(int i = 0; i < WIDTH*HEIGHT-1; ++i) {
 			fprintf(results, "%d,", dataIn[i]);
+			imageBuffer[i] = dataIn[i];
 		}
 		fprintf(results, "%d\n", dataIn[WIDTH*HEIGHT-1]);
+		imageBuffer[WIDTH*HEIGHT-1] = dataIn[WIDTH*HEIGHT-1];
 
 		for(int i = 0; i < WIDTH*HEIGHT-1; ++i) {
-			fprintf(results, "%d,", dataOut[0][i]);
+			if (dataOut[0][i] < 0) fprintf(results, "%d,", dataOut[0][i]);
+			else fprintf(results, " ,");
 			imageBuffer[i] = dataOut[0][i];
 		}
-		fprintf(results, "%d\n", dataOut[0][WIDTH*HEIGHT-1]);
+		if (dataOut[0][WIDTH*HEIGHT-1] < 0) fprintf(results, "%d\n", dataOut[0][WIDTH*HEIGHT-1]);
+		else fprintf(results, " \n");
 		imageBuffer[WIDTH*HEIGHT-1] = dataOut[0][WIDTH*HEIGHT-1];
 
 		for(int j = 1; j < it; ++j) {
 			for(int i = 0; i < WIDTH*HEIGHT-1; ++i) {
-				if (imageBuffer[i] != dataOut[j][i] && imageBuffer != 0) {
+				if (imageBuffer[i] != dataOut[j][i]) {
 					fprintf(results, "%i,", dataOut[j][i]);
-					imageBuffer[i] = dataOut[0][i];
+					imageBuffer[i] = dataOut[j][i];
 				} else fprintf(results, " ,");
 			}
 
-			if (imageBuffer[WIDTH*HEIGHT-1] != dataOut[j][WIDTH*HEIGHT-1] && imageBuffer != 0) {
-				fprintf(results, "%i,", dataOut[j][WIDTH*HEIGHT-1]);
-				imageBuffer[WIDTH*HEIGHT-1] = dataOut[0][WIDTH*HEIGHT-1];
-			} else fprintf(results, " ,");
+			if (imageBuffer[WIDTH*HEIGHT-1] != dataOut[j][WIDTH*HEIGHT-1]) {
+				fprintf(results, "%i", dataOut[j][WIDTH*HEIGHT-1]);
+				imageBuffer[WIDTH*HEIGHT-1] = dataOut[j][WIDTH*HEIGHT-1];
+			} else fprintf(results, " ");
 
 			fprintf(results, "\n");
 			fprintf(paramsFile, "%d,%d\n", paramsOut[j][0], paramsOut[j][1]);

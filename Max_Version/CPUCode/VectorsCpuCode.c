@@ -620,10 +620,13 @@ int main(int argc, char *argv[]) {
 		fprintf(results, "%d\n", dataIn[Vectors_width*Vectors_height-1]);
 
 		for(int i = 0; i < Vectors_width*Vectors_height-1; ++i) {
-			fprintf(results, "%d,", dataOutDFE[0][i]);
+			if (dataOutDFE[0][i] < 0) fprintf(results, "%d,", dataOutDFE[0][i]);
+			else fprintf(results, " ,");
 			imageBuffer[i] = dataOutDFE[0][i];
 		}
-		fprintf(results, "%d\n", dataOutDFE[0][Vectors_width*Vectors_height-1]);
+
+		if (dataOutDFE[0][WIDTH*HEIGHT-1] < 0) fprintf(results, "%d\n", dataOutDFE[0][Vectors_width*Vectors_height-1]);
+		else fprintf(results, " \n");
 		imageBuffer[Vectors_width*Vectors_height-1] = dataOutDFE[0][Vectors_width*Vectors_height-1];
 
 		for(int j = 1; j < it; ++j) {
@@ -635,9 +638,9 @@ int main(int argc, char *argv[]) {
 			}
 
 			if (imageBuffer[Vectors_width*Vectors_height-1] != dataOutDFE[j][Vectors_width*Vectors_height-1] && imageBuffer != 0) {
-				fprintf(results, "%i,", dataOutDFE[j][Vectors_width*Vectors_height-1]);
+				fprintf(results, "%i", dataOutDFE[j][Vectors_width*Vectors_height-1]);
 				imageBuffer[Vectors_width*Vectors_height-1] = dataOutDFE[0][Vectors_width*Vectors_height-1];
-			} else fprintf(results, " ,");
+			} else fprintf(results, " ");
 
 			fprintf(results, "\n");
 			fprintf(paramsFile, "%d,%d\n", paramsOut[j][0], paramsOut[j][1]);

@@ -56,9 +56,9 @@ dataType getInflammability(int color) {
 	}
 }
 
-int getColorForRendering(int identifier) {
+int getColorForRendering(int id) {
 	//"normalising"
-	int id = (identifier < -6) ? -6 : identifier;
+	//int id = (identifier < -6) ? -6 : identifier;
 	switch(id) {
 		case -6: return 0xffe808;
 		case -5: return 0xffce00;
