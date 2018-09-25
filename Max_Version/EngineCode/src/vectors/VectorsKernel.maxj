@@ -17,9 +17,13 @@ class VectorsKernel extends Kernel {
 
 		int centeredIdx = (neighSize-1)/2;
 
-		neighbors[centeredIdx] = constant.var(dataType, 0); //can be zero since center cell isn't counted as neighbor
+		for (int i=0; i<neighSize; ++i) {
+			neighbors[i] = constant.var(dataType, 0);
+		}
 
-		//cross around center cell -> 4*r
+		//neighbors[centeredIdx] = constant.var(dataType, 0); //can be zero since center cell isn't counted as neighbor
+
+		/*//cross around center cell -> 4*r
 		for (int i=1; i <= maxRadius; ++i) {
 			neighbors[centeredIdx-i*(2*maxRadius+1)] = ((y - i) < 0 & i <= radius) ? constant.var(dataType, 1) 
 					: stream.offset(binaryImage, -i*width); //above
@@ -46,7 +50,7 @@ class VectorsKernel extends Kernel {
 				neighbors[centeredIdx+i*(2*maxRadius+1)+j] = ((y + i) >= height | (x + j) >= width & i <= radius & j <= radius) ? constant.var(dataType, 1) :
 					stream.offset(binaryImage,+i*width+j); //below right
 			}
-		}
+		}*/
 
 		return neighbors;
 	}
