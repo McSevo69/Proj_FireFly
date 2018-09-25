@@ -37,7 +37,7 @@ float checkAccuracy(dataType** results, dataType** expected, int it) {
 
 	//printf("elements: %d, errors: %d\n", elements, errors);
 
-	return 100.0 - ( (float) errors/ (float) (Vectors_width*Vectors_height))*100;
+	return 100.0 - ( (float) errors/ (float) (Vectors_width*Vectors_height*it))*100;
 }
 
 dataType* getNeighbors(dataType *dataSet, dataType *neighborhood, int x, int y, int radius) {
