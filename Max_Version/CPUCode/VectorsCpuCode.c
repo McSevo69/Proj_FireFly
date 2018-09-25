@@ -625,7 +625,7 @@ int main(int argc, char *argv[]) {
 			imageBuffer[i] = dataOutDFE[0][i];
 		}
 
-		if (dataOutDFE[0][WIDTH*HEIGHT-1] < 0) fprintf(results, "%d\n", dataOutDFE[0][Vectors_width*Vectors_height-1]);
+		if (dataOutDFE[0][Vectors_width*Vectors_height-1] < 0) fprintf(results, "%d\n", dataOutDFE[0][Vectors_width*Vectors_height-1]);
 		else fprintf(results, " \n");
 		imageBuffer[Vectors_width*Vectors_height-1] = dataOutDFE[0][Vectors_width*Vectors_height-1];
 
