@@ -562,20 +562,6 @@ int main(int argc, char *argv[]) {
 				((end.tv_usec - begin.tv_usec)/1000000.0);
 		printf("Time CPU: %lf\n", timeSpentCPU);
 
-		//TESTING
-		printf("Running CPU...\n");
-		gettimeofday(&begin, NULL);		
-		VectorsCPU(dataBuffer, dataOutDFE[0], paramsOut[0]);
-		for (int i=1; i<it; ++i) {
-			VectorsCPU(dataOutDFE[i-1], dataOutDFE[i], paramsOut[i]);
-		}
-			
-		gettimeofday(&end, NULL);
-		timeSpentCPU += (end.tv_sec - begin.tv_sec) +
-				((end.tv_usec - begin.tv_usec)/1000000.0);
-		printf("Time CPU: %lf\n", timeSpentCPU);
-		//TESTING
-
 		float acc = checkAccuracy(dataOut, dataOutDFE, it);
 		printf("The accuracy measured is: %f\n", acc);
 		printf("Speedup: %f\n", timeSpentCPU/timeSpent);
