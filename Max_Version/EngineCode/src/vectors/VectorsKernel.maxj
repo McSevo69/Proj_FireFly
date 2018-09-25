@@ -64,7 +64,7 @@ class VectorsKernel extends Kernel {
 		DFEVar cnt = constant.var(dataType, 0);
 
 		if (windDir % 2 == 0) { //vertical
-			for (int i = 2; i <= maxRadius; i++) cnt += (stream.offset(streamIn, +moveUpDown*i*width < -1) ? constant.var(dataType, 1) : 0;
+			for (int i = 2; i <= maxRadius; i++) cnt += (stream.offset(streamIn, +moveUpDown*i*width) < -1) ? constant.var(dataType, 1) : 0;
 
 			for (int a = 2; a <= maxRadius; ++a) {
 				for (int b = 1; b < a; ++b) {
