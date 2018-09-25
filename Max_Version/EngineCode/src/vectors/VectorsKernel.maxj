@@ -129,8 +129,8 @@ class VectorsKernel extends Kernel {
 		
 		DFEVar burnState = hasBurningNeighbors(streamIn, x, y, width, height, wind, radius, maxRadius);
 
-		DFEVar resultDry = (burnState === -1 | burnState > 1) ? burning + 1 : streamIn;
-		DFEVar resultNormal = (burnState === -1) ? burning + 1 : (burnState > 1) ? burning -1 : streamIn;
+		DFEVar resultDry = (burnState === -1 | burnState > 0) ? burning + 1 : streamIn;
+		DFEVar resultNormal = (burnState === -1) ? burning + 1 : ((burnState > 1) ? burning -1 : streamIn);
 
 		DFEVar inState = (streamIn > 2) ? constant.var(dfeUInt(2), 0) :
 			((streamIn > 0) ? constant.var(dfeUInt(2), 1) : ((streamIn > -1) ? constant.var(dfeUInt(2), 2) : constant.var(dfeUInt(2), 3)));	
@@ -150,8 +150,8 @@ class VectorsKernel extends Kernel {
 
 		//counters
 		CounterChain chain = control.count.makeCounterChain();
-		DFEVar y_cnt = chain.addCounter(width, 1);
-		DFEVar x_cnt = chain.addCounter(height, 1);
+		DFEVar y_cnt = chain.addCounter(height, 1);
+		DFEVar x_cnt = chain.addCounter(width, 1);
 
 		y_cnt = y_cnt.cast(dfeUInt(32));
 		x_cnt = x_cnt.cast(dfeUInt(32));
