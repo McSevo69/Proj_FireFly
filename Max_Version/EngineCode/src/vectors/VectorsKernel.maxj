@@ -148,8 +148,8 @@ class VectorsKernel extends Kernel {
 
 		//counters
 		CounterChain chain = control.count.makeCounterChain();
-		DFEVar y_cnt = chain.addCounter(height, 1);
-		DFEVar x_cnt = chain.addCounter(width, 1);
+		DFEVar y_cnt = chain.addCounter(width, 1);
+		DFEVar x_cnt = chain.addCounter(height, 1);
 
 		y_cnt = y_cnt.cast(dfeUInt(32));
 		x_cnt = x_cnt.cast(dfeUInt(32));
