@@ -27,18 +27,17 @@ enum compass {S = 0b1100, SW = 0b1101, W = 0b0001, NW = 0b0101, N = 0b0100, NE =
 //wind strength = radius (flying sparks)
 
 float checkAccuracy(dataType** results, dataType** expected, int it) {
-	int elements = 0, errors = 0;
+	int errors = 0;
 
 	for (int i=0; i < it; ++i) {
 		for (int j=0; j < Vectors_width*Vectors_height; ++j) {
-			++elements;
 			if (results[i][j] != expected[i][j]) ++errors;
 		}
 	}
 
 	//printf("elements: %d, errors: %d\n", elements, errors);
 
-	return 100.0 - ( (float) errors/ (float) elements)*100;
+	return 100.0 - ( (float) errors/ (float) (Vectors_width*Vectors_height))*100;
 }
 
 dataType* getNeighbors(dataType *dataSet, dataType *neighborhood, int x, int y, int radius) {
@@ -80,20 +79,6 @@ dataType* getNeighbors(dataType *dataSet, dataType *neighborhood, int x, int y, 
 	}
 
 	return neighborhood;
-}
-
-float verifyResults(int *outVector, int *expectedVector, int size) {
-	int errors = 0;
-	for (int i = 0; i < size; ++i) {
-		if (outVector[i] != expectedVector[i]) {
-			printf("%d != %d \n", outVector[i], expectedVector[i]);
-			++errors;
-		}
-	}
-
-	printf("elements: %d, errors: %d\n", size, errors);
-
-	return 100.0 - ((float) errors/ (float) size)*100;
 }
 
 //initialization
@@ -576,6 +561,20 @@ int main(int argc, char *argv[]) {
 		timeSpentCPU += (end.tv_sec - begin.tv_sec) +
 				((end.tv_usec - begin.tv_usec)/1000000.0);
 		printf("Time CPU: %lf\n", timeSpentCPU);
+
+		//TESTING
+		printf("Running CPU...\n");
+		gettimeofday(&begin, NULL);		
+		VectorsCPU(dataBuffer, dataOutDFE[0], paramsOut[0]);
+		for (int i=1; i<it; ++i) {
+			VectorsCPU(dataOutDFE[i-1], dataOutDFE[i], paramsOut[i]);
+		}
+			
+		gettimeofday(&end, NULL);
+		timeSpentCPU += (end.tv_sec - begin.tv_sec) +
+				((end.tv_usec - begin.tv_usec)/1000000.0);
+		printf("Time CPU: %lf\n", timeSpentCPU);
+		//TESTING
 
 		float acc = checkAccuracy(dataOut, dataOutDFE, it);
 		printf("The accuracy measured is: %f\n", acc);
