@@ -10,8 +10,8 @@ class VectorsKernel extends Kernel {
 
 	static final DFEType dataType=dfeInt(8);
 
-	DFEVar[] getNeighbors(DFEVar binaryImage, DFEVar x, DFEVar y, int width, int height, DFEVar radius, int maxRadius) {
-		int neighSize = (2*maxRadius+1)*(2*maxRadius+1);
+	/*DFEVar[] getNeighbors(DFEVar binaryImage, DFEVar x, DFEVar y, int width, int height, DFEVar radius, int maxRadius) {
+		int neighSize = width*width;
 
 		DFEVar[] neighbors = new DFEVar[neighSize];
 
@@ -23,11 +23,11 @@ class VectorsKernel extends Kernel {
 
 		//neighbors[centeredIdx] = constant.var(dataType, 0); //can be zero since center cell isn't counted as neighbor
 
-		/*//cross around center cell -> 4*r
+		/cross around center cell -> 4*r
 		for (int i=1; i <= maxRadius; ++i) {
-			neighbors[centeredIdx-i*(2*maxRadius+1)] = ((y - i) < 0 & i <= radius) ? constant.var(dataType, 1) 
+			neighbors[centeredIdx-i*width] = ((y - i) < 0 & i <= radius) ? constant.var(dataType, 1) 
 					: stream.offset(binaryImage, -i*width); //above
-			neighbors[centeredIdx+i*(2*maxRadius+1)] = ((y + i) >= height & i <= radius) ? constant.var(dataType, 1)
+			neighbors[centeredIdx+i*width] = ((y + i) >= height & i <= radius) ? constant.var(dataType, 1)
 					: stream.offset(binaryImage, +i*width); //below
 			neighbors[centeredIdx-i] = ((x - i) < 0 & i <= radius) ? constant.var(dataType, 1)
 					: stream.offset(binaryImage, -i); //left
@@ -38,59 +38,59 @@ class VectorsKernel extends Kernel {
 		//squares around x -> 4*r^2
 		for (int i = 1; i <= maxRadius; ++i) {
 			for (int j = 1; j <= maxRadius; ++j) {
-				neighbors[centeredIdx-i*(2*maxRadius+1)-j] = ((y - i) < 0 | (x - j) < 0 & i <= radius & j <= radius) ? constant.var(dataType, 1) :
+				neighbors[centeredIdx-i*width-j] = ((y - i) < 0 | (x - j) < 0 & i <= radius & j <= radius) ? constant.var(dataType, 1) :
 					stream.offset(binaryImage,-i*width-j); //above left
 
-				neighbors[centeredIdx-i*(2*maxRadius+1)+j] = ((y - i) < 0 | (x + j) >= width & i <= radius & j <= radius) ? constant.var(dataType, 1) :
+				neighbors[centeredIdx-i*width+j] = ((y - i) < 0 | (x + j) >= width & i <= radius & j <= radius) ? constant.var(dataType, 1) :
 					stream.offset(binaryImage,-i*width+j); //above right
 
-				neighbors[centeredIdx+i*(2*maxRadius+1)-j] = ((y + i) >= height | (x - j) < 0 & i <= radius & j <= radius) ? constant.var(dataType, 1) :
+				neighbors[centeredIdx+i*width-j] = ((y + i) >= height | (x - j) < 0 & i <= radius & j <= radius) ? constant.var(dataType, 1) :
 					stream.offset(binaryImage,+i*width-j); //below left
 
-				neighbors[centeredIdx+i*(2*maxRadius+1)+j] = ((y + i) >= height | (x + j) >= width & i <= radius & j <= radius) ? constant.var(dataType, 1) :
+				neighbors[centeredIdx+i*width+j] = ((y + i) >= height | (x + j) >= width & i <= radius & j <= radius) ? constant.var(dataType, 1) :
 					stream.offset(binaryImage,+i*width+j); //below right
 			}
-		}*/
+		}
 
 		return neighbors;
-	}
+	}*/
 
-	DFEVar getWindResult(DFEVar[] neighborhood, DFEVar radius, int maxRadius, int windDir) {
+	DFEVar getWindResult(DFEVar streamIn, int width, int height, DFEVar x, DFEVar y, DFEVar radius, int maxRadius, int windDir) {
 		int moveUpDown = (int) Math.pow(-1, (windDir & 8) >> 3) * ((windDir >> 2) & 1);
 		int moveLeftRight = (int) Math.pow(-1, (windDir & 3) >> 1) * (windDir & 1);
 
-		int centerCell = ((2*maxRadius+1)*(2*maxRadius+1)-1)/2;
+		int centerCell = (width*width-1)/2;
 
 		DFEVar cnt = constant.var(dataType, 0);
 
 		if (windDir % 2 == 0) { //vertical
-			for (int i = 2; i <= maxRadius; i++) cnt += (neighborhood[centerCell+moveUpDown*i*(2*maxRadius+1)] < -1) ? constant.var(dataType, 1) : 0;
+			for (int i = 2; i <= maxRadius; i++) cnt += (stream.offset(streamIn, +moveUpDown*i*width < -1) ? constant.var(dataType, 1) : 0;
 
 			for (int a = 2; a <= maxRadius; ++a) {
 				for (int b = 1; b < a; ++b) {
-					cnt += (neighborhood[centerCell+moveUpDown*a*(2*maxRadius+1)+b] < -1) ? constant.var(dataType, 1) : 0; //counting left/right ones
-					cnt += (neighborhood[centerCell+moveUpDown*a*(2*maxRadius+1)-b] < -1) ? constant.var(dataType, 1) : 0;
+					cnt += (stream.offset(streamIn, +moveUpDown*a*width+b) < -1) ? constant.var(dataType, 1) : 0; //counting left/right ones
+					cnt += (stream.offset(streamIn, +moveUpDown*a*width-b) < -1) ? constant.var(dataType, 1) : 0;
 				}
 			}
 		} else if (windDir % 8 <= 3) { //horizontal
-			for (int i = 2; i <= maxRadius; ++i) cnt += (neighborhood[centerCell+moveLeftRight*i] < -1) ? constant.var(dataType, 1) : 0;
+			for (int i = 2; i <= maxRadius; ++i) cnt += (stream.offset(streamIn, +moveLeftRight*i) < -1) ? constant.var(dataType, 1) : 0;
 
 			for (int a = 2; a <= maxRadius; ++a) {
 				for (int b = 1; b < a; ++b) {
-					cnt += (neighborhood[centerCell+moveLeftRight*a+b*(2*maxRadius+1)] < -1) ? constant.var(dataType, 1) : 0; //counting above/below ones
-					cnt += (neighborhood[centerCell+moveLeftRight*a-b*(2*maxRadius+1)] < -1) ? constant.var(dataType, 1) : 0;
+					cnt += (stream.offset(streamIn, +moveLeftRight*a+b*width) < -1) ? constant.var(dataType, 1) : 0; //counting above/below ones
+					cnt += (stream.offset(streamIn, +moveLeftRight*a-b*width) < -1) ? constant.var(dataType, 1) : 0;
 				}
 			}
 		} else {
-			for (int i = 2; i <= maxRadius; ++i) cnt += (neighborhood[centerCell+moveUpDown*i*(2*maxRadius+1)+moveLeftRight*i] < -1) ? constant.var(dataType, 1) : 0; //diagonal
+			for (int i = 2; i <= maxRadius; ++i) cnt += (stream.offset(streamIn, +moveUpDown*i*width+moveLeftRight*i) < -1) ? constant.var(dataType, 1) : 0; //diagonal
 
 			int diagIdx;
 
 			for (int a = 2; a <= maxRadius; ++a) {
 				for (int b = 1; b < a; ++b) {
-					diagIdx = centerCell+moveUpDown*a*(2*maxRadius+1)+moveLeftRight*a;
-					cnt += (neighborhood[diagIdx+(-1)*moveUpDown*b*(2*maxRadius+1)] < -1) ? constant.var(dataType, 1) : 0; //times (-1) as we go in the opposite direction
-					cnt += (neighborhood[diagIdx+(-1)*moveLeftRight*b] < -1) ? constant.var(dataType, 1) : 0;
+					diagIdx = moveUpDown*a*width+moveLeftRight*a;
+					cnt += (stream.offset(streamIn, diagIdx+(-1)*moveUpDown*b*width) < -1) ? constant.var(dataType, 1) : 0; //times (-1) as we go in the opposite direction
+					cnt += (stream.offset(streamIn, diagIdx+(-1)*moveLeftRight*b) < -1) ? constant.var(dataType, 1) : 0;
 				}
 			}
 		}
@@ -99,17 +99,15 @@ class VectorsKernel extends Kernel {
 
 	DFEVar willBurnDueToWind(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
 		
-		DFEVar[] neighborhood = getNeighbors(streamIn, x, y, width, height, radius, maxRadius);
-
 		//this is like transforming DFEVar to int
-		return control.mux(wind.cast(dfeUInt(4)), getWindResult(neighborhood, radius, maxRadius, 0), getWindResult(neighborhood, radius, maxRadius, 1),
-			getWindResult(neighborhood, radius, maxRadius, 2), getWindResult(neighborhood, radius, maxRadius, 3),
-			getWindResult(neighborhood, radius, maxRadius, 4), getWindResult(neighborhood, radius, maxRadius, 5),
-			getWindResult(neighborhood, radius, maxRadius, 6), getWindResult(neighborhood, radius, maxRadius, 7),
-			getWindResult(neighborhood, radius, maxRadius, 8), getWindResult(neighborhood, radius, maxRadius, 9),
-			getWindResult(neighborhood, radius, maxRadius, 10), getWindResult(neighborhood, radius, maxRadius, 11),
-			getWindResult(neighborhood, radius, maxRadius, 12), getWindResult(neighborhood, radius, maxRadius, 13),
-			getWindResult(neighborhood, radius, maxRadius, 14), getWindResult(neighborhood, radius, maxRadius, 15));		
+		return control.mux(wind.cast(dfeUInt(4)), getWindResult(streamIn, width, height, x, y, radius, maxRadius, 0), getWindResult(streamIn, width, height, x, y, radius, maxRadius, 1),
+			getWindResult(streamIn, width, height, x, y, radius, maxRadius, 2), getWindResult(streamIn, width, height, x, y, radius, maxRadius, 3),
+			getWindResult(streamIn, width, height, x, y, radius, maxRadius, 4), getWindResult(streamIn, width, height, x, y, radius, maxRadius, 5),
+			getWindResult(streamIn, width, height, x, y, radius, maxRadius, 6), getWindResult(streamIn, width, height, x, y, radius, maxRadius, 7),
+			getWindResult(streamIn, width, height, x, y, radius, maxRadius, 8), getWindResult(streamIn, width, height, x, y, radius, maxRadius, 9),
+			getWindResult(streamIn, width, height, x, y, radius, maxRadius, 10), getWindResult(streamIn, width, height, x, y, radius, maxRadius, 11),
+			getWindResult(streamIn, width, height, x, y, radius, maxRadius, 12), getWindResult(streamIn, width, height, x, y, radius, maxRadius, 13),
+			getWindResult(streamIn, width, height, x, y, radius, maxRadius, 14), getWindResult(streamIn, width, height, x, y, radius, maxRadius, 15));		
 	}
 
 	DFEVar hasBurningNeighbors(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
