@@ -119,8 +119,8 @@ class VectorsKernel extends Kernel {
 		cnt += (x - 1 >= 0 & stream.offset(streamIn, -1) < -1) ? constant.var(dataType, 1) : 0;
 		cnt += (y - 1 >= 0 & x - 1 >= 0 & stream.offset(streamIn, -width -1) < -1) ? constant.var(dataType, 1) : 0;
 
-		return (cnt > 6) ? constant.var(dataType, -1) : (cnt > 0 | radius < 2 | (wind & 5) === 0) ? 
-			cnt : willBurnDueToWind(streamIn, x, y, width, height, wind, radius, maxRadius);
+		return (cnt > 6) ? constant.var(dataType, -1) : ((cnt > 0 | radius < 2 | (wind & 5) === 0) ? 
+			cnt : willBurnDueToWind(streamIn, x, y, width, height, wind, radius, maxRadius));
 	}
 
 	DFEVar getNewCellState(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar burning, DFEVar wind, DFEVar radius, int maxRadius) {
@@ -131,9 +131,9 @@ class VectorsKernel extends Kernel {
 		DFEVar resultNormal = (burnState === -1) ? burning + 1 : (burnState > 1) ? burning -1 : streamIn;
 
 		DFEVar inState = (streamIn > 2) ? constant.var(dfeUInt(2), 0) :
-			((streamIn > 0) ? constant.var(dfeUInt(2), 1) : (streamIn < -1) ? constant.var(dfeUInt(2), 2) : constant.var(dfeUInt(2), 3));	
+			((streamIn > 0) ? constant.var(dfeUInt(2), 1) : ((streamIn > -1) ? constant.var(dfeUInt(2), 2) : constant.var(dfeUInt(2), 3)));	
 
-		return control.mux(inState, resultDry, resultNormal, streamIn + 1, streamIn);	
+		return control.mux(inState, resultDry, resultNormal, streamIn, streamIn + 1);	
 	}
 
 	VectorsKernel(KernelParameters parameters, int width, int height, int maxRadius) {
