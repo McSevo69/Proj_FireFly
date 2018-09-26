@@ -177,13 +177,15 @@ class VectorsKernel extends Kernel {
 
 		// Counters
 		Params paramsOne = control.count.makeParams(addrBitsWidth)
-		.withMax(width-1);
+		.withWrapMode(WrapMode.COUNT_LT_MAX_THEN_WRAP)
+		.withMax(width);
 
 		Counter counterOne = control.count.makeCounter(paramsOne);
 		
 		Params paramsTwo = control.count.makeParams(addrBitsHeight)
 		.withEnable(counterOne.getWrap())
-		.withMax(height-1);
+		.withWrapMode(WrapMode.COUNT_LT_MAX_THEN_WRAP)
+		.withMax(height);
 
 		Counter counterTwo = control.count.makeCounter(paramsTwo);
 
