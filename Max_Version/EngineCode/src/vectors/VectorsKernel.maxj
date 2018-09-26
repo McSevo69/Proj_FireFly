@@ -18,37 +18,33 @@ class VectorsKernel extends Kernel {
 
 		int centeredIdx = (neighSize-1)/2;
 
-		for (int i=0; i<neighSize; ++i) {
-			neighbors[i] = constant.var(dataType, 0);
-		}
-
-		neighbors[centeredIdx] = constant.var(dataType, 0); //can be zero since center cell isn't counted as neighbor
+		neighbors[centeredIdx] = streamIn;
 
 		//cross around center cell -> 4*r
 		for (int i=1; i <= maxRadius; ++i) {
-			neighbors[centeredIdx-i*neighWidth] = ((y - i) < 0 & i <= radius) ? constant.var(dataType, 1) 
+			neighbors[centeredIdx-i*neighWidth] = ((y - i) < 0 | i > radius) ? constant.var(dataType, 1) 
 					: stream.offset(streamIn, -i*width); //above
-			neighbors[centeredIdx+i*neighWidth] = ((y + i) >= height & i <= radius) ? constant.var(dataType, 1)
+			neighbors[centeredIdx+i*neighWidth] = ((y + i) >= height | i > radius) ? constant.var(dataType, 1)
 					: stream.offset(streamIn, +i*width); //below
-			neighbors[centeredIdx-i] = ((x - i) < 0 & i <= radius) ? constant.var(dataType, 1)
+			neighbors[centeredIdx-i] = ((x - i) < 0 | i > radius) ? constant.var(dataType, 1)
 					: stream.offset(streamIn, -i); //left
-			neighbors[centeredIdx+i] = ((x + i) >= width & i <= radius) ? constant.var(dataType, 1)
+			neighbors[centeredIdx+i] = ((x + i) >= width | i > radius) ? constant.var(dataType, 1)
 					: stream.offset(streamIn, +i); // right
 		}
 
 		//squares around x -> 4*r^2
 		for (int i = 1; i <= maxRadius; ++i) {
 			for (int j = 1; j <= maxRadius; ++j) {
-				neighbors[centeredIdx-i*neighWidth-j] = ((y - i) < 0 | (x - j) < 0 & i <= radius & j <= radius) ? constant.var(dataType, 1) :
+				neighbors[centeredIdx-i*neighWidth-j] = ((y - i) < 0 | (x - j) < 0 | i > radius | j > radius) ? constant.var(dataType, 1) :
 					stream.offset(streamIn,-i*width-j); //above left
 
-				neighbors[centeredIdx-i*neighWidth+j] = ((y - i) < 0 | (x + j) >= width & i <= radius & j <= radius) ? constant.var(dataType, 1) :
+				neighbors[centeredIdx-i*neighWidth+j] = ((y - i) < 0 | (x + j) >= width | i > radius | j > radius) ? constant.var(dataType, 1) :
 					stream.offset(streamIn,-i*width+j); //above right
 
-				neighbors[centeredIdx+i*neighWidth-j] = ((y + i) >= height | (x - j) < 0 & i <= radius & j <= radius) ? constant.var(dataType, 1) :
+				neighbors[centeredIdx+i*neighWidth-j] = ((y + i) >= height | (x - j) < 0 | i > radius | j > radius) ? constant.var(dataType, 1) :
 					stream.offset(streamIn,+i*width-j); //below left
 
-				neighbors[centeredIdx+i*neighWidth+j] = ((y + i) >= height | (x + j) >= width & i <= radius & j <= radius) ? constant.var(dataType, 1) :
+				neighbors[centeredIdx+i*neighWidth+j] = ((y + i) >= height | (x + j) >= width | i > radius | j > radius) ? constant.var(dataType, 1) :
 					stream.offset(streamIn,+i*width+j); //below right
 			}
 		}
