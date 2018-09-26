@@ -174,13 +174,13 @@ class VectorsKernel extends Kernel {
 		DFEVar burning = io.scalarInput("burningState", dataType);
 
 		// Counters
-		Params paramsOne = control.count.makeParams(addrBitsWidth)
+		Params paramsOne = control.count.makeParams(addrBits)
 		.withEnable(~readingInput)
 		.withMax(width);
 
 		Counter counterOne = control.count.makeCounter(paramsOne);
 		
-		Params paramsTwo = control.count.makeParams(addrBitsHeight)
+		Params paramsTwo = control.count.makeParams(addrBits)
 		.withEnable(counterOne.getWrap())
 		.withMax(height);
 
