@@ -9,13 +9,14 @@ import com.maxeler.maxcompiler.v2.utils.MathUtils;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.WrapMode;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Counter;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Params;
-import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.memory.Memory;
+//import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVector;
+//import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVectorType;
 
 class VectorsKernel extends Kernel {
 
 	static final DFEType dataType=dfeInt(8);
 
-	DFEVar[] getNeighbors(Memory<DFEVar> reverseRam, DFEVar x, DFEVar y, int width, int height, DFEVar radius, int maxRadius) {
+	DFEVar[] getNeighbors(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar radius, int maxRadius) {
 		int neighWidth = (2*maxRadius+1);
 		int neighSize = neighWidth*neighWidth;
 
@@ -23,38 +24,34 @@ class VectorsKernel extends Kernel {
 
 		int centeredIdx = (neighSize-1)/2;
 
-		neighbors[centeredIdx] = constant.var(dataType, 1);
-
-		int addrBits = MathUtils.bitsToAddress(width*height);
-		DFEVar idx = y*width+x;
-		idx = idx.cast(dfeUInt(addrBits));
+		neighbors[centeredIdx] =  constant.var(dataType, 1);
 
 		//cross around center cell -> 4*r
 		for (int i=1; i <= maxRadius; ++i) {
 			neighbors[centeredIdx-i*neighWidth] = ((y - i) < 0 | i > radius) ? constant.var(dataType, 1) 
-					: reverseRam.read(idx -i*width); //above
+					: stream.offset(streamIn, -i*width); //above
 			neighbors[centeredIdx+i*neighWidth] = ((y + i) >= height | i > radius) ? constant.var(dataType, 1)
-					: reverseRam.read(idx +i*width); //below
+					: stream.offset(streamIn, +i*width); //below
 			neighbors[centeredIdx-i] = ((x - i) < 0 | i > radius) ? constant.var(dataType, 1)
-					: reverseRam.read(idx -i); //left
+					: stream.offset(streamIn, -i); //left
 			neighbors[centeredIdx+i] = ((x + i) >= width | i > radius) ? constant.var(dataType, 1)
-					: reverseRam.read(idx +i); // right
+					: stream.offset(streamIn, +i); // right
 		}
 
 		//squares around x -> 4*r^2
 		for (int i = 1; i <= maxRadius; ++i) {
 			for (int j = 1; j <= maxRadius; ++j) {
 				neighbors[centeredIdx-i*neighWidth-j] = ((y - i) < 0 | (x - j) < 0 | i > radius | j > radius) ? constant.var(dataType, 1) :
-					reverseRam.read(idx-i*width-j); //above left
+					stream.offset(streamIn,-i*width-j); //above left
 
 				neighbors[centeredIdx-i*neighWidth+j] = ((y - i) < 0 | (x + j) >= width | i > radius | j > radius) ? constant.var(dataType, 1) :
-					reverseRam.read(idx-i*width+j); //above right
+					stream.offset(streamIn,-i*width+j); //above right
 
 				neighbors[centeredIdx+i*neighWidth-j] = ((y + i) >= height | (x - j) < 0 | i > radius | j > radius) ? constant.var(dataType, 1) :
-					reverseRam.read(idx+i*width-j); //below left
+					stream.offset(streamIn,+i*width-j); //below left
 
 				neighbors[centeredIdx+i*neighWidth+j] = ((y + i) >= height | (x + j) >= width | i > radius | j > radius) ? constant.var(dataType, 1) :
-					reverseRam.read(idx+i*width+j); //below right
+					stream.offset(streamIn,+i*width+j); //below right
 			}
 		}
 		return neighbors;
@@ -118,38 +115,32 @@ class VectorsKernel extends Kernel {
 			getWindResult(neighborhood, x, y, radius, maxRadius, 14), getWindResult(neighborhood, x, y, radius, maxRadius, 15));		
 	}
 
-	DFEVar hasBurningNeighbors(Memory<DFEVar> reverseRam, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
+	DFEVar hasBurningNeighbors(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
 
-		DFEVar neighborhood[] = getNeighbors(reverseRam, x, y, width, height, radius, maxRadius);
+		DFEVar neighborhood[] = getNeighbors(streamIn, x, y, width, height, radius, maxRadius);
 
 		int neighWidth = (2*maxRadius+1);
 		int centerCell = (neighWidth*neighWidth-1)/2;
 
 		DFEVar cnt = (neighborhood[centerCell-neighWidth] < -1) ? constant.var(dataType, 1) : 0;
-		cnt += (neighborhood[centerCell-neighWidth+1] < -1) ? constant.var(dataType, 1) : 0;
-		cnt += (neighborhood[centerCell+1] < -1) ? constant.var(dataType, 1) : 0;
-		cnt += (neighborhood[centerCell+neighWidth+1] < -1) ? constant.var(dataType, 1) : 0;
-		cnt += (neighborhood[centerCell+neighWidth] < -1) ? constant.var(dataType, 1) : 0;
-		cnt += (neighborhood[centerCell+neighWidth-1] < -1) ? constant.var(dataType, 1) : 0;
-		cnt += (neighborhood[centerCell-1] < -1) ? constant.var(dataType, 1) : 0;
-		cnt += (neighborhood[centerCell-neighWidth-1] < -1) ? constant.var(dataType, 1) : 0;
+		cnt += neighborhood[centerCell-neighWidth+1] < -1) ? constant.var(dataType, 1) : 0;
+		cnt += neighborhood[centerCell+1] < -1) ? constant.var(dataType, 1) : 0;
+		cnt += neighborhood[centerCell+neighWidth+1] < -1) ? constant.var(dataType, 1) : 0;
+		cnt += neighborhood[centerCell+neighWidth] < -1) ? constant.var(dataType, 1) : 0;
+		cnt += neighborhood[centerCell+neighWidth-1] < -1) ? constant.var(dataType, 1) : 0;
+		cnt += neighborhood[centerCell-1] < -1) ? constant.var(dataType, 1) : 0;
+		cnt += neighborhood[centerCell-neighWidth-1] < -1) ? constant.var(dataType, 1) : 0;
 
 		return (cnt > 6) ? constant.var(dataType, -1) : ((cnt > 0 | radius < 2 | (wind & 5) === 0) ? 
 			cnt : willBurnDueToWind(neighborhood, x, y, width, height, wind, radius, maxRadius));
 	}
 
-	DFEVar getNewCellState(Memory<DFEVar> reverseRam, DFEVar x, DFEVar y, int width, int height, DFEVar burning, DFEVar wind, DFEVar radius, int maxRadius) {
+	DFEVar getNewCellState(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar burning, DFEVar wind, DFEVar radius, int maxRadius) {
 		
-		int addrBits = MathUtils.bitsToAddress(width*height);
-		DFEVar idx = y*width+x;
-		idx = idx.cast(dfeUInt(addrBits));
-
-		DFEVar streamIn = reverseRam.read(idx);
-
-		DFEVar burnState = hasBurningNeighbors(reverseRam, x, y, width, height, wind, radius, maxRadius);
+		DFEVar burnState = hasBurningNeighbors(streamIn, x, y, width, height, wind, radius, maxRadius);
 
 		DFEVar resultDry = (burnState === -1 | burnState > 0) ? burning + 1 : streamIn;
-		DFEVar resultNormal = (burnState === -1) ? burning + 1 : ((burnState > 1) ? burning -1 : streamIn);		
+		DFEVar resultNormal = (burnState === -1) ? burning + 1 : ((burnState > 1) ? burning -1 : streamIn);
 
 		DFEVar inState = (streamIn > 2) ? constant.var(dfeUInt(2), 0) :
 			((streamIn > 0) ? constant.var(dfeUInt(2), 1) : ((streamIn > -1) ? constant.var(dfeUInt(2), 2) : constant.var(dfeUInt(2), 3)));	
@@ -160,41 +151,47 @@ class VectorsKernel extends Kernel {
 	VectorsKernel(KernelParameters parameters, int width, int height, int maxRadius) {
 		super(parameters);
 
-		int addrBits = MathUtils.bitsToAddress(width*height);
-		Params addressCounterParams = control.count.makeParams(addrBits+1).withWrapMode(WrapMode.STOP_AT_MAX);
-		Counter addressCounter = control.count.makeCounter(addressCounterParams);
-
-		DFEVar readingInput = addressCounter.getCount() < width*height;
-
 		// Input
-		DFEVar streamIn = io.input("inData", dataType, readingInput);
+		DFEVar streamIn = io.input("inData", dataType);
 
 		DFEVar windDir = io.scalarInput("windDir", dataType);
 		DFEVar windStrength = io.scalarInput("windStrength", dataType);
 		DFEVar burning = io.scalarInput("burningState", dataType);
 
+		/*DFEVectorType<DFEVar> vectorType = new DFEVectorType<DFEVar>(dataType, vectorOutSize);
+
+		DFEVector<DFEVar> outVec = vectorType.newInstance(this);
+
+		Memory<DFEStruct> reverseRam = mem.alloc(points, maxN);
+
+		reverseRam.write(addressCounter.getCount().cast(dfeUInt(addrBits)), refPoint, readingInput);
+
+		for (int i=0; i<vectorOutSize; i++) {				
+			outVec[i] <== (readingInput | j_cnt+i < i_cnt) ? constant.var(dataType, 0) : 
+					getEuclidianDistance(reverseRam.read(i_cnt),
+					reverseRam.read(j_cnt+i));
+		}*/
+
+		int addrBitsWidth = MathUtils.bitsToAddress(width);
+		int addrBitsHeight = MathUtils.bitsToAddress(height);
+
 		// Counters
-		Params paramsOne = control.count.makeParams(addrBits)
-		.withEnable(~readingInput)
-		.withMax(width);
+		Params paramsOne = control.count.makeParams(addrBitsWidth)
+		.withMax(width-1);
 
 		Counter counterOne = control.count.makeCounter(paramsOne);
 		
-		Params paramsTwo = control.count.makeParams(addrBits)
+		Params paramsTwo = control.count.makeParams(addrBitsHeight)
 		.withEnable(counterOne.getWrap())
-		.withMax(height);
+		.withMax(height-1);
 
 		Counter counterTwo = control.count.makeCounter(paramsTwo);
 
-		DFEVar y_cnt = counterTwo.getCount().cast(dfeUInt(32));		
-		DFEVar x_cnt = counterOne.getCount().cast(dfeUInt(32)); 
-
-		Memory<DFEVar> reverseRam = mem.alloc(dataType, width*height);
-
-		reverseRam.write(addressCounter.getCount().cast(dfeUInt(addrBits)), streamIn, readingInput);
+		DFEVar y_cnt = counterTwo.getCount().cast(dfeUInt(addrBitsHeight));		
+		DFEVar x_cnt = counterOne.getCount().cast(dfeUInt(addrBitsWidth)); 
 
 		//Output
-		io.output("outData", getNewCellState(reverseRam, x_cnt, y_cnt, width, height, burning, windDir, windStrength, maxRadius), dataType, ~readingInput);
+		io.output("outData", getNewCellState(streamIn, x_cnt, y_cnt, width, height, burning, windDir, windStrength, maxRadius), dataType);
 
 	}
 }
