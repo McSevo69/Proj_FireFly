@@ -24,7 +24,7 @@ class VectorsKernel extends Kernel {
 
 		neighbors[centeredIdx] = constant.var(dataType, 0); //can be zero since center cell isn't counted as neighbor
 
-		/cross around center cell -> 4*r
+		//cross around center cell -> 4*r
 		for (int i=1; i <= maxRadius; ++i) {
 			neighbors[centeredIdx-i*neighWidth] = ((y - i) < 0 & i <= radius) ? constant.var(dataType, 1) 
 					: stream.offset(streamIn, -i*width); //above
