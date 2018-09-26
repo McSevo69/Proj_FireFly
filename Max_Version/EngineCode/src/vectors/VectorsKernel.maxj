@@ -55,6 +55,48 @@ class VectorsKernel extends Kernel {
 		return neighbors;
 	}*/
 
+	/**
+	 * 
+	 */
+	/*DFEVar isInRange(int moveLeftRight, int moveUpDown, int a, int b, int i, int width, int height, DFEVar x, DFEVar y) {
+		DFEVar inRangeLeftRight = constant.var(dfeUInt(1), 1);
+		DFEVar inRangeUpDown = constant.var(dfeUInt(1), 1);
+
+		if (moveLeftRight != 0) {
+			if (a > 0) {
+				if (moveLeftRight == -1) {
+					inRangeLeftRight = ((x-a) < 0) ? constant.var(dfeUInt(1), 0) : inRangeLeftRight;
+				} else {
+					inRangeLeftRight = ((x+a) >= width) ? constant.var(dfeUInt(1), 0) : inRangeLeftRight;
+				}
+			} else { //take i
+				if (moveLeftRight == -1) {
+					inRangeLeftRight = ((x-i) < 0) ? constant.var(dfeUInt(1), 0) : inRangeLeftRight;
+				} else {
+					inRangeLeftRight = ((x+i) >= width) ? constant.var(dfeUInt(1), 0) : inRangeLeftRight;
+				}
+			}			
+		}
+
+		if (moveUpDown != 0) {
+			if (b > 0) {
+				if (moveUpDown == -1) {
+					inRangeUpDown = ((y-b) < 0) ? constant.var(dfeUInt(1), 0) : inRangeUpDown;
+				} else {
+					inRangeUpDown = ((y+b) >= height) ? constant.var(dfeUInt(1), 0) : inRangeUpDown;
+				}
+			} else { //take i
+				if (moveUpDown == -1) {
+					inRangeUpDown = ((y-i) < 0) ? constant.var(dfeUInt(1), 0) : inRangeUpDown;
+				} else {
+					inRangeUpDown = ((y+i) >= height) ? constant.var(dfeUInt(1), 0) : inRangeUpDown;
+				}
+			}			
+		}
+
+		return inRangeLeftRight & inRangeUpDown;
+	}*/
+
 	DFEVar getWindResult(DFEVar streamIn, int width, int height, DFEVar x, DFEVar y, DFEVar radius, int maxRadius, int windDir) {
 		int moveUpDown = (int) Math.pow(-1, (windDir & 8) >> 3) * ((windDir >> 2) & 1);
 		int moveLeftRight = (int) Math.pow(-1, (windDir & 3) >> 1) * (windDir & 1);
@@ -64,33 +106,36 @@ class VectorsKernel extends Kernel {
 		DFEVar cnt = constant.var(dataType, 0);
 
 		if (windDir % 2 == 0) { //vertical
-			for (int i = 2; i <= maxRadius; i++) cnt += (stream.offset(streamIn, +moveUpDown*i*width) < -1) ? constant.var(dataType, 1) : 0;
+			for (int i = 2; i <= maxRadius; i++)
+				cnt += (stream.offset(streamIn, +moveUpDown*i*width) < -1 & radius <= maxRadius) ? constant.var(dataType, 1) : 0;
 
 			for (int a = 2; a <= maxRadius; ++a) {
 				for (int b = 1; b < a; ++b) {
-					cnt += (stream.offset(streamIn, +moveUpDown*a*width+b) < -1) ? constant.var(dataType, 1) : 0; //counting left/right ones
-					cnt += (stream.offset(streamIn, +moveUpDown*a*width-b) < -1) ? constant.var(dataType, 1) : 0;
+					cnt += (stream.offset(streamIn, +moveUpDown*a*width+b) < -1 & radius <= maxRadius) ? constant.var(dataType, 1) : 0; //counting left/right ones
+					cnt += (stream.offset(streamIn, +moveUpDown*a*width-b) < -1 & radius <= maxRadius) ? constant.var(dataType, 1) : 0;
 				}
 			}
 		} else if (windDir % 8 <= 3) { //horizontal
-			for (int i = 2; i <= maxRadius; ++i) cnt += (stream.offset(streamIn, +moveLeftRight*i) < -1) ? constant.var(dataType, 1) : 0;
+			for (int i = 2; i <= maxRadius; ++i)
+				cnt += (stream.offset(streamIn, +moveLeftRight*i) < -1 & radius <= maxRadius) ? constant.var(dataType, 1) : 0;
 
 			for (int a = 2; a <= maxRadius; ++a) {
 				for (int b = 1; b < a; ++b) {
-					cnt += (stream.offset(streamIn, +moveLeftRight*a+b*width) < -1) ? constant.var(dataType, 1) : 0; //counting above/below ones
-					cnt += (stream.offset(streamIn, +moveLeftRight*a-b*width) < -1) ? constant.var(dataType, 1) : 0;
+					cnt += (stream.offset(streamIn, +moveLeftRight*a+b*width) < -1 & radius <= maxRadius) ? constant.var(dataType, 1) : 0; //counting above/below ones
+					cnt += (stream.offset(streamIn, +moveLeftRight*a-b*width) < -1 & radius <= maxRadius) ? constant.var(dataType, 1) : 0;
 				}
 			}
 		} else {
-			for (int i = 2; i <= maxRadius; ++i) cnt += (stream.offset(streamIn, +moveUpDown*i*width+moveLeftRight*i) < -1) ? constant.var(dataType, 1) : 0; //diagonal
+			for (int i = 2; i <= maxRadius; ++i)
+				cnt += (stream.offset(streamIn, +moveUpDown*i*width+moveLeftRight*i) < -1 & radius <= maxRadius) ? constant.var(dataType, 1) : 0; //diagonal
 
 			int diagIdx;
 
 			for (int a = 2; a <= maxRadius; ++a) {
 				for (int b = 1; b < a; ++b) {
 					diagIdx = moveUpDown*a*width+moveLeftRight*a;
-					cnt += (stream.offset(streamIn, diagIdx+(-1)*moveUpDown*b*width) < -1) ? constant.var(dataType, 1) : 0; //times (-1) as we go in the opposite direction
-					cnt += (stream.offset(streamIn, diagIdx+(-1)*moveLeftRight*b) < -1) ? constant.var(dataType, 1) : 0;
+					cnt += (stream.offset(streamIn, diagIdx+(-1)*moveUpDown*b*width) < -1 & radius <= maxRadius) ? constant.var(dataType, 1) : 0; //times (-1) as we go in the opposite direction
+					cnt += (stream.offset(streamIn, diagIdx+(-1)*moveLeftRight*b) < -1 & radius <= maxRadius) ? constant.var(dataType, 1) : 0;
 				}
 			}
 		}
