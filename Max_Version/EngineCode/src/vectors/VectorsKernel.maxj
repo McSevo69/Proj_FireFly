@@ -162,14 +162,14 @@ class VectorsKernel extends Kernel {
 		int neighWidth = (2*maxRadius+1);
 		int centerCell = (neighWidth*neighWidth-1)/2;
 
-		DFEVar cnt = neighborhood[centerCell-neighWidth];
-		cnt += neighborhood[centerCell-neighWidth+1];
-		cnt += neighborhood[centerCell+1];
-		cnt += neighborhood[centerCell+neighWidth+1];
-		cnt += neighborhood[centerCell+neighWidth];
-		cnt += neighborhood[centerCell+neighWidth-1];
-		cnt += neighborhood[centerCell-1];
-		cnt += neighborhood[centerCell-neighWidth-1];
+		DFEVar cnt = (neighborhood[centerCell-neighWidth] < -1) ? constant.var(dataType, 1) : 0;
+		cnt += (neighborhood[centerCell-neighWidth+1] < -1) ? constant.var(dataType, 1) : 0;
+		cnt += (neighborhood[centerCell+1] < -1) ? constant.var(dataType, 1) : 0;
+		cnt += (neighborhood[centerCell+neighWidth+1] < -1) ? constant.var(dataType, 1) : 0;
+		cnt += (neighborhood[centerCell+neighWidth] < -1) ? constant.var(dataType, 1) : 0;
+		cnt += (neighborhood[centerCell+neighWidth-1] < -1) ? constant.var(dataType, 1) : 0;
+		cnt += (neighborhood[centerCell-1] < -1) ? constant.var(dataType, 1) : 0;
+		cnt += (neighborhood[centerCell-neighWidth-1] < -1) ? constant.var(dataType, 1) : 0;
 
 		/*DFEVar cnt = (y > 0 & stream.offset(streamIn, -width) < -1) ? constant.var(dataType, 1) : constant.var(dataType, 0);
 		cnt += (y > 0 & x + 1 < width & stream.offset(streamIn, -width + 1) < -1) ? constant.var(dataType, 1) : 0;
