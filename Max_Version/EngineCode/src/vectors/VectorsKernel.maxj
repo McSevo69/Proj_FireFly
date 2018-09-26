@@ -25,7 +25,8 @@ class VectorsKernel extends Kernel {
 
 		neighbors[centeredIdx] = constant.var(dataType, 1);
 
-		DFEVar idx = constant.var(dfeUInt(MathUtils.bitsToAddress(width*height)), y*width+x);
+		int addrBits = MathUtils.bitsToAddress(width*height);
+		DFEVar idx = constant.var(dfeUInt(addrBits), y*width+x);
 
 		//cross around center cell -> 4*r
 		for (int i=1; i <= maxRadius; ++i) {
@@ -138,7 +139,9 @@ class VectorsKernel extends Kernel {
 
 	DFEVar getNewCellState(Memory<DFEVar> reverseRam, DFEVar x, DFEVar y, int width, int height, DFEVar burning, DFEVar wind, DFEVar radius, int maxRadius) {
 		
-		DFEVar idx = constant.var(dfeUInt(MathUtils.bitsToAddress(width*height)), y*width+x);
+		int addrBits = MathUtils.bitsToAddress(width*height);
+		DFEVar idx = constant.var(dfeUInt(addrBits), y*width+x);
+		
 		DFEVar streamIn = reverseRam.read(idx);
 
 		DFEVar burnState = hasBurningNeighbors(reverseRam, x, y, width, height, wind, radius, maxRadius);
