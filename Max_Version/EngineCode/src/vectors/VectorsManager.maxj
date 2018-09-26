@@ -30,7 +30,7 @@ class VectorsManager extends CustomManager {
 		InterfaceParam windStrength = ei.addParam("windStrength", CPUTypes.INT8);
 		InterfaceParam burningState = ei.addParam("burningState", CPUTypes.INT8);
 		
-		ei.setTicks("ForestFire", size);
+		ei.setTicks("ForestFire", 2*size);
 
 		ei.setScalar("ForestFire", "windDir", windDir);
 		ei.setScalar("ForestFire", "windStrength", windStrength);
@@ -47,8 +47,8 @@ class VectorsManager extends CustomManager {
 		EngineParameters params = new EngineParameters(args);
 		VectorsManager manager = new VectorsManager(params);
 
-		//KernelConfiguration currKConf = manager.getCurrentKernelConfig();
-		//currKConf.optimization.setCEPipelining(2);
+		KernelConfiguration currKConf = manager.getCurrentKernelConfig();
+		currKConf.optimization.setCEPipelining(2);
 		
 		manager.addMaxFileConstant("width", width);
 		manager.addMaxFileConstant("height", height);
