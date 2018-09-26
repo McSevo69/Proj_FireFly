@@ -173,9 +173,6 @@ class VectorsKernel extends Kernel {
 		DFEVar windStrength = io.scalarInput("windStrength", dataType);
 		DFEVar burning = io.scalarInput("burningState", dataType);
 
-		int addrBitsWidth = MathUtils.bitsToAddress(width);
-		int addrBitsHeight = MathUtils.bitsToAddress(height);
-
 		// Counters
 		Params paramsOne = control.count.makeParams(addrBitsWidth)
 		.withEnable(~readingInput)
@@ -189,8 +186,8 @@ class VectorsKernel extends Kernel {
 
 		Counter counterTwo = control.count.makeCounter(paramsTwo);
 
-		DFEVar y_cnt = counterTwo.getCount().cast(dfeUInt(addrBitsHeight));		
-		DFEVar x_cnt = counterOne.getCount().cast(dfeUInt(addrBitsWidth)); 
+		DFEVar y_cnt = counterTwo.getCount().cast(dfeUInt(32));		
+		DFEVar x_cnt = counterOne.getCount().cast(dfeUInt(32)); 
 
 		Memory<DFEVar> reverseRam = mem.alloc(dataType, width*height);
 
