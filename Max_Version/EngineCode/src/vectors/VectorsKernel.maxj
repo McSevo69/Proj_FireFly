@@ -181,7 +181,7 @@ class VectorsKernel extends Kernel {
 		cnt += (y > 0 & x > 0 & stream.offset(streamIn, -width -1) < -1) ? constant.var(dataType, 1) : 0;*/
 
 		return (cnt > 6) ? constant.var(dataType, -1) : ((cnt > 0 | radius < 2 | (wind & 5) === 0) ? 
-			cnt : willBurnDueToWind(neighborhood, streamIn, x, y, width, height, wind, radius, maxRadius));
+			cnt : willBurnDueToWind(neighborhood, x, y, width, height, wind, radius, maxRadius));
 	}
 
 	DFEVar getNewCellState(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar burning, DFEVar wind, DFEVar radius, int maxRadius) {
