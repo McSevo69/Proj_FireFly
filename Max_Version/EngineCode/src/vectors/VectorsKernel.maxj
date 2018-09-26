@@ -5,6 +5,10 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEType;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
+import com.maxeler.maxcompiler.v2.utils.MathUtils;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.WrapMode;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Counter;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Params;
 
 class VectorsKernel extends Kernel {
 
@@ -192,12 +196,30 @@ class VectorsKernel extends Kernel {
 		DFEVar burning = io.scalarInput("burningState", dataType);
 
 		//counters
-		CounterChain chain = control.count.makeCounterChain();
-		DFEVar y_cnt = chain.addCounter(height, 1);
-		DFEVar x_cnt = chain.addCounter(width, 1);
+		//CounterChain chain = control.count.makeCounterChain();
+		//DFEVar y_cnt = chain.addCounter(height, 1);
+		//DFEVar x_cnt = chain.addCounter(width, 1);
 
-		y_cnt = y_cnt.cast(dfeUInt(32));
-		x_cnt = x_cnt.cast(dfeUInt(32));
+		//y_cnt = y_cnt.cast(dfeUInt(32));
+		//x_cnt = x_cnt.cast(dfeUInt(32));
+
+		int addrBitsWidth = MathUtils.bitsToAddress(width);
+		int addrBitsHeight = MathUtils.bitsToAddress(height);
+
+		// Counters
+		Params paramsOne = control.count.makeParams(addrBitsWidth)
+		.withMax(width);
+
+		Counter counterOne = control.count.makeCounter(paramsOne);
+		
+		Params paramsTwo = control.count.makeParams(addrBitsHeight)
+		.withEnable(counterOne.getWrap())
+		.withMax(height);
+
+		Counter counterTwo = control.count.makeCounter(paramsTwo);
+
+		DFEVar y_cnt = counterTwo.getCount().cast(dfeUInt(addrBitsHeight));		
+		DFEVar x_cnt = counterOne.getCount().cast(dfeUInt(addrBitsWidth)); 
 
 		//Output
 		io.output("outData", getNewCellState(streamIn, x_cnt, y_cnt, width, height, burning, windDir, windStrength, maxRadius), dataType);
