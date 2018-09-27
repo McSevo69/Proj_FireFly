@@ -55,13 +55,14 @@ int getInflammability(int color) {
 }
 
 int getColorForRendering(int identifier) {
-	switch(identifier) {
+	int id = (identifier < -6) ? -6 : identifier;
+	switch(id) {
 		case -6: return 0xffe808;
 		case -5: return 0xffce00;
 		case -4: return 0xff9a00;
 		case -3: return 0xff5a00;
 		case -2: return 0xff0000;
 		case -1: return 0x373a24;
-		default: return identifier;
+		default: return id;
 	}
 }
