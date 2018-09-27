@@ -34,7 +34,7 @@ float checkAccuracy(dataType** results, dataType** expected, int it) {
 			
 			if (results[i][j] != expected[i][j]) {
 				++errors;
-				printf("res: %i, exp: %i\n", results[i][j], expected[i][j]);
+				//printf("res: %i, exp: %i\n", results[i][j], expected[i][j]);
 			} 
 		}
 	}
@@ -566,7 +566,7 @@ int main(int argc, char *argv[]) {
 				((end.tv_usec - begin.tv_usec)/1000000.0);
 		printf("Time CPU: %lf\n", timeSpentCPU);
 
-		float acc = checkAccuracy(dataOut, dataOutDFE, it);
+		float acc = checkAccuracy(dataOutDFE, dataOut, it);
 		printf("The accuracy measured is: %f\n", acc);
 		printf("Speedup: %f\n", timeSpentCPU/timeSpent);
 
