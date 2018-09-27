@@ -30,20 +30,14 @@ float checkAccuracy(dataType** results, dataType** expected, int it) {
 	int errors = 0;
 
 	for (int i=0; i < it; ++i) {
-		int check = 1;
 		for (int j=0; j < Vectors_width*Vectors_height; ++j) {
 			
 			if (results[i][j] != expected[i][j]) {
 				++errors;
-				if (check < 20) {
-					printf("it: %d, idx: %d, res: %i, exp: %i\n", i, j, results[i][j], expected[i][j]);
-			 		check++;
-				}
+				//printf("it: %d, idx: %d, res: %i, exp: %i\n", i, j, results[i][j], expected[i][j]);
 			}
 		}
 	}
-
-	//printf("elements: %d, errors: %d\n", elements, errors);
 
 	return 100.0 - ( (float) errors/ (float) (Vectors_width*Vectors_height*it))*100;
 }
