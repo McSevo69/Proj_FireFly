@@ -189,12 +189,11 @@ class VectorsKernel extends Kernel {
 
 		Counter counterTwo = control.count.makeCounter(paramsTwo);
 
-		DFEVar y_cnt = counterTwo.getCount().cast(dfeInt(addrBitsHeight+1));		
-		DFEVar x_cnt = counterOne.getCount().cast(dfeInt(addrBitsWidth+1)); 
+		DFEVar y_cnt = counterTwo.getCount().cast(dfeInt(addrBitsHeight+3));		
+		DFEVar x_cnt = counterOne.getCount().cast(dfeInt(addrBitsWidth+3)); 
 
 		//Output
 		io.output("outData", getNewCellState(streamIn, x_cnt, y_cnt, width, height, burning, windDir, windStrength, maxRadius), dataType);
-		//io.output("outData", x_cnt.cast(dataType), dataType);
 
 	}
 }
