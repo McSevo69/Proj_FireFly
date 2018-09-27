@@ -34,7 +34,7 @@ float checkAccuracy(dataType** results, dataType** expected, int it) {
 			
 			if (results[i][j] != expected[i][j]) {
 				++errors;
-				//printf("res: %i, exp: %i\n", results[i][j], expected[i][j]);
+				printf("it: %d, res: %i, exp: %i\n", it, results[i][j], expected[i][j]);
 			} 
 		}
 	}
