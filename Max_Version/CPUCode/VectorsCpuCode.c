@@ -570,7 +570,7 @@ int main(int argc, char *argv[]) {
 
 		FILE* time_res;
 		char filename[16];
-		snprintf(filename, sizeof(filename), "benchmark.csv", Vectors_width, Vectors_height, it);
+		snprintf(filename, sizeof(filename), "benchmark.csv");
 		time_res = fopen(filename, "a");
 		fprintf(time_res, "%d, %d, %d, %f, %f, %f, %f\n", Vectors_width, Vectors_height, it, timeSpentCPU, timeSpent, timeSpentCPU/timeSpent, acc);
 		fclose(time_res);
