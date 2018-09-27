@@ -616,16 +616,16 @@ int main(int argc, char *argv[]) {
 
 		for(int j = 1; j < it; ++j) {
 			for(int i = 0; i < Vectors_width*Vectors_height-1; ++i) {
-				if (imageBuffer[i] != dataOutDFE[j][i] && imageBuffer != 0) {
+				//if (imageBuffer[i] != dataOutDFE[j][i] && imageBuffer != 0) {
 					fprintf(results, "%i,", dataOutDFE[j][i]);
-					imageBuffer[i] = dataOutDFE[0][i];
-				} else fprintf(results, " ,");
+					//imageBuffer[i] = dataOutDFE[0][i];
+				//} else fprintf(results, " ,");
 			}
 
-			if (imageBuffer[Vectors_width*Vectors_height-1] != dataOutDFE[j][Vectors_width*Vectors_height-1] && imageBuffer != 0) {
+			//if (imageBuffer[Vectors_width*Vectors_height-1] != dataOutDFE[j][Vectors_width*Vectors_height-1] && imageBuffer != 0) {
 				fprintf(results, "%i", dataOutDFE[j][Vectors_width*Vectors_height-1]);
-				imageBuffer[Vectors_width*Vectors_height-1] = dataOutDFE[0][Vectors_width*Vectors_height-1];
-			} else fprintf(results, " ");
+				//imageBuffer[Vectors_width*Vectors_height-1] = dataOutDFE[0][Vectors_width*Vectors_height-1];
+			//} else fprintf(results, " ");
 
 			fprintf(results, "\n");
 			fprintf(paramsFile, "%d,%d\n", paramsOut[j][0], paramsOut[j][1]);
