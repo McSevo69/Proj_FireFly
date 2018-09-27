@@ -569,12 +569,12 @@ int main(int argc, char *argv[]) {
 		printf("Speedup: %f\n", timeSpentCPU/timeSpent);
 
 		FILE* time_res;
-		char filename[1024];
-		printf("Exporting benchmark to file...\n");
-		snprintf(filename, sizeof(filename), "benchmark_%dx%d_%d.csv", Vectors_width, Vectors_height, it);
+		char filename[16];
+		snprintf(filename, sizeof(filename), "benchmark.csv", Vectors_width, Vectors_height, it);
 		time_res = fopen(filename, "a");
 		fprintf(time_res, "%d, %d, %d, %f, %f, %f, %f\n", Vectors_width, Vectors_height, it, timeSpentCPU, timeSpent, timeSpentCPU/timeSpent, acc);
-		fclose(time_res);	
+		fclose(time_res);
+		printf("Benchmark results written to %s\n", filename);
 
 		for (int i=0; i<it; ++i) free(dataOut[i]);
 		free(dataOut);	
@@ -585,12 +585,12 @@ int main(int argc, char *argv[]) {
 		FILE* results;
 		FILE* paramsFile;
 
-		char filename[1024];
+		char filename[64];
 		snprintf(filename, sizeof(filename), "results_%dx%d_%d.csv", Vectors_width, Vectors_height, it);
 
 		results = fopen(filename, "wb");
 
-		char paramsFileName[1024];
+		char paramsFileName[64];
 		snprintf(paramsFileName, sizeof(paramsFileName), "params_%dx%d_%d.csv", Vectors_width, Vectors_height, it);
 
 		paramsFile = fopen(paramsFileName, "wb");
