@@ -194,7 +194,7 @@ class VectorsKernel extends Kernel {
 
 		//Output
 		//io.output("outData", getNewCellState(streamIn, x_cnt, y_cnt, width, height, burning, windDir, windStrength, maxRadius), dataType);
-		io.output("outData", x_cnt, dataType);
+		io.output("outData", x_cnt.cast(dataType), dataType);
 
 	}
 }
