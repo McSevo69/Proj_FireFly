@@ -193,7 +193,8 @@ class VectorsKernel extends Kernel {
 		DFEVar x_cnt = counterOne.getCount().cast(dfeUInt(addrBitsWidth)); 
 
 		//Output
-		io.output("outData", getNewCellState(streamIn, x_cnt, y_cnt, width, height, burning, windDir, windStrength, maxRadius), dataType);
+		//io.output("outData", getNewCellState(streamIn, x_cnt, y_cnt, width, height, burning, windDir, windStrength, maxRadius), dataType);
+		io.output("outData", x_cnt, dataType);
 
 	}
 }
