@@ -541,13 +541,13 @@ int main(int argc, char *argv[]) {
 	printf("Running DFE...\n");
 	int64_t *minValue = calloc(2, sizeof(int64_t));
 	int x = 0;
-	boolean convergedDFE = false;
+	bool convergedDFE = false;
 	gettimeofday(&begin, NULL);
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
 	Vectors(burning, Vectors_width*Vectors_height, paramsOut[0][0], paramsOut[0][1], dataBuffer, minValue, dataOutDFE[0]);
 	while (++x < it && convergedDFE == 0) {
-		if (!paramsGiven) manageParams(paramsOut[i-1], paramsOut[i], radius, wind, windChangeIntervall, i);
-		Vectors(burning, Vectors_width*Vectors_height, paramsOut[i][0], paramsOut[i][1], dataOutDFE[i-1], minValue, dataOutDFE[i]);
+		if (!paramsGiven) manageParams(paramsOut[x-1], paramsOut[x], radius, wind, windChangeIntervall, x);
+		Vectors(burning, Vectors_width*Vectors_height, paramsOut[x][0], paramsOut[x][1], dataOutDFE[x-1], minValue, dataOutDFE[x]);
 		if (minValue[1] >= -1) convergedDFE = true;
 	}
 	gettimeofday(&end, NULL);
@@ -565,8 +565,8 @@ int main(int argc, char *argv[]) {
 		for (int i=0; i<it; ++i) dataOut[i] = calloc(Vectors_width*Vectors_height, sizeof(dataType));
 
 		printf("Running CPU...\n");
-		boolean convergedCPU = 0;
-		int y = 0, minValueCPU = -10;
+		bool convergedCPU = 0;
+		int y = 0, minValueCPU = -2;
 		gettimeofday(&begin, NULL);
 		VectorsCPU(dataBuffer, dataOut[0], paramsOut[0], &minValueCPU);
 		while (++y < it && convergedCPU == 0) {
