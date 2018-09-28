@@ -31,7 +31,7 @@ float checkAccuracy(dataType** results, dataType** expected, int it) {
 
 	for (int i=0; i < it; ++i) {
 		for (int j=0; j < Vectors_width*Vectors_height; ++j) {
-			
+
 			if (results[i][j] != expected[i][j]) {
 				++errors;
 				//printf("it: %d, idx: %d, res: %i, exp: %i\n", i, j, results[i][j], expected[i][j]);
@@ -222,12 +222,12 @@ int getNewCellState(dataType* dataset, int x, int y, int width, int height, int 
 		else if (burnState > 1) return burning -1;
 		else return dataset[idx];
 	} else return (dataset[idx] < -1) ? dataset[idx] + 1 : dataset[idx];
-	
+
 }
 
-void transformInputImage(int* datasetIn, dataType* datasetOut, int width, int height) {	
+void transformInputImage(int* datasetIn, dataType* datasetOut, int width, int height) {
 	for (int i=0; i<width*height; ++i)
-		datasetOut[i] = getInflammability(datasetIn[i]);	
+		datasetOut[i] = getInflammability(datasetIn[i]);
 }
 
 /**
@@ -236,7 +236,7 @@ void transformInputImage(int* datasetIn, dataType* datasetOut, int width, int he
  *
  **/
 int getWindStrength(int prevWind, int itCnt, int windChangeIntervall) {
-	
+
 	if (itCnt % windChangeIntervall) {
 		return (prevWind == 0) ? 0 : prevWind;
 	} else {
@@ -300,7 +300,7 @@ int getWindDirection(int prevWindDir, int itCnt, int windChangeIntervall) {
 			case 7: return 0b1111;
 			default: return prevWindDir;
 		}
-	}	
+	}
 }
 
 void initParams(dataType** params, char* file, int iterations) {
@@ -319,11 +319,11 @@ void initParams(dataType** params, char* file, int iterations) {
 
 	x = -1;
 	while((line = fgets(buffer, sizeof(buffer), pstream)) !=NULL && ++x < iterations) {
-		y = -1;		
+		y = -1;
 		record = strtok(line, ",");
 		while(y++ < 2 && record != NULL) {
-			params[x][y] = strtoul(record, &ptr, 10);	
-			record = strtok(NULL, ",");		
+			params[x][y] = strtoul(record, &ptr, 10);
+			record = strtok(NULL, ",");
 		}
 	}
 
@@ -336,8 +336,8 @@ void manageParams(dataType* paramsIn, dataType* paramsOut, int windStrength,
 
 	enum compass wind = (windDir == -1) ? getWindDirection(paramsIn[0], itCnt, windChangeIntervall) : windDir;
 
-	int radius = (windStrength == 0) ? getWindStrength(paramsIn[1], itCnt, windChangeIntervall) : windStrength; //paramsIn are the previous settings	
-	
+	int radius = (windStrength == 0) ? getWindStrength(paramsIn[1], itCnt, windChangeIntervall) : windStrength; //paramsIn are the previous settings
+
 	paramsOut[0] = wind;
 	paramsOut[1] = radius;
 
@@ -400,7 +400,7 @@ int convertArgToInt(char * str) {
 	else if (strcmp ("--dry", str) == 0) return 7;
 	else if (strcmp ("-d", str) == 0) return 7;
 	else if (strcmp ("--standard", str) == 0) return 8;
-	else if (strcmp ("-s", str) == 0) return 8;	
+	else if (strcmp ("-s", str) == 0) return 8;
 	else if (strcmp ("--radius", str) == 0) return 9;
 	else if (strcmp ("-r", str) == 0) return 9;
 	else if (strcmp ("--wind", str) == 0) return 10;
@@ -530,35 +530,42 @@ int main(int argc, char *argv[]) {
 		int width = 0, height = 0;
 		loadImage(inPath, &dataIn, &width, &height, 0);
 		if (noiseDesired) makeItRealistic(dataIn, width, height, noiseRatio);
-		transformInputImage(dataIn, dataBuffer, width, height);	
+		transformInputImage(dataIn, dataBuffer, width, height);
 	}
 
 	if (burningOnes > 0) setSomeTreesOnFire(dataBuffer, Vectors_width*Vectors_height, burningOnes);
-	
+
 	printf("Running DFE...\n");
-	gettimeofday(&begin, NULL);	
+	dataType minValue = 0;
+	size_t convergedIt = 0;
+	gettimeofday(&begin, NULL);
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
-	Vectors(burning, Vectors_width*Vectors_height, paramsOut[0][0], paramsOut[0][1], dataBuffer, dataOutDFE[0]);
+	Vectors(burning, Vectors_width*Vectors_height, paramsOut[0][0], paramsOut[0][1], dataBuffer, &minValue, dataOutDFE[0]);
 	for (int i=1; i<it; ++i) {
 		if (!paramsGiven) manageParams(paramsOut[i-1], paramsOut[i], radius, wind, windChangeIntervall, i);
-		Vectors(burning, Vectors_width*Vectors_height, paramsOut[i][0], paramsOut[i][1], dataOutDFE[i-1], dataOutDFE[i]);
+		Vectors(burning, Vectors_width*Vectors_height, paramsOut[i][0], paramsOut[i][1], dataOutDFE[i-1], &minValue, dataOutDFE[i]);
+		if (minValue >= -1) {
+			convergedIt = i;
+			break;
+		}
 	}
 	gettimeofday(&end, NULL);
 	timeSpent += (end.tv_sec - begin.tv_sec) +
             ((end.tv_usec - begin.tv_usec)/1000000.0);
 	printf("Time DFE: %lf\n", timeSpent);
+	printf("minValue: %u, converged: %u\n", minValue, convergedIt);
 
 	if (benchmarkIt) {
 		dataType ** dataOut = malloc(it*sizeof(dataType*));
 		for (int i=0; i<it; ++i) dataOut[i] = calloc(Vectors_width*Vectors_height, sizeof(dataType));
 
 		printf("Running CPU...\n");
-		gettimeofday(&begin, NULL);		
+		gettimeofday(&begin, NULL);
 		VectorsCPU(dataBuffer, dataOut[0], paramsOut[0]);
 		for (int i=1; i<it; ++i) {
 			VectorsCPU(dataOut[i-1], dataOut[i], paramsOut[i]);
 		}
-			
+
 		gettimeofday(&end, NULL);
 		timeSpentCPU += (end.tv_sec - begin.tv_sec) +
 				((end.tv_usec - begin.tv_usec)/1000000.0);
@@ -577,7 +584,7 @@ int main(int argc, char *argv[]) {
 		printf("Benchmark results written to %s\n", filename);
 
 		for (int i=0; i<it; ++i) free(dataOut[i]);
-		free(dataOut);	
+		free(dataOut);
 	}
 
 	if (exportIt) {
