@@ -540,10 +540,10 @@ int main(int argc, char *argv[]) {
 	int convergedIt = 0;
 	gettimeofday(&begin, NULL);
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
-	Vectors(burning, Vectors_width*Vectors_height, paramsOut[0][0], paramsOut[0][1], dataBuffer, &minValue, dataOutDFE[0]);
+	Vectors(burning, Vectors_width*Vectors_height, paramsOut[0][0], paramsOut[0][1], dataBuffer, minValue, dataOutDFE[0]);
 	for (int i=1; i<it; ++i) {
 		if (!paramsGiven) manageParams(paramsOut[i-1], paramsOut[i], radius, wind, windChangeIntervall, i);
-		Vectors(burning, Vectors_width*Vectors_height, paramsOut[i][0], paramsOut[i][1], dataOutDFE[i-1], &minValue, dataOutDFE[i]);
+		Vectors(burning, Vectors_width*Vectors_height, paramsOut[i][0], paramsOut[i][1], dataOutDFE[i-1], minValue, dataOutDFE[i]);
 		if (minValue[1] >= -1) {
 			convergedIt = i;
 			break;
