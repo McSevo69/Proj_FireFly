@@ -553,7 +553,7 @@ int main(int argc, char *argv[]) {
 	timeSpent += (end.tv_sec - begin.tv_sec) +
             ((end.tv_usec - begin.tv_usec)/1000000.0);
 	printf("Time DFE: %lf\n", timeSpent);
-	printf("minValue: " PRId64 " and " PRId64 ", converged: %d\n", minValue[0], minValue[1]; convergedIt);
+	printf("minValue: %d and %d, converged: %d\n", (int) minValue[0], (int) minValue[1], convergedIt);
 
 	if (benchmarkIt) {
 		dataType ** dataOut = malloc(it*sizeof(dataType*));
