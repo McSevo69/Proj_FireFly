@@ -184,7 +184,7 @@ class VectorsKernel extends Kernel {
 
 		//Output
 		io.output("outData", outputData, dataType);
-		io.output("minValue", minValue, dfeInt(64), y_cnt === height-1 & x_cnt >= width-2);
+		io.output("minValue", minValue.cast(dfeInt(64)), dfeInt(64), y_cnt === height-1 & x_cnt >= width-2);
 
 	}
 }
