@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <stdbool.h>
+#include <limits.h>
 #include "Maxfiles.h"
 #include <MaxSLiCInterface.h>
 
@@ -343,11 +344,13 @@ void manageParams(dataType* paramsIn, dataType* paramsOut, int windStrength,
 
 }
 
-void VectorsCPU(dataType *dataIn, dataType *dataOut, dataType* paramsIn) {
+void VectorsCPU(dataType *dataIn, dataType *dataOut, dataType* paramsIn, int minValue) {
+	minValue = INT_MAX;
 	for (int y = 0; y < Vectors_height; ++y) {
 		for (int x = 0; x < Vectors_width; ++x) {
 			int idx = y*Vectors_width+x;
 			dataOut[idx] = getNewCellState(dataIn, x, y, Vectors_width, Vectors_height, paramsIn[1], paramsIn[0]);
+			if (dataOut[idx] < minValue) minValue = dataOut[idx];
 		}
 	}
 }
@@ -537,40 +540,46 @@ int main(int argc, char *argv[]) {
 
 	printf("Running DFE...\n");
 	int64_t *minValue = calloc(2, sizeof(int64_t));
-	int convergedIt = 0;
+	int x = 0;
+	boolean convergedDFE = false;
 	gettimeofday(&begin, NULL);
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
 	Vectors(burning, Vectors_width*Vectors_height, paramsOut[0][0], paramsOut[0][1], dataBuffer, minValue, dataOutDFE[0]);
-	for (int i=1; i<it; ++i) {
+	while (++x < it && convergedDFE == 0) {
 		if (!paramsGiven) manageParams(paramsOut[i-1], paramsOut[i], radius, wind, windChangeIntervall, i);
 		Vectors(burning, Vectors_width*Vectors_height, paramsOut[i][0], paramsOut[i][1], dataOutDFE[i-1], minValue, dataOutDFE[i]);
-		if (minValue[1] >= -1) {
-			convergedIt = i;
-			break;
-		}
+		if (minValue[1] >= -1) convergedDFE = true;
 	}
 	gettimeofday(&end, NULL);
+
 	timeSpent += (end.tv_sec - begin.tv_sec) +
             ((end.tv_usec - begin.tv_usec)/1000000.0);
 	printf("Time DFE: %lf\n", timeSpent);
-	printf("minValue: %d and %d, converged: %d\n", (int) minValue[0], (int) minValue[1], convergedIt);
 	free(minValue);
-	
+
+	if (convergedDFE) printf("Converged after %d iterations\n", x);
+	else printf("Hasn't converged after %d iterations\n", x);
+
 	if (benchmarkIt) {
 		dataType ** dataOut = malloc(it*sizeof(dataType*));
 		for (int i=0; i<it; ++i) dataOut[i] = calloc(Vectors_width*Vectors_height, sizeof(dataType));
 
 		printf("Running CPU...\n");
+		boolean convergedCPU = 0;
+		int y = 0, minValueCPU = -10;
 		gettimeofday(&begin, NULL);
-		VectorsCPU(dataBuffer, dataOut[0], paramsOut[0]);
-		for (int i=1; i<it; ++i) {
-			VectorsCPU(dataOut[i-1], dataOut[i], paramsOut[i]);
+		VectorsCPU(dataBuffer, dataOut[0], paramsOut[0], &minValueCPU);
+		while (++y < it && convergedCPU == 0) {
+			VectorsCPU(dataOut[y-1], dataOut[y], paramsOut[y], &minValueCPU);
+			if (minValueCPU >= -1) convergedCPU = true;
 		}
-
 		gettimeofday(&end, NULL);
 		timeSpentCPU += (end.tv_sec - begin.tv_sec) +
 				((end.tv_usec - begin.tv_usec)/1000000.0);
 		printf("Time CPU: %lf\n", timeSpentCPU);
+
+		if (convergedCPU) printf("Converged after %d iterations\n", y);
+		else printf("Hasn't converged after %d iterations\n", y);
 
 		float acc = checkAccuracy(dataOutDFE, dataOut, it);
 		printf("The accuracy measured is: %f\n", acc);
