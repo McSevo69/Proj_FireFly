@@ -181,10 +181,10 @@ class VectorsKernel extends Kernel {
 
 		DFEVar outputData = getNewCellState(streamIn, x_cnt, y_cnt, width, height, burning, windDir, windStrength, maxRadius);
 		DFEVar minValue = Reductions.streamMin(outputData);
-		
+
 		//Output
 		io.output("outData", outputData, dataType);
-		io.output("minValue", minValue, dataType, y_cnt === height-1 & x_cnt === width-1);
+		io.output("minValue", minValue, dfeInt(64), y_cnt === height-1 & x_cnt => width-2);
 
 	}
 }
