@@ -11,6 +11,7 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Counter;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Params;
 //import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVector;
 //import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVectorType;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.Reductions;
 
 class VectorsKernel extends Kernel {
 
@@ -28,7 +29,7 @@ class VectorsKernel extends Kernel {
 
 		//cross around center cell -> 4*r
 		for (int i=1; i <= maxRadius; ++i) {
-			neighbors[centeredIdx-i*neighWidth] = ((y - i) < 0 | i > radius) ? constant.var(dataType, 1) 
+			neighbors[centeredIdx-i*neighWidth] = ((y - i) < 0 | i > radius) ? constant.var(dataType, 1)
 					: stream.offset(streamIn, -i*width); //above
 			neighbors[centeredIdx+i*neighWidth] = ((y + i) >= height | i > radius) ? constant.var(dataType, 1)
 					: stream.offset(streamIn, +i*width); //below
@@ -62,8 +63,8 @@ class VectorsKernel extends Kernel {
 		int moveLeftRight = (int) Math.pow(-1, (windDir & 3) >> 1) * (windDir & 1);
 
 		int centerCell = ((2*maxRadius+1)*(2*maxRadius+1)-1)/2;
-		
-		DFEVar cnt = constant.var(dataType, 0);		
+
+		DFEVar cnt = constant.var(dataType, 0);
 
 		if (windDir % 2 == 0) { //vertical
 			for (int i = 2; i <= maxRadius; i++)
@@ -103,7 +104,7 @@ class VectorsKernel extends Kernel {
 	}
 
 	DFEVar willBurnDueToWind(DFEVar[] neighborhood, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
-		
+
 		//this is like transforming DFEVar to int
 		return control.mux(wind.cast(dfeUInt(4)), getWindResult(neighborhood, x, y, radius, maxRadius, 0), getWindResult(neighborhood, x, y, radius, maxRadius, 1),
 			getWindResult(neighborhood, x, y, radius, maxRadius, 2), getWindResult(neighborhood, x, y, radius, maxRadius, 3),
@@ -112,7 +113,7 @@ class VectorsKernel extends Kernel {
 			getWindResult(neighborhood, x, y, radius, maxRadius, 8), getWindResult(neighborhood, x, y, radius, maxRadius, 9),
 			getWindResult(neighborhood, x, y, radius, maxRadius, 10), getWindResult(neighborhood, x, y, radius, maxRadius, 11),
 			getWindResult(neighborhood, x, y, radius, maxRadius, 12), getWindResult(neighborhood, x, y, radius, maxRadius, 13),
-			getWindResult(neighborhood, x, y, radius, maxRadius, 14), getWindResult(neighborhood, x, y, radius, maxRadius, 15));		
+			getWindResult(neighborhood, x, y, radius, maxRadius, 14), getWindResult(neighborhood, x, y, radius, maxRadius, 15));
 	}
 
 	DFEVar hasBurningNeighbors(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
@@ -131,21 +132,21 @@ class VectorsKernel extends Kernel {
 		cnt += (neighborhood[centerCell-1] < -1) ? constant.var(dataType, 1) : 0;
 		cnt += (neighborhood[centerCell-neighWidth-1] < -1) ? constant.var(dataType, 1) : 0;
 
-		return (cnt > 6) ? constant.var(dataType, -1) : ((cnt > 0 | radius < 2 | (wind & 5) === 0) ? 
+		return (cnt > 6) ? constant.var(dataType, -1) : ((cnt > 0 | radius < 2 | (wind & 5) === 0) ?
 			cnt : willBurnDueToWind(neighborhood, x, y, width, height, wind, radius, maxRadius));
 	}
 
 	DFEVar getNewCellState(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar burning, DFEVar wind, DFEVar radius, int maxRadius) {
-		
+
 		DFEVar burnState = hasBurningNeighbors(streamIn, x, y, width, height, wind, radius, maxRadius);
 
 		DFEVar resultDry = (burnState === -1 | burnState > 0) ? burning + 1 : streamIn;
 		DFEVar resultNormal = (burnState === -1) ? burning + 1 : ((burnState > 1) ? burning -1 : streamIn);
 
 		DFEVar inState = (streamIn > 2) ? constant.var(dfeUInt(2), 0) :
-			((streamIn > 0) ? constant.var(dfeUInt(2), 1) : ((streamIn >= -1) ? constant.var(dfeUInt(2), 2) : constant.var(dfeUInt(2), 3)));	
+			((streamIn > 0) ? constant.var(dfeUInt(2), 1) : ((streamIn >= -1) ? constant.var(dfeUInt(2), 2) : constant.var(dfeUInt(2), 3)));
 
-		return control.mux(inState, resultDry, resultNormal, streamIn, streamIn + 1);	
+		return control.mux(inState, resultDry, resultNormal, streamIn, streamIn + 1);
 	}
 
 	VectorsKernel(KernelParameters parameters, int width, int height, int maxRadius) {
@@ -158,20 +159,6 @@ class VectorsKernel extends Kernel {
 		DFEVar windStrength = io.scalarInput("windStrength", dataType);
 		DFEVar burning = io.scalarInput("burningState", dataType);
 
-		/*DFEVectorType<DFEVar> vectorType = new DFEVectorType<DFEVar>(dataType, vectorOutSize);
-
-		DFEVector<DFEVar> outVec = vectorType.newInstance(this);
-
-		Memory<DFEStruct> reverseRam = mem.alloc(points, maxN);
-
-		reverseRam.write(addressCounter.getCount().cast(dfeUInt(addrBits)), refPoint, readingInput);
-
-		for (int i=0; i<vectorOutSize; i++) {				
-			outVec[i] <== (readingInput | j_cnt+i < i_cnt) ? constant.var(dataType, 0) : 
-					getEuclidianDistance(reverseRam.read(i_cnt),
-					reverseRam.read(j_cnt+i));
-		}*/
-
 		int addrBitsWidth = MathUtils.bitsToAddress(width);
 		int addrBitsHeight = MathUtils.bitsToAddress(height);
 
@@ -181,7 +168,7 @@ class VectorsKernel extends Kernel {
 		.withMax(width);
 
 		Counter counterOne = control.count.makeCounter(paramsOne);
-		
+
 		Params paramsTwo = control.count.makeParams(addrBitsHeight)
 		.withEnable(counterOne.getWrap())
 		.withWrapMode(WrapMode.COUNT_LT_MAX_THEN_WRAP)
@@ -189,11 +176,15 @@ class VectorsKernel extends Kernel {
 
 		Counter counterTwo = control.count.makeCounter(paramsTwo);
 
-		DFEVar y_cnt = counterTwo.getCount().cast(dfeInt(addrBitsHeight+3));		
-		DFEVar x_cnt = counterOne.getCount().cast(dfeInt(addrBitsWidth+3)); 
+		DFEVar y_cnt = counterTwo.getCount().cast(dfeInt(addrBitsHeight+3));
+		DFEVar x_cnt = counterOne.getCount().cast(dfeInt(addrBitsWidth+3));
 
+		DFEVar outputData = getNewCellState(streamIn, x_cnt, y_cnt, width, height, burning, windDir, windStrength, maxRadius);
+		DFEVar minValue = Reductions.streamMin(outputData);
+		
 		//Output
-		io.output("outData", getNewCellState(streamIn, x_cnt, y_cnt, width, height, burning, windDir, windStrength, maxRadius), dataType);
+		io.output("outData", outputData, dataType);
+		io.output("minValue", minValue, dataType, y_cnt === height-1 & x_cnt === width-1);
 
 	}
 }
