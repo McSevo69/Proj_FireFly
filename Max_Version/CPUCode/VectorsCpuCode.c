@@ -344,7 +344,7 @@ void manageParams(dataType* paramsIn, dataType* paramsOut, int windStrength,
 
 }
 
-void VectorsCPU(dataType *dataIn, dataType *dataOut, dataType* paramsIn, int minValue) {
+void VectorsCPU(dataType *dataIn, dataType *dataOut, dataType* paramsIn, int *minValue) {
 	minValue = INT_MAX;
 	for (int y = 0; y < Vectors_height; ++y) {
 		for (int x = 0; x < Vectors_width; ++x) {
@@ -565,7 +565,7 @@ int main(int argc, char *argv[]) {
 		for (int i=0; i<it; ++i) dataOut[i] = calloc(Vectors_width*Vectors_height, sizeof(dataType));
 
 		printf("Running CPU...\n");
-		bool convergedCPU = 0;
+		bool convergedCPU = false;
 		int y = 0, minValueCPU = -2;
 		gettimeofday(&begin, NULL);
 		VectorsCPU(dataBuffer, dataOut[0], paramsOut[0], &minValueCPU);
