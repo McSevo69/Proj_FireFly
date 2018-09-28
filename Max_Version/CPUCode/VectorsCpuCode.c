@@ -536,7 +536,7 @@ int main(int argc, char *argv[]) {
 	if (burningOnes > 0) setSomeTreesOnFire(dataBuffer, Vectors_width*Vectors_height, burningOnes);
 
 	printf("Running DFE...\n");
-	int64_t *minValue;
+	int64_t *minValue = calloc(2, sizeof(int64_t));
 	int convergedIt = 0;
 	gettimeofday(&begin, NULL);
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
@@ -554,7 +554,8 @@ int main(int argc, char *argv[]) {
             ((end.tv_usec - begin.tv_usec)/1000000.0);
 	printf("Time DFE: %lf\n", timeSpent);
 	printf("minValue: %d and %d, converged: %d\n", (int) minValue[0], (int) minValue[1], convergedIt);
-
+	free(minValue);
+	
 	if (benchmarkIt) {
 		dataType ** dataOut = malloc(it*sizeof(dataType*));
 		for (int i=0; i<it; ++i) dataOut[i] = calloc(Vectors_width*Vectors_height, sizeof(dataType));
