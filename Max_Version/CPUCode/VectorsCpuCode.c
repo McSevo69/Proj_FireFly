@@ -602,13 +602,15 @@ int main(int argc, char *argv[]) {
 		FILE* results;
 		FILE* paramsFile;
 
+		int calculatedIts = (x < it) ? x : it;
+
 		char filename[64];
-		snprintf(filename, sizeof(filename), "results_%dx%d_%d.csv", Vectors_width, Vectors_height, it);
+		snprintf(filename, sizeof(filename), "results_%dx%d_%d.csv", Vectors_width, Vectors_height, calculatedIts);
 
 		results = fopen(filename, "wb");
 
 		char paramsFileName[64];
-		snprintf(paramsFileName, sizeof(paramsFileName), "params_%dx%d_%d.csv", Vectors_width, Vectors_height, it);
+		snprintf(paramsFileName, sizeof(paramsFileName), "params_%dx%d_%d.csv", Vectors_width, Vectors_height, calculatedIts);
 
 		paramsFile = fopen(paramsFileName, "wb");
 
@@ -633,7 +635,7 @@ int main(int argc, char *argv[]) {
 		else fprintf(results, " \n");
 		imageBuffer[Vectors_width*Vectors_height-1] = dataOutDFE[0][Vectors_width*Vectors_height-1];
 
-		for(int j = 1; j < it; ++j) {
+		for(int j = 1; j < calculatedIts; ++j) {
 			for(int i = 0; i < Vectors_width*Vectors_height-1; ++i) {
 				if (imageBuffer[i] != dataOutDFE[j][i] && imageBuffer != 0) {
 					fprintf(results, "%i,", dataOutDFE[j][i]);
