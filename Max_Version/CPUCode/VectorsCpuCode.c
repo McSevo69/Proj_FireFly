@@ -536,15 +536,15 @@ int main(int argc, char *argv[]) {
 	if (burningOnes > 0) setSomeTreesOnFire(dataBuffer, Vectors_width*Vectors_height, burningOnes);
 
 	printf("Running DFE...\n");
-	int64_t minValue = 0;
-	size_t convergedIt = 0;
+	int64_t minValue[2];
+	int convergedIt = 0;
 	gettimeofday(&begin, NULL);
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
 	Vectors(burning, Vectors_width*Vectors_height, paramsOut[0][0], paramsOut[0][1], dataBuffer, &minValue, dataOutDFE[0]);
 	for (int i=1; i<it; ++i) {
 		if (!paramsGiven) manageParams(paramsOut[i-1], paramsOut[i], radius, wind, windChangeIntervall, i);
 		Vectors(burning, Vectors_width*Vectors_height, paramsOut[i][0], paramsOut[i][1], dataOutDFE[i-1], &minValue, dataOutDFE[i]);
-		if (minValue >= -1) {
+		if (minValue[1] >= -1) {
 			convergedIt = i;
 			break;
 		}
@@ -553,7 +553,7 @@ int main(int argc, char *argv[]) {
 	timeSpent += (end.tv_sec - begin.tv_sec) +
             ((end.tv_usec - begin.tv_usec)/1000000.0);
 	printf("Time DFE: %lf\n", timeSpent);
-	printf("minValue: %u, converged: %u\n", minValue, convergedIt);
+	printf("minValue: %d and %d, converged: %d\n", minValue[0], minValue[1]; convergedIt);
 
 	if (benchmarkIt) {
 		dataType ** dataOut = malloc(it*sizeof(dataType*));
