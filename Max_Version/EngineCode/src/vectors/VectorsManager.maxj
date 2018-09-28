@@ -39,7 +39,7 @@ class VectorsManager extends CustomManager {
 
 		ei.setStream("inData", CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes());
 		ei.setStream("outData", CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes());
-		ei.setStream("minValue", CPUTypes.INT64, 2*CPUTypes.INT8.sizeInBytes());
+		ei.setStream("minValue", CPUTypes.INT64, 2*CPUTypes.INT64.sizeInBytes());
 
 		return ei;
 
