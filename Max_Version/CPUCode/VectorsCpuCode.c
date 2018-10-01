@@ -544,10 +544,10 @@ int main(int argc, char *argv[]) {
 	bool convergedDFE = false;
 	gettimeofday(&begin, NULL);
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
-	Vectors(burning, Vectors_width*Vectors_height, paramsOut[0][0], paramsOut[0][1], dataBuffer, &minValue, dataOutDFE[0]);
+	Vectors(burning, Vectors_width*Vectors_height, paramsOut[0][0], paramsOut[0][1], &minValue, dataBuffer, dataOutDFE[0]);
 	while (++x < it && convergedDFE == 0) {
 		if (!paramsGiven) manageParams(paramsOut[x-1], paramsOut[x], radius, wind, windChangeIntervall, x);
-		Vectors(burning, Vectors_width*Vectors_height, paramsOut[x][0], paramsOut[x][1], dataOutDFE[x-1], &minValue, dataOutDFE[x]);
+		Vectors(burning, Vectors_width*Vectors_height, paramsOut[x][0], paramsOut[x][1], &minValue, dataOutDFE[x-1], dataOutDFE[x]);
 		if (minValue >= -1) convergedDFE = true;
 	}
 	gettimeofday(&end, NULL);
