@@ -660,7 +660,7 @@ int main(int argc, char *argv[]) {
 
 	free(dataIn);
 	free(dataBuffer);
-	for (int i=0; i<x; ++i) free(dataOutDFE[i]);
+	for (int i=0; i<it; ++i) free(dataOutDFE[i]);
 	free(dataOutDFE);
 
 	for (int i=0; i<it; ++i) free(paramsOut[i]);
