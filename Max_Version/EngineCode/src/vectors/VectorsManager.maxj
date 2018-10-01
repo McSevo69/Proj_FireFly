@@ -19,7 +19,7 @@ class VectorsManager extends CustomManager {
 
 		kernel.getInput("inData") <== addStreamFromCPU("inData");
 		addStreamToCPU("outData") <== kernel.getOutput("outData");
-		addStreamToCPU("minValue") <== kernel.getOutput("minValue");
+		//addStreamToCPU("minValue") <== kernel.getOutput("minValue");
 	}
 
 	static EngineInterface interfaceDefault() {
