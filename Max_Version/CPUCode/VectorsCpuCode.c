@@ -556,7 +556,7 @@ int main(int argc, char *argv[]) {
 	timeSpent += (end.tv_sec - begin.tv_sec) +
             ((end.tv_usec - begin.tv_usec)/1000000.0);
 	printf("Time DFE: %lf\n", timeSpent);
-	free(minValue);
+	//free(minValue);
 
 	if (convergedDFE) printf("Converged after %d iterations\n", x);
 	else printf("Hasn't converged after %d iterations\n", x);
