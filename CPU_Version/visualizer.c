@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
 #include <math.h>
@@ -191,7 +192,10 @@ void startVisualisationFromFile(char* fileName) {
 	char buffer[8000000];
 	char* ptr;
 
-	char *record,*line;
+	size_t bytesRead;
+	size_t nBytes = (width*height*2+1)*sizeof(char);
+
+	char *record, *line = malloc(nBytes+1);
 	int x = -2, y = -1, numBuf = 0;
 	
 	int* dataIn = calloc(width*height, sizeof(int));
@@ -201,7 +205,7 @@ void startVisualisationFromFile(char* fileName) {
 	dataType ** paramsOut = (dataType **) malloc(it*sizeof(dataType*));
 	for (int i=0; i<it; ++i) paramsOut[i] = calloc(2, sizeof(dataType));
 
-	while((line = fgets(buffer, sizeof(buffer), fstream)) !=NULL && ++x < it) {
+	while((bytesRead = getline(&line, &nBytes, fstream)) >= 0 && ++x < it) {
 		y = -1;		
 		record = strtok(line, ",");
 
@@ -215,6 +219,7 @@ void startVisualisationFromFile(char* fileName) {
 	}
 
 	fclose(fstream);
+	free(line);
 	printf("Results file loading successful...\n");
 
 	char paramsFileName[1024];

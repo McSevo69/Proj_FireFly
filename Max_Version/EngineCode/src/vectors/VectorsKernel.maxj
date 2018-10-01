@@ -4,7 +4,6 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
 import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEType;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
-//import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
 import com.maxeler.maxcompiler.v2.utils.MathUtils;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.WrapMode;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Counter;
@@ -184,7 +183,7 @@ class VectorsKernel extends Kernel {
 
 		//Output
 		io.output("outData", outputData, dataType);
-		io.output("minValue", minValue.cast(dfeInt(64)), dfeInt(64), y_cnt === height-1 & x_cnt >= width-2);
+		io.output("minValue", minValue.cast(dfeInt(128)), dfeInt(128), y_cnt === height-1 & x_cnt >= width-1);
 
 	}
 }
