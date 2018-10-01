@@ -30,7 +30,7 @@ class VectorsManager extends CustomManager {
 		InterfaceParam windDir = ei.addParam("windDir", CPUTypes.INT8);
 		InterfaceParam windStrength = ei.addParam("windStrength", CPUTypes.INT8);
 		InterfaceParam burningState = ei.addParam("burningState", CPUTypes.INT8);
-		InterfaceParam minValue = ei.addParam("burningState", CPUTypes.INT8);
+		InterfaceParam minValue = ei.addParam("minValue", CPUTypes.INT8);
 
 		ei.setTicks("ForestFire", size);
 
