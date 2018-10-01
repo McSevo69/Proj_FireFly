@@ -539,8 +539,7 @@ int main(int argc, char *argv[]) {
 	if (burningOnes > 0) setSomeTreesOnFire(dataBuffer, Vectors_width*Vectors_height, burningOnes);
 
 	printf("Running DFE...\n");
-	//int64_t *minValue = calloc(2, sizeof(int64_t));
-	int64_t minValue;
+	int64_t minValue = -2;
 	int x = 0;
 	bool convergedDFE = false;
 	gettimeofday(&begin, NULL);
@@ -556,7 +555,6 @@ int main(int argc, char *argv[]) {
 	timeSpent += (end.tv_sec - begin.tv_sec) +
             ((end.tv_usec - begin.tv_usec)/1000000.0);
 	printf("Time DFE: %lf\n", timeSpent);
-	//free(minValue);
 
 	if (convergedDFE) printf("Converged after %d iterations\n", x);
 	else printf("Hasn't converged after %d iterations\n", x);
@@ -662,7 +660,7 @@ int main(int argc, char *argv[]) {
 
 	free(dataIn);
 	free(dataBuffer);
-	for (int i=0; i<it; ++i) free(dataOutDFE[i]);
+	for (int i=0; i<x; ++i) free(dataOutDFE[i]);
 	free(dataOutDFE);
 
 	for (int i=0; i<it; ++i) free(paramsOut[i]);
