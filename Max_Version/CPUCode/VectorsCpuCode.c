@@ -539,7 +539,7 @@ int main(int argc, char *argv[]) {
 	if (burningOnes > 0) setSomeTreesOnFire(dataBuffer, Vectors_width*Vectors_height, burningOnes);
 
 	printf("Running DFE...\n");
-	int64_t minValue = -2;
+	dataType minValue = -2;
 	int x = 0;
 	bool convergedDFE = false;
 	gettimeofday(&begin, NULL);
