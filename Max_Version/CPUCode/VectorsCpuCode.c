@@ -34,11 +34,10 @@ float checkAccuracy(dataType** results, dataType** expected, int itRes, int itEx
 	int expItIdx, resItIdx;
 
 	for (int i=0; i < maxIt; ++i) {
+		expItIdx = (i < itExp) ? i : itExp - 1;
+		resItIdx = (i < itRes) ? i : itRes - 1;
+		printf("expIdx: %d, resIdx: %d\n", expItIdx, resItIdx);
 		for (int j=0; j < Vectors_width*Vectors_height; ++j) {
-			expItIdx = (i < itExp) ? i : itExp - 1;
-			resItIdx = (i < itRes) ? i : itRes - 1;
-			printf("expIdx: %d, resIdx: %d\n", expItIdx, resItIdx);
-
 			if (results[resItIdx][j] != expected[expItIdx][j])
 				++errors;
 		}
