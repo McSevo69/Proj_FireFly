@@ -166,7 +166,7 @@ class VectorsKernel extends Kernel {
 		// Counters
 		Params paramsOne = control.count.makeParams(addrBitsWidth)
 		.withWrapMode(WrapMode.COUNT_LT_MAX_THEN_WRAP)
-		.withInc(vectorOutSize)
+		.withInc(chunkSize)
 		.withMax(width);
 
 		Counter counterOne = control.count.makeCounter(paramsOne);
