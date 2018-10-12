@@ -56,14 +56,14 @@ void startVisualisation(int width, int height, int iterations, int* dataIn, data
 
 	SDL_Window* Main_Window;
 	SDL_Renderer* Main_Renderer;
-	
+
 	SDL_Texture *windImg = NULL;
-	SDL_Rect texr; texr.x = width-100; texr.y = 20; texr.w = 80; texr.h = 80; 
+	SDL_Rect texr; texr.x = width-100; texr.y = 20; texr.w = 80; texr.h = 80;
 
 	/* Before we can render anything, we need a window and a renderer */
 	Main_Window = SDL_CreateWindow("Forest-fire model",
 	SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width * SHAPE_SIZE, height * SHAPE_SIZE, 0);
-	Main_Renderer = SDL_CreateRenderer(Main_Window, -1, SDL_RENDERER_ACCELERATED);	
+	Main_Renderer = SDL_CreateRenderer(Main_Window, -1, SDL_RENDERER_ACCELERATED);
 
 	SDL_RenderClear(Main_Renderer);
 
@@ -79,9 +79,9 @@ void startVisualisation(int width, int height, int iterations, int* dataIn, data
 	for (int j=0; j<height; ++j) {
 		for (int k=0; k<width; ++k) {
 			colorToDraw = dataIn[j*width+k];
-			SDL_SetRenderDrawColor(Main_Renderer, colorToDraw >> 16, (colorToDraw >> 8) & 0xFF, colorToDraw & 0xFF, 255);	
+			SDL_SetRenderDrawColor(Main_Renderer, colorToDraw >> 16, (colorToDraw >> 8) & 0xFF, colorToDraw & 0xFF, 255);
 			SDL_RenderDrawPoint(Main_Renderer, k, j);
-			image[idx] = colorToDraw;			
+			image[idx] = colorToDraw;
 		}
 	}
 
@@ -112,7 +112,7 @@ void startVisualisation(int width, int height, int iterations, int* dataIn, data
 					image[idx] = colorToDraw;
 				}
 			}
-}
+		}
 
 		windPower = paramsOut[it][1];
 		windDir = paramsOut[it][0];
@@ -124,12 +124,12 @@ void startVisualisation(int width, int height, int iterations, int* dataIn, data
 		} else {
 			windImg = IMG_LoadTexture(Main_Renderer, NOWIND_PATH);
 			SDL_RenderCopy(Main_Renderer, windImg, NULL, &texr);
-		}		
+		}
 
 		if (windPower > 1 && windGoes) {
 			windImg = IMG_LoadTexture(Main_Renderer, getWindDirPath(windDir));
 			SDL_RenderCopy(Main_Renderer, windImg, NULL, &texr);
-		}		
+		}
 
 		SDL_RenderPresent(Main_Renderer);
 
@@ -143,7 +143,7 @@ void startVisualisation(int width, int height, int iterations, int* dataIn, data
 			SDL_Event event;
 			SDL_PollEvent( &event );
 			SDL_Delay(1);
-		}		
+		}
 	}
 
 	char ch;
@@ -153,7 +153,7 @@ void startVisualisation(int width, int height, int iterations, int* dataIn, data
 
 	while(1) {
 		ch = fgetc(stdin);
-		if(ch==0x0A) break;	
+		if(ch==0x0A) break;
 	};
 
 	free(image);
@@ -166,10 +166,10 @@ void startVisualisation(int width, int height, int iterations, int* dataIn, data
 }
 
 void startVisualisationFromFile(char* fileName) {
-	
+
 	//File must be opened before strtok operations are done
 	FILE* fstream = fopen(fileName, "r");
-	
+
 	if(fstream == NULL) {
 		printf("ERROR: file opening failed.\n");
 		return;
@@ -197,7 +197,7 @@ void startVisualisationFromFile(char* fileName) {
 
 	char *record, *line = malloc(nBytes+1);
 	int x = -2, y = -1, numBuf = 0;
-	
+
 	int* dataIn = calloc(width*height, sizeof(int));
 	dataType ** dataOut = (dataType **) malloc(it*sizeof(dataType*));
 	for (int i=0; i<it; ++i) dataOut[i] = calloc(width*height, sizeof(dataType));
@@ -206,15 +206,15 @@ void startVisualisationFromFile(char* fileName) {
 	for (int i=0; i<it; ++i) paramsOut[i] = calloc(2, sizeof(dataType));
 
 	while((bytesRead = getline(&line, &nBytes, fstream)) >= 0 && ++x < it) {
-		y = -1;		
+		y = -1;
 		record = strtok(line, ",");
 
 		while(++y < width*height && record != NULL) {
 			numBuf = strtoul(record, &ptr, 10);
 			if (x > -1) dataOut[x][y] = (numBuf < 0) ? (dataType) numBuf : 0;
 			else dataIn[y] = numBuf;
-							
-			record = strtok(NULL, ",");			
+
+			record = strtok(NULL, ",");
 		}
 	}
 
@@ -227,23 +227,23 @@ void startVisualisationFromFile(char* fileName) {
 
 	//Params file
 	FILE* pstream = fopen(paramsFileName, "r");
-	
+
 	if(pstream == NULL) {
 		printf("WARNING: Could not open params file.\n");
 	} else {
 		x = -1;
 		while((line = fgets(buffer, sizeof(buffer), pstream)) !=NULL && ++x < it) {
-			y = -1;		
+			y = -1;
 			record = strtok(line, ",");
 			while(++y < 2 && record != NULL) {
-				paramsOut[x][y] = strtoul(record, &ptr, 10);	
-				record = strtok(NULL, ",");		
+				paramsOut[x][y] = strtoul(record, &ptr, 10);
+				record = strtok(NULL, ",");
 			}
 		}
 
 		fclose(pstream);
 		printf("Params file loading successful...\n");
-	}	
+	}
 
 	startVisualisation(width, height, it, dataIn, dataOut, paramsOut);
 

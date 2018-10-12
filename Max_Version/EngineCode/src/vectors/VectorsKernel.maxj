@@ -9,6 +9,8 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.WrapMode;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Counter;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Params;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.Reductions;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVector;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVectorType;
 
 class VectorsKernel extends Kernel {
 
@@ -146,11 +148,13 @@ class VectorsKernel extends Kernel {
 		return control.mux(inState, resultDry, resultNormal, streamIn, streamIn + 1);
 	}
 
-	VectorsKernel(KernelParameters parameters, int width, int height, int maxRadius) {
+	VectorsKernel(KernelParameters parameters, int width, int height, int maxRadius, int chunkSize) {
 		super(parameters);
 
+		DFEVectorType<DFEVar> vectorType = new DFEVectorType<DFEVar>(dataType, chunkSize);
+
 		// Input
-		DFEVar streamIn = io.input("inData", dataType);
+		DFEVector<DFEVar> streamIn = io.input("inData", vectorType);
 
 		DFEVar windDir = io.scalarInput("windDir", dataType);
 		DFEVar windStrength = io.scalarInput("windStrength", dataType);
@@ -162,6 +166,7 @@ class VectorsKernel extends Kernel {
 		// Counters
 		Params paramsOne = control.count.makeParams(addrBitsWidth)
 		.withWrapMode(WrapMode.COUNT_LT_MAX_THEN_WRAP)
+		.withInc(vectorOutSize)
 		.withMax(width);
 
 		Counter counterOne = control.count.makeCounter(paramsOne);
@@ -176,11 +181,15 @@ class VectorsKernel extends Kernel {
 		DFEVar y_cnt = counterTwo.getCount().cast(dfeInt(addrBitsHeight+3));
 		DFEVar x_cnt = counterOne.getCount().cast(dfeInt(addrBitsWidth+3));
 
-		DFEVar outputData = getNewCellState(streamIn, x_cnt, y_cnt, width, height, burning, windDir, windStrength, maxRadius);
-		DFEVar minValue = Reductions.streamMin(outputData);
+		DFEVector<DFEVar> outVec = vectorType.newInstance(this);
+
+		for (int i=0; i<chunkSize; ++i)
+			outVec[i] <== getNewCellState(streamIn, x_cnt + i, y_cnt, width, height, burning, windDir, windStrength, maxRadius);
+
+		DFEVar minValue = Reductions.streamMin(outVec);
 
 		//Output
-		io.output("outData", outputData, dataType);
+		io.output("outData", outVec, vectorType);
 		io.scalarOutput("minValue", minValue, dataType, y_cnt === height-1 & x_cnt >= width-1);
 	}
 }

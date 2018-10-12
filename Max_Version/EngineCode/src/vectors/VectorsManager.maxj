@@ -10,7 +10,7 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.KernelConfiguration;
 
 class VectorsManager extends CustomManager {
 
-	private static int width = 1920, height = 1080, maxRadius = 4;
+	private static int width = 1920, height = 1080, maxRadius = 4, chunkSize = 8;
 
 	VectorsManager(EngineParameters engineParameters) {
 		super(engineParameters);
@@ -31,7 +31,7 @@ class VectorsManager extends CustomManager {
 		InterfaceParam burningState = ei.addParam("burningState", CPUTypes.INT8);
 		InterfaceParam minValue = ei.addParam("minValue", CPUTypes.INT8);
 
-		ei.setTicks("ForestFire", size);
+		ei.setTicks("ForestFire", size/chunkSize);
 
 		ei.setScalar("ForestFire", "windDir", windDir);
 		ei.setScalar("ForestFire", "windStrength", windStrength);
@@ -41,7 +41,6 @@ class VectorsManager extends CustomManager {
 		ei.setStream("outData", CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes());
 
 		return ei;
-
 	}
 
 	public static void main(String[] args) {
