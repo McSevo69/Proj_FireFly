@@ -15,7 +15,7 @@ class VectorsManager extends CustomManager {
 	VectorsManager(EngineParameters engineParameters) {
 		super(engineParameters);
 
-		KernelBlock kernel = addKernel(new VectorsKernel(makeKernelParameters("ForestFire"), width, height, maxRadius));
+		KernelBlock kernel = addKernel(new VectorsKernel(makeKernelParameters("ForestFire"), width, height, maxRadius, chunkSize));
 
 		kernel.getInput("inData") <== addStreamFromCPU("inData");
 		addStreamToCPU("outData") <== kernel.getOutput("outData");
@@ -53,6 +53,7 @@ class VectorsManager extends CustomManager {
 		manager.addMaxFileConstant("width", width);
 		manager.addMaxFileConstant("height", height);
 		manager.addMaxFileConstant("maxRadius", maxRadius);
+		manager.addMaxFileConstant("chunkSize", chunkSize);
 		manager.createSLiCinterface(interfaceDefault());
 		manager.build();
 	}
