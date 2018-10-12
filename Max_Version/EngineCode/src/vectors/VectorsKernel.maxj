@@ -182,7 +182,7 @@ class VectorsKernel extends Kernel {
 		DFEVar x_cnt = counterOne.getCount().cast(dfeInt(addrBitsWidth+3));
 
 		DFEVector<DFEVar> outVec = vectorType.newInstance(this);
-		DFEVar minValue = vectorType.newInstance(this)
+		DFEVar minValue = vectorType.newInstance(this);
 
 		for (int i=0; i<chunkSize; ++i) {
 			outVec[i] <== getNewCellState(streamIn.get(i), x_cnt + i, y_cnt, width, height, burning, windDir, windStrength, maxRadius);
