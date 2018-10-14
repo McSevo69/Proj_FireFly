@@ -186,7 +186,7 @@ class VectorsKernel extends Kernel {
 
 		for (int i=0; i<chunkSize; ++i) {
 			outVec[i] <== getNewCellState(streamIn.get(i), x_cnt + i, y_cnt, width, height, burning, windDir, windStrength, maxRadius);
-			if (outVec[i] < minValue) minValue = outVec[i];
+			minValue = (outVec[i] < minValue) ? outVec[i] : minValue;
 		}
 
 		//Output
