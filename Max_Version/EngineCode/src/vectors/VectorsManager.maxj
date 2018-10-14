@@ -10,7 +10,7 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.KernelConfiguration;
 
 class VectorsManager extends CustomManager {
 
-	private static int width = 1920, height = 1080, maxRadius = 4, chunkSize = 32;
+	private static int width = 1920, height = 1080, maxRadius = 4, chunkSize = 16;
 
 	VectorsManager(EngineParameters engineParameters) {
 		super(engineParameters);
