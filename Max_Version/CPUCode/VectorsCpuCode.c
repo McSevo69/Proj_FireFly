@@ -545,7 +545,7 @@ int main(int argc, char *argv[]) {
 	int x = 0;
 	int elements = Vectors_width*Vectors_height;
 	//bool convergedDFE = false;
-	int overlap = 4 * Vectors_width + Vectors_maxRadius;
+	int overlap = 4 * Vectors_width + 16;
 	gettimeofday(&begin, NULL);
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
 	Vectors(burning, elements, paramsOut[0][0], paramsOut[0][1], 
