@@ -158,6 +158,9 @@ class VectorsKernel extends Kernel {
 		DFEVar processingOverlap = controlInputCounter.getCount() < overlap;
 
 		// Counters
+		int addrBitsWidth = MathUtils.bitsToAddress(width);
+		int addrBitsHeight = MathUtils.bitsToAddress(height);
+		
 		//First part counter
 		Params paramsOneBegin = control.count.makeParams(addrBitsWidth)
 		.withWrapMode(WrapMode.COUNT_LT_MAX_THEN_WRAP)
@@ -203,9 +206,7 @@ class VectorsKernel extends Kernel {
 		DFEVar windStrength = io.scalarInput("windStrength", dataType);
 		DFEVar burning = io.scalarInput("burningState", dataType);
 
-		int addrBitsWidth = MathUtils.bitsToAddress(width);
-		int addrBitsHeight = MathUtils.bitsToAddress(height);
-	
+		//Output	
 		io.output("outData0", getNewCellState(streamIn0, xCntBegin, yCntBegin, width, height, burning, windDir, windStrength, maxRadius), dataType, yCntBegin < height/4);
 		io.output("outData1", getNewCellState(streamIn1, xCntEnd, yCntEnd + 1*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType, ~processingOverlap & yCntEnd < height/4);
 		io.output("outData2", getNewCellState(streamIn2, xCntEnd, yCntEnd + 2*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType, ~processingOverlap & yCntEnd < height/4);
