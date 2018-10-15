@@ -9,8 +9,8 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.WrapMode;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Counter;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Params;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.Reductions;
-import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVector;
-import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVectorType;
+//import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVector;
+//import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVectorType;
 
 class VectorsKernel extends Kernel {
 
@@ -148,15 +148,14 @@ class VectorsKernel extends Kernel {
 		return control.mux(inState, resultDry, resultNormal, streamIn, streamIn + 1);
 	}
 
-	VectorsKernel(KernelParameters parameters, int width, int height, int maxRadius, int streamCnt) {
+	VectorsKernel(KernelParameters parameters, int width, int height, int maxRadius) {
 		super(parameters);
 
-		DFEVectorType<DFEVar> vectorType = new DFEVectorType<DFEVar>(dataType, streamCnt);
-
 		// Input
-		DFEVector<DFEVar> streamIn = vectorType.newInstance(this);
-		for (int i=0; i<streamCnt; ++i)
-			streamIn[i] <== io.input("inData" + i, dataType);
+		DFEVar streamIn0 = io.input("inData0", dataType);
+		DFEVar streamIn1 = io.input("inData1", dataType);
+		DFEVar streamIn2 = io.input("inData2", dataType);
+		DFEVar streamIn3 = io.input("inData3", dataType);
 
 		DFEVar windDir = io.scalarInput("windDir", dataType);
 		DFEVar windStrength = io.scalarInput("windStrength", dataType);
@@ -181,19 +180,10 @@ class VectorsKernel extends Kernel {
 
 		DFEVar y_cnt = counterTwo.getCount().cast(dfeInt(addrBitsHeight+3));
 		DFEVar x_cnt = counterOne.getCount().cast(dfeInt(addrBitsWidth+3));
-
-		DFEVector<DFEVar> outVec = vectorType.newInstance(this);
-		DFEVar minValue = constant.var(dataType, 15);
-
-		for (int i=1; i<streamCnt; ++i) {
-			outVec[i] <== getNewCellState(streamIn[i], x_cnt, y_cnt + i*height/streamCnt, width, height, burning, windDir, windStrength, maxRadius);
-			minValue = (outVec[i] < minValue) ? outVec[i] : minValue;
-		}
-
-		//Output
-		for (int i=0; i<streamCnt; ++i)
-			io.output("outData" + i, outVec[i], dataType);
-
-		io.scalarOutput("minValue", Reductions.streamMin(minValue), dataType);
+	
+		io.output("outData0", getNewCellState(streamIn[i], x_cnt, y_cnt + 0*height/streamCnt, width, height, burning, windDir, windStrength, maxRadius), dataType);
+		io.output("outData1", getNewCellState(streamIn[i], x_cnt, y_cnt + 1*height/streamCnt, width, height, burning, windDir, windStrength, maxRadius), dataType);
+		io.output("outData2", getNewCellState(streamIn[i], x_cnt, y_cnt + 2*height/streamCnt, width, height, burning, windDir, windStrength, maxRadius), dataType);
+		io.output("outData3", getNewCellState(streamIn[i], x_cnt, y_cnt + 3*height/streamCnt, width, height, burning, windDir, windStrength, maxRadius), dataType);
 	}
 }
