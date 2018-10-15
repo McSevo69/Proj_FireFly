@@ -156,7 +156,7 @@ class VectorsKernel extends Kernel {
 		// Input
 		DFEVector<DFEVar> streamIn;
 		for (int i=0; i<streamCnt; ++i)
-			streamIn[i] = io.input("inData" + i, dataType);
+			streamIn[i] <== io.input("inData" + i, dataType);
 
 		DFEVar windDir = io.scalarInput("windDir", dataType);
 		DFEVar windStrength = io.scalarInput("windStrength", dataType);

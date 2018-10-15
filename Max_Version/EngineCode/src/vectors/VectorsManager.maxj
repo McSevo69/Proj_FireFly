@@ -62,7 +62,7 @@ class VectorsManager extends CustomManager {
 		manager.addMaxFileConstant("width", width);
 		manager.addMaxFileConstant("height", height);
 		manager.addMaxFileConstant("maxRadius", maxRadius);
-		manager.addMaxFileConstant("streamCnt", chunkSize);
+		manager.addMaxFileConstant("streamCnt", streamCnt);
 		manager.createSLiCinterface(interfaceDefault());
 		manager.build();
 	}
