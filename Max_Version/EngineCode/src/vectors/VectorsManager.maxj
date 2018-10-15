@@ -50,7 +50,7 @@ class VectorsManager extends CustomManager {
 
 		KernelConfiguration currKConf = manager.getCurrentKernelConfig();
 		currKConf.optimization.setOptimizationTechnique(OptimizationTechnique.AREA);
-		currKConf.setDefaultStreamClockFrequency(120);
+		config.setDefaultStreamClockFrequency(120);
 
 		manager.addMaxFileConstant("width", width);
 		manager.addMaxFileConstant("height", height);
