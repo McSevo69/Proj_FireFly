@@ -18,7 +18,7 @@ class VectorsManager extends CustomManager {
 
 		config.setDefaultStreamClockFrequency(120);
 
-		KernelBlock kernel = addKernel(new VectorsKernel(makeKernelParameters("ForestFire"), width, height, maxRadius, streamCnt));
+		KernelBlock kernel = addKernel(new VectorsKernel(makeKernelParameters("ForestFire"), width, height, maxRadius));
 
 		for (int i=0; i<streamCnt; ++i) {
 			kernel.getInput("inData" + i) <== addStreamFromCPU("inData" + i);
