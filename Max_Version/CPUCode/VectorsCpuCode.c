@@ -541,16 +541,21 @@ int main(int argc, char *argv[]) {
 	if (burningOnes > 0) setSomeTreesOnFire(dataBuffer, Vectors_width*Vectors_height, burningOnes);
 
 	printf("Running DFE...\n");
-	dataType minValue = -2;
+	//dataType minValue = -2;
 	int x = 0;
-	bool convergedDFE = false;
+	int elements = Vectors_width*Vectors_height;
+	//bool convergedDFE = false;
 	gettimeofday(&begin, NULL);
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
-	Vectors(burning, Vectors_width*Vectors_height, paramsOut[0][0], paramsOut[0][1], &minValue, dataBuffer, dataOutDFE[0]);
-	while (++x < it && convergedDFE == 0) {
+	Vectors(burning, elements, paramsOut[0][0], paramsOut[0][1], 
+		dataBuffer, &dataBuffer[elements/4], &dataBuffer[2*elements/4], &dataBuffer[3*elements/4],
+		dataOutDFE[0], &dataOutDFE[elements/4], &dataOutDFE[2*elements/4], &dataOutDFE[3*elements/4]);
+	while (++x < it) {
 		if (!paramsGiven) manageParams(paramsOut[x-1], paramsOut[x], radius, wind, windChangeIntervall, x);
-		Vectors(burning, Vectors_width*Vectors_height, paramsOut[x][0], paramsOut[x][1], &minValue, dataOutDFE[x-1], dataOutDFE[x]);
-		if (minValue >= -1) convergedDFE = true;
+		Vectors(burning, elements, paramsOut[x][0], paramsOut[x][1], 
+		dataOutDFE[x-1], &dataOutDFE[x-1][elements/4], &dataOutDFE[x-1][2*elements/4], &dataOutDFE[x-1][3*elements/4],
+		dataOutDFE[x][0], &dataOutDFE[x][elements/4], &dataOutDFE[x][2*elements/4], &dataOutDFE[x][3*elements/4]);
+		//if (minValue >= -1) convergedDFE = true;
 	}
 	gettimeofday(&end, NULL);
 
