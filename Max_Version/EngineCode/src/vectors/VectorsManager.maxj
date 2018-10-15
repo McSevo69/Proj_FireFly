@@ -8,7 +8,6 @@ import com.maxeler.maxcompiler.v2.managers.engine_interfaces.EngineInterface;
 import com.maxeler.maxcompiler.v2.managers.engine_interfaces.InterfaceParam;
 import com.maxeler.maxcompiler.v2.kernelcompiler.KernelConfiguration;
 import com.maxeler.maxcompiler.v2.kernelcompiler.KernelConfiguration.OptimizationOptions.OptimizationTechnique;
-import com.maxeler.maxcompiler.v2.managers.custom.ManagerClock;
 
 class VectorsManager extends CustomManager {
 
@@ -51,9 +50,7 @@ class VectorsManager extends CustomManager {
 
 		KernelConfiguration currKConf = manager.getCurrentKernelConfig();
 		currKConf.optimization.setOptimizationTechnique(OptimizationTechnique.AREA);
-
-		ManagerClock myClk = generateStreamClock(”myClk”, 120);
-		myKernel.setClock(myClk);
+		currKConf.setDefaultStreamClockFrequency(120);
 
 		manager.addMaxFileConstant("width", width);
 		manager.addMaxFileConstant("height", height);
