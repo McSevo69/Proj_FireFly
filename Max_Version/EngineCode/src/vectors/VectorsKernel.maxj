@@ -11,12 +11,10 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Params;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.Reductions;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVector;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVectorType;
-import com.maxeler.maxcompiler.v2.utils.Bits;
 
 class VectorsKernel extends Kernel {
 
 	static final DFEType dataType=dfeInt(8);
-	static final Bits initBits = Bits(8);
 
 	DFEVar[] getNeighbors(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar radius, int maxRadius) {
 		int neighWidth = (2*maxRadius+1);
@@ -27,33 +25,30 @@ class VectorsKernel extends Kernel {
 		int centeredIdx = (neighSize-1)/2;
 
 		neighbors[centeredIdx] =  constant.var(dataType, 1);
-
-		//cross around center cell -> 4*r
-		for (int i=1; i <= maxRadius; ++i) {
-			neighbors[centeredIdx-i*neighWidth] = ((y - i) < 0 | i > radius) ? constant.var(dataType, 1)
-					: stream.offset(streamIn, -i*width, initBits); //above
-			neighbors[centeredIdx+i*neighWidth] = ((y + i) >= height | i > radius) ? constant.var(dataType, 1)
-					: stream.offset(streamIn, +i*width, initBits); //below
-			neighbors[centeredIdx-i] = ((x - i) < 0 | i > radius) ? constant.var(dataType, 1)
-					: stream.offset(streamIn, -i, initBits); //left
-			neighbors[centeredIdx+i] = ((x + i) >= width | i > radius) ? constant.var(dataType, 1)
-					: stream.offset(streamIn, +i, initBits); // right
-		}
-
-		//squares around x -> 4*r^2
+		
 		for (int i = 1; i <= maxRadius; ++i) {
+			//cross around center cell -> 4*r
+			neighbors[centeredIdx-i*neighWidth] = ((y - i) < 0 | i > radius) ? constant.var(dataType, 1)
+					: stream.offset(streamIn, -i*width); //above
+			neighbors[centeredIdx+i*neighWidth] = ((y + i) >= height | i > radius) ? constant.var(dataType, 1)
+					: stream.offset(streamIn, +i*width); //below
+			neighbors[centeredIdx-i] = ((x - i) < 0 | i > radius) ? constant.var(dataType, 1)
+					: stream.offset(streamIn, -i); //left
+			neighbors[centeredIdx+i] = ((x + i) >= width | i > radius) ? constant.var(dataType, 1)
+					: stream.offset(streamIn, +i); // right
 			for (int j = 1; j <= maxRadius; ++j) {
+				//squares around x -> 4*r^2
 				neighbors[centeredIdx-i*neighWidth-j] = ((y - i) < 0 | (x - j) < 0 | i > radius | j > radius) ? constant.var(dataType, 1) :
-					stream.offset(streamIn,-i*width-j, initBits); //above left
+					stream.offset(streamIn,-i*width-j); //above left
 
 				neighbors[centeredIdx-i*neighWidth+j] = ((y - i) < 0 | (x + j) >= width | i > radius | j > radius) ? constant.var(dataType, 1) :
-					stream.offset(streamIn,-i*width+j, initBits); //above right
+					stream.offset(streamIn,-i*width+j); //above right
 
 				neighbors[centeredIdx+i*neighWidth-j] = ((y + i) >= height | (x - j) < 0 | i > radius | j > radius) ? constant.var(dataType, 1) :
-					stream.offset(streamIn,+i*width-j, initBits); //below left
+					stream.offset(streamIn,+i*width-j); //below left
 
 				neighbors[centeredIdx+i*neighWidth+j] = ((y + i) >= height | (x + j) >= width | i > radius | j > radius) ? constant.var(dataType, 1) :
-					stream.offset(streamIn,+i*width+j, initBits); //below right
+					stream.offset(streamIn,+i*width+j); //below right
 			}
 		}
 		return neighbors;
