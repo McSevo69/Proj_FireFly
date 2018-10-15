@@ -12,13 +12,14 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.KernelConfiguration.Optimizatio
 class VectorsManager extends CustomManager {
 
 	private static int width = 1920, height = 1080, maxRadius = 4, streamCnt = 4;
+	private static int overlap = maxRadius * width + madRadius;
 
 	VectorsManager(EngineParameters engineParameters) {
 		super(engineParameters);
 
 		config.setDefaultStreamClockFrequency(120);
 
-		KernelBlock kernel = addKernel(new VectorsKernel(makeKernelParameters("ForestFire"), width, height, maxRadius));
+		KernelBlock kernel = addKernel(new VectorsKernel(makeKernelParameters("ForestFire"), width, height, maxRadius, overlap));
 
 		for (int i=0; i<streamCnt; ++i) {
 			kernel.getInput("inData" + i) <== addStreamFromCPU("inData" + i);
@@ -42,12 +43,14 @@ class VectorsManager extends CustomManager {
 		ei.setScalar("ForestFire", "windStrength", windStrength);
 		ei.setScalar("ForestFire", "burningState", burningState);
 
+		ei.setStream("inData0", CPUTypes.INT8, overlap + size * CPUTypes.INT8.sizeInBytes() / streamCnt);
+		ei.setStream("inData1", CPUTypes.INT8, 2*overlap + size * CPUTypes.INT8.sizeInBytes() / streamCnt);
+		ei.setStream("inData2", CPUTypes.INT8, 2*overlap + size * CPUTypes.INT8.sizeInBytes() / streamCnt);
+		ei.setStream("inData3", CPUTypes.INT8, overlap + size * CPUTypes.INT8.sizeInBytes() / streamCnt);
 
-		for (int i=0; i<streamCnt; ++i) {
-			ei.setStream("inData" + i, CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes() / streamCnt);
+		for (int i=0; i<streamCnt; ++i) 			
 			ei.setStream("outData" + i, CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes() / streamCnt);
-		}
-
+		
 		return ei;
 	}
 

@@ -148,8 +148,14 @@ class VectorsKernel extends Kernel {
 		return control.mux(inState, resultDry, resultNormal, streamIn, streamIn + 1);
 	}
 
-	VectorsKernel(KernelParameters parameters, int width, int height, int maxRadius) {
+	VectorsKernel(KernelParameters parameters, int width, int height, int maxRadius, int overlap) {
 		super(parameters);
+
+		int addrBits = MathUtils.bitsToAddress(overlap);
+		Params controlInputCounterParams = control.count.makeParams(addrBits+1).withWrapMode(WrapMode.STOP_AT_MAX);
+		Counter controlInputCounter = control.count.makeCounter(controlInputCounterParams);
+
+		DFEVar readingInput = controlInputCounter.getCount() < overlap;
 
 		// Input
 		DFEVar streamIn0 = io.input("inData0", dataType);
@@ -165,25 +171,44 @@ class VectorsKernel extends Kernel {
 		int addrBitsHeight = MathUtils.bitsToAddress(height);
 
 		// Counters
-		Params paramsOne = control.count.makeParams(addrBitsWidth)
+		//First part counter
+		Params paramsOneBegin = control.count.makeParams(addrBitsWidth)
 		.withWrapMode(WrapMode.COUNT_LT_MAX_THEN_WRAP)
 		.withMax(width);
 
-		Counter counterOne = control.count.makeCounter(paramsOne);
+		Counter counterOneBegin = control.count.makeCounter(paramsOneBegin);
 
-		Params paramsTwo = control.count.makeParams(addrBitsHeight)
-		.withEnable(counterOne.getWrap())
+		Params paramsTwoBegin = control.count.makeParams(addrBitsHeight)
+		.withEnable(counterOneBegin.getWrap())
 		.withWrapMode(WrapMode.COUNT_LT_MAX_THEN_WRAP)
 		.withMax(height);
 
-		Counter counterTwo = control.count.makeCounter(paramsTwo);
+		Counter counterTwoBegin = control.count.makeCounter(paramsTwoBegin);
 
-		DFEVar y_cnt = counterTwo.getCount().cast(dfeInt(addrBitsHeight+3));
-		DFEVar x_cnt = counterOne.getCount().cast(dfeInt(addrBitsWidth+3));
+		//middle parts counters
+		Params paramsOneEnd = control.count.makeParams(addrBitsWidth)
+		.withEnable(~readingInput)
+		.withWrapMode(WrapMode.COUNT_LT_MAX_THEN_WRAP)
+		.withMax(width);
+
+		Counter counterOneEnd = control.count.makeCounter(paramsOneEnd);
+
+		Params paramsTwoEnd = control.count.makeParams(addrBitsHeight)
+		.withEnable(counterOneEnd.getWrap())
+		.withWrapMode(WrapMode.COUNT_LT_MAX_THEN_WRAP)
+		.withMax(height);
+
+		Counter counterTwoEnd = control.count.makeCounter(paramsTwoEnd);
+
+		DFEVar yCntBegin = counterTwoBegin.getCount().cast(dfeInt(addrBitsHeight+3));
+		DFEVar xCntBegin = counterOneBegin.getCount().cast(dfeInt(addrBitsWidth+3));
+
+		DFEVar yCntEnd = counterTwoEnd.getCount().cast(dfeInt(addrBitsHeight+3));
+		DFEVar xCntEnd = counterOneEnd.getCount().cast(dfeInt(addrBitsWidth+3));
 	
-		io.output("outData0", getNewCellState(streamIn0, x_cnt, y_cnt + 0*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType);
-		io.output("outData1", getNewCellState(streamIn1, x_cnt, y_cnt + 1*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType);
-		io.output("outData2", getNewCellState(streamIn2, x_cnt, y_cnt + 2*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType);
-		io.output("outData3", getNewCellState(streamIn3, x_cnt, y_cnt + 3*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType);
+		io.output("outData0", getNewCellState(streamIn0, xCntBegin, yCntBegin, width, height, burning, windDir, windStrength, maxRadius), dataType, yCntBegin < height/4);
+		io.output("outData1", getNewCellState(streamIn1, xCntEnd, yCntEnd + 1*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType, ~readingInput & yCntEnd < 2*height/4);
+		io.output("outData2", getNewCellState(streamIn2, xCntEnd, yCntEnd + 2*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType, ~readingInput & yCntEnd < 3*height/4);
+		io.output("outData3", getNewCellState(streamIn3, xCntEnd, yCntEnd + 3*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType, ~readingInput);
 	}
 }
