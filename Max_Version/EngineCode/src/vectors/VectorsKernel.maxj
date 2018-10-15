@@ -181,9 +181,9 @@ class VectorsKernel extends Kernel {
 		DFEVar y_cnt = counterTwo.getCount().cast(dfeInt(addrBitsHeight+3));
 		DFEVar x_cnt = counterOne.getCount().cast(dfeInt(addrBitsWidth+3));
 	
-		io.output("outData0", getNewCellState(streamIn[i], x_cnt, y_cnt + 0*height/streamCnt, width, height, burning, windDir, windStrength, maxRadius), dataType);
-		io.output("outData1", getNewCellState(streamIn[i], x_cnt, y_cnt + 1*height/streamCnt, width, height, burning, windDir, windStrength, maxRadius), dataType);
-		io.output("outData2", getNewCellState(streamIn[i], x_cnt, y_cnt + 2*height/streamCnt, width, height, burning, windDir, windStrength, maxRadius), dataType);
-		io.output("outData3", getNewCellState(streamIn[i], x_cnt, y_cnt + 3*height/streamCnt, width, height, burning, windDir, windStrength, maxRadius), dataType);
+		io.output("outData0", getNewCellState(streamIn0, x_cnt, y_cnt + 0*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType);
+		io.output("outData1", getNewCellState(streamIn1, x_cnt, y_cnt + 1*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType);
+		io.output("outData2", getNewCellState(streamIn2, x_cnt, y_cnt + 2*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType);
+		io.output("outData3", getNewCellState(streamIn3, x_cnt, y_cnt + 3*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType);
 	}
 }
