@@ -25,9 +25,9 @@ class VectorsKernel extends Kernel {
 		int centeredIdx = (neighSize-1)/2;
 
 		neighbors[centeredIdx] =  constant.var(dataType, 1);
-		
-		for (int i = 1; i <= maxRadius; ++i) {
-			//cross around center cell -> 4*r
+
+		//cross around center cell -> 4*r
+		for (int i=1; i <= maxRadius; ++i) {
 			neighbors[centeredIdx-i*neighWidth] = ((y - i) < 0 | i > radius) ? constant.var(dataType, 1)
 					: stream.offset(streamIn, -i*width); //above
 			neighbors[centeredIdx+i*neighWidth] = ((y + i) >= height | i > radius) ? constant.var(dataType, 1)
@@ -36,8 +36,11 @@ class VectorsKernel extends Kernel {
 					: stream.offset(streamIn, -i); //left
 			neighbors[centeredIdx+i] = ((x + i) >= width | i > radius) ? constant.var(dataType, 1)
 					: stream.offset(streamIn, +i); // right
+		}
+
+		//squares around x -> 4*r^2
+		for (int i = 1; i <= maxRadius; ++i) {
 			for (int j = 1; j <= maxRadius; ++j) {
-				//squares around x -> 4*r^2
 				neighbors[centeredIdx-i*neighWidth-j] = ((y - i) < 0 | (x - j) < 0 | i > radius | j > radius) ? constant.var(dataType, 1) :
 					stream.offset(streamIn,-i*width-j); //above left
 
@@ -145,13 +148,15 @@ class VectorsKernel extends Kernel {
 		return control.mux(inState, resultDry, resultNormal, streamIn, streamIn + 1);
 	}
 
-	VectorsKernel(KernelParameters parameters, int width, int height, int maxRadius, int chunkSize) {
+	VectorsKernel(KernelParameters parameters, int width, int height, int maxRadius, int streamCnt) {
 		super(parameters);
 
-		DFEVectorType<DFEVar> vectorType = new DFEVectorType<DFEVar>(dataType, chunkSize);
+		DFEVectorType<DFEVar> vectorType = new DFEVectorType<DFEVar>(dataType, streamCnt);
 
 		// Input
-		DFEVector<DFEVar> streamIn = io.input("inData", vectorType);
+		DFEVector<DFEVar> streamIn;
+		for (int i=0; i<streamCnt; ++i)
+			streamIn[i] = io.input("inData" + i, dataType);
 
 		DFEVar windDir = io.scalarInput("windDir", dataType);
 		DFEVar windStrength = io.scalarInput("windStrength", dataType);
@@ -163,7 +168,6 @@ class VectorsKernel extends Kernel {
 		// Counters
 		Params paramsOne = control.count.makeParams(addrBitsWidth)
 		.withWrapMode(WrapMode.COUNT_LT_MAX_THEN_WRAP)
-		.withInc(chunkSize)
 		.withMax(width);
 
 		Counter counterOne = control.count.makeCounter(paramsOne);
@@ -179,15 +183,17 @@ class VectorsKernel extends Kernel {
 		DFEVar x_cnt = counterOne.getCount().cast(dfeInt(addrBitsWidth+3));
 
 		DFEVector<DFEVar> outVec = vectorType.newInstance(this);
-		DFEVar minValue = constant.var(dataType, 2);
+		DFEVar minValue = constant.var(dataType, 15);
 
-		for (int i=0; i<chunkSize; ++i) {
-			outVec[i] <== getNewCellState(streamIn[i], x_cnt + i, y_cnt, width, height, burning, windDir, windStrength, maxRadius);
+		for (int i=0; i<streamCnt; ++i) {
+			outVec[i] <== getNewCellState(streamIn[i], x_cnt, y_cnt + i*height/streamCnt, width, height, burning, windDir, windStrength, maxRadius);
 			minValue = (outVec[i] < minValue) ? outVec[i] : minValue;
 		}
 
 		//Output
-		io.output("outData", outVec, vectorType);
-		io.scalarOutput("minValue", Reductions.streamMin(minValue), dataType, y_cnt === height-1 & x_cnt >= width-1);
+		for (int i=0; i<streamCnt; ++i)
+			io.output("outData" + i, outVec[i], dataType);
+
+		io.scalarOutput("minValue", Reductions.streamMin(minValue), dataType);
 	}
 }

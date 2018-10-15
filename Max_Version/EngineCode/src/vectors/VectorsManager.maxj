@@ -11,17 +11,20 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.KernelConfiguration.Optimizatio
 
 class VectorsManager extends CustomManager {
 
-	private static int width = 1920, height = 1080, maxRadius = 4, chunkSize = 4;
+	private static int width = 1920, height = 1080, maxRadius = 4, streamCnt = 4;
 
 	VectorsManager(EngineParameters engineParameters) {
 		super(engineParameters);
 
 		config.setDefaultStreamClockFrequency(120);
 
-		KernelBlock kernel = addKernel(new VectorsKernel(makeKernelParameters("ForestFire"), width, height, maxRadius, chunkSize));
+		KernelBlock kernel = addKernel(new VectorsKernel(makeKernelParameters("ForestFire"), width, height, maxRadius, streamCnt));
 
-		kernel.getInput("inData") <== addStreamFromCPU("inData");
-		addStreamToCPU("outData") <== kernel.getOutput("outData");
+		for (int i=0; i<streamCnt; ++i) {
+			kernel.getInput("inData" + i) <== addStreamFromCPU("inData" + i);
+			addStreamToCPU("outData" + i) <== kernel.getOutput("outData" + i);
+		}
+		
 	}
 
 	static EngineInterface interfaceDefault() {
@@ -34,14 +37,17 @@ class VectorsManager extends CustomManager {
 		InterfaceParam burningState = ei.addParam("burningState", CPUTypes.INT8);
 		//InterfaceParam minValue = ei.addParam("minValue", CPUTypes.INT8);
 
-		ei.setTicks("ForestFire", size/chunkSize);
+		ei.setTicks("ForestFire", size/streamCnt);
 
 		ei.setScalar("ForestFire", "windDir", windDir);
 		ei.setScalar("ForestFire", "windStrength", windStrength);
 		ei.setScalar("ForestFire", "burningState", burningState);
 
-		ei.setStream("inData", CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes());
-		ei.setStream("outData", CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes());
+
+		for (int i=0; i<streamCnt; ++i) {
+			ei.setStream("inData" + i, CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes());
+			ei.setStream("outData" + i, CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes());
+		}
 
 		return ei;
 	}
@@ -56,7 +62,7 @@ class VectorsManager extends CustomManager {
 		manager.addMaxFileConstant("width", width);
 		manager.addMaxFileConstant("height", height);
 		manager.addMaxFileConstant("maxRadius", maxRadius);
-		manager.addMaxFileConstant("chunkSize", chunkSize);
+		manager.addMaxFileConstant("streamCnt", chunkSize);
 		manager.createSLiCinterface(interfaceDefault());
 		manager.build();
 	}
