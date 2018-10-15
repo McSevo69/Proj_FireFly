@@ -23,8 +23,7 @@ class VectorsManager extends CustomManager {
 		for (int i=0; i<streamCnt; ++i) {
 			kernel.getInput("inData" + i) <== addStreamFromCPU("inData" + i);
 			addStreamToCPU("outData" + i) <== kernel.getOutput("outData" + i);
-		}
-		
+		}		
 	}
 
 	static EngineInterface interfaceDefault() {
@@ -45,8 +44,8 @@ class VectorsManager extends CustomManager {
 
 
 		for (int i=0; i<streamCnt; ++i) {
-			ei.setStream("inData" + i, CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes());
-			ei.setStream("outData" + i, CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes());
+			ei.setStream("inData" + i, CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes() / streamCnt);
+			ei.setStream("outData" + i, CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes() / streamCnt);
 		}
 
 		return ei;
