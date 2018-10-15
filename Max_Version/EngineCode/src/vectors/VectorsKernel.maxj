@@ -27,9 +27,9 @@ class VectorsKernel extends Kernel {
 		int centeredIdx = (neighSize-1)/2;
 
 		neighbors[centeredIdx] =  constant.var(dataType, 1);
-		
-		for (int i = 1; i <= maxRadius; ++i) {
-			//cross around center cell -> 4*r
+
+		//cross around center cell -> 4*r
+		for (int i=1; i <= maxRadius; ++i) {
 			neighbors[centeredIdx-i*neighWidth] = ((y - i) < 0 | i > radius) ? constant.var(dataType, 1)
 					: stream.offset(streamIn, -i*width, initBits); //above
 			neighbors[centeredIdx+i*neighWidth] = ((y + i) >= height | i > radius) ? constant.var(dataType, 1)
@@ -38,8 +38,11 @@ class VectorsKernel extends Kernel {
 					: stream.offset(streamIn, -i, initBits); //left
 			neighbors[centeredIdx+i] = ((x + i) >= width | i > radius) ? constant.var(dataType, 1)
 					: stream.offset(streamIn, +i, initBits); // right
+		}
+
+		//squares around x -> 4*r^2
+		for (int i = 1; i <= maxRadius; ++i) {
 			for (int j = 1; j <= maxRadius; ++j) {
-				//squares around x -> 4*r^2
 				neighbors[centeredIdx-i*neighWidth-j] = ((y - i) < 0 | (x - j) < 0 | i > radius | j > radius) ? constant.var(dataType, 1) :
 					stream.offset(streamIn,-i*width-j, initBits); //above left
 
