@@ -159,9 +159,9 @@ class VectorsKernel extends Kernel {
 
 		// Input
 		DFEVar streamIn0 = io.input("inData0", dataType);
-		DFEVar streamIn1 = io.input("inData1", dataType);
-		DFEVar streamIn2 = io.input("inData2", dataType);
-		DFEVar streamIn3 = io.input("inData3", dataType);
+		DFEVar streamIn1 = io.input("inData1", dataType, readingInput);
+		DFEVar streamIn2 = io.input("inData2", dataType, readingInput);
+		DFEVar streamIn3 = io.input("inData3", dataType, readingInput);
 
 		DFEVar windDir = io.scalarInput("windDir", dataType);
 		DFEVar windStrength = io.scalarInput("windStrength", dataType);
