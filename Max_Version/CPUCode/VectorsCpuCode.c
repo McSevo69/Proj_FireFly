@@ -550,6 +550,7 @@ int main(int argc, char *argv[]) {
 	Vectors(burning, elements, paramsOut[0][0], paramsOut[0][1], 
 		dataBuffer, &dataBuffer[elements/4], &dataBuffer[2*elements/4], &dataBuffer[3*elements/4],
 		dataOutDFE[0], dataOutDFE[elements/4], dataOutDFE[2*elements/4], dataOutDFE[3*elements/4]);
+	printf("Check");
 	while (++x < it) {
 		if (!paramsGiven) manageParams(paramsOut[x-1], paramsOut[x], radius, wind, windChangeIntervall, x);
 		Vectors(burning, elements, paramsOut[x][0], paramsOut[x][1], 
