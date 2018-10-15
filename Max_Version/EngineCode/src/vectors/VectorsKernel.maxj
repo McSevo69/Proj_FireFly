@@ -155,7 +155,9 @@ class VectorsKernel extends Kernel {
 
 		// Input
 		DFEVector<DFEVar> streamIn;
-		for (int i=0; i<streamCnt; ++i)
+		streamIn[0] <== io.input("inData0", dataType);
+
+		for (int i=1; i<streamCnt; ++i)
 			streamIn[i] <== io.input("inData" + i, dataType);
 
 		DFEVar windDir = io.scalarInput("windDir", dataType);
@@ -191,7 +193,8 @@ class VectorsKernel extends Kernel {
 		}
 
 		//Output
-		for (int i=0; i<streamCnt; ++i)
+		io.output("outData0", outVec[0], dataType);
+		for (int i=1; i<streamCnt; ++i)
 			io.output("outData" + i, outVec[i], dataType);
 
 		io.scalarOutput("minValue", Reductions.streamMin(minValue), dataType);
