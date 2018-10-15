@@ -8,7 +8,7 @@ import com.maxeler.maxcompiler.v2.utils.MathUtils;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.WrapMode;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Counter;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Params;
-import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.Reductions;
+//import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.Reductions;
 //import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVector;
 //import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVectorType;
 
