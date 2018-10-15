@@ -160,7 +160,7 @@ class VectorsKernel extends Kernel {
 		// Counters
 		int addrBitsWidth = MathUtils.bitsToAddress(width);
 		int addrBitsHeight = MathUtils.bitsToAddress(height);
-		
+
 		//First part counter
 		Params paramsOneBegin = control.count.makeParams(addrBitsWidth)
 		.withWrapMode(WrapMode.COUNT_LT_MAX_THEN_WRAP)
@@ -198,8 +198,8 @@ class VectorsKernel extends Kernel {
 
 		// Input
 		DFEVar streamIn0 = io.input("inData0", dataType, yCntBegin < height/4);
-		DFEVar streamIn1 = io.input("inData1", dataType);
-		DFEVar streamIn2 = io.input("inData2", dataType);
+		DFEVar streamIn1 = io.input("inData1", dataType, controlInputCounter.getCount() < (width*height/4+overlap));
+		DFEVar streamIn2 = io.input("inData2", dataType, controlInputCounter.getCount() < (width*height/4+overlap));
 		DFEVar streamIn3 = io.input("inData3", dataType, controlInputCounter.getCount() < (width*height/4+overlap) );
 
 		DFEVar windDir = io.scalarInput("windDir", dataType);
