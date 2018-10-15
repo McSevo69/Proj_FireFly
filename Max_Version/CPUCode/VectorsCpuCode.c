@@ -548,8 +548,8 @@ int main(int argc, char *argv[]) {
 	gettimeofday(&begin, NULL);
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
 	Vectors(burning, elements, paramsOut[0][0], paramsOut[0][1], 
-		dataBuffer, dataBuffer[elements/4], dataBuffer[2*elements/4], dataBuffer[3*elements/4],
-		dataOutDFE, &dataOutDFE[elements/4], &dataOutDFE[2*elements/4], &dataOutDFE[3*elements/4]);
+		dataBuffer, &dataBuffer[elements/4], &dataBuffer[2*elements/4], &dataBuffer[3*elements/4],
+		dataOutDFE[0], dataOutDFE[elements/4], dataOutDFE[2*elements/4], dataOutDFE[3*elements/4]);
 	while (++x < it) {
 		if (!paramsGiven) manageParams(paramsOut[x-1], paramsOut[x], radius, wind, windChangeIntervall, x);
 		Vectors(burning, elements, paramsOut[x][0], paramsOut[x][1], 
@@ -563,8 +563,8 @@ int main(int argc, char *argv[]) {
             ((end.tv_usec - begin.tv_usec)/1000000.0);
 	printf("Time DFE: %lf\n", timeSpent);
 
-	if (convergedDFE) printf("Converged after %d iterations\n", x);
-	else printf("Hasn't converged after %d iterations\n", x);
+	//if (convergedDFE) printf("Converged after %d iterations\n", x);
+	//else printf("Hasn't converged after %d iterations\n", x);
 
 	if (benchmarkIt) {
 		dataType ** dataOut = malloc(it*sizeof(dataType*));
