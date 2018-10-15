@@ -154,9 +154,7 @@ class VectorsKernel extends Kernel {
 		DFEVectorType<DFEVar> vectorType = new DFEVectorType<DFEVar>(dataType, streamCnt);
 
 		// Input
-		DFEVector<DFEVar> streamIn;
-		streamIn[0] <== io.input("inData0", dataType);
-
+		DFEVector<DFEVar> streamIn = vectorType.newInstance(this);
 		for (int i=1; i<streamCnt; ++i)
 			streamIn[i] <== io.input("inData" + i, dataType);
 
@@ -187,14 +185,13 @@ class VectorsKernel extends Kernel {
 		DFEVector<DFEVar> outVec = vectorType.newInstance(this);
 		DFEVar minValue = constant.var(dataType, 15);
 
-		for (int i=0; i<streamCnt; ++i) {
+		for (int i=1; i<streamCnt; ++i) {
 			outVec[i] <== getNewCellState(streamIn[i], x_cnt, y_cnt + i*height/streamCnt, width, height, burning, windDir, windStrength, maxRadius);
 			minValue = (outVec[i] < minValue) ? outVec[i] : minValue;
 		}
 
 		//Output
-		io.output("outData0", outVec[0], dataType);
-		for (int i=1; i<streamCnt; ++i)
+		for (int i=0; i<streamCnt; ++i)
 			io.output("outData" + i, outVec[i], dataType);
 
 		io.scalarOutput("minValue", Reductions.streamMin(minValue), dataType);
