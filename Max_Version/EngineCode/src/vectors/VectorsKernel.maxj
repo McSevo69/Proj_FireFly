@@ -14,7 +14,7 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Params;
 
 class VectorsKernel extends Kernel {
 
-	static final DFEType dataType=dfeInt(8);
+	static final DFEType dataType=dfeInt(16);
 
 	DFEVar[] getNeighbors(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar radius, int maxRadius) {
 		int neighWidth = (2*maxRadius+1);

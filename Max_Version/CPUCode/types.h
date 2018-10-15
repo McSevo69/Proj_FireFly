@@ -1,6 +1,6 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-typedef int8_t dataType;
+typedef int16_t dataType;
 
 #endif

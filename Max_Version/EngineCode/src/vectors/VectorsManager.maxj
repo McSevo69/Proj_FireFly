@@ -43,13 +43,13 @@ class VectorsManager extends CustomManager {
 		ei.setScalar("ForestFire", "windStrength", windStrength);
 		ei.setScalar("ForestFire", "burningState", burningState);
 
-		ei.setStream("inData0", CPUTypes.INT8, (overlap + size) * CPUTypes.INT8.sizeInBytes() / streamCnt);
-		ei.setStream("inData1", CPUTypes.INT8, (2*overlap + size) * CPUTypes.INT8.sizeInBytes() / streamCnt);
-		ei.setStream("inData2", CPUTypes.INT8, (2*overlap + size) * CPUTypes.INT8.sizeInBytes() / streamCnt);
-		ei.setStream("inData3", CPUTypes.INT8, (overlap + size) * CPUTypes.INT8.sizeInBytes() / streamCnt);
+		ei.setStream("inData0", CPUTypes.INT16, (overlap + size) * CPUTypes.INT16.sizeInBytes() / streamCnt);
+		ei.setStream("inData1", CPUTypes.INT16, (2*overlap + size) * CPUTypes.INT16.sizeInBytes() / streamCnt);
+		ei.setStream("inData2", CPUTypes.INT16, (2*overlap + size) * CPUTypes.INT16.sizeInBytes() / streamCnt);
+		ei.setStream("inData3", CPUTypes.INT16, (overlap + size) * CPUTypes.INT16.sizeInBytes() / streamCnt);
 
 		for (int i=0; i<streamCnt; ++i) 			
-			ei.setStream("outData" + i, CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes() / streamCnt);
+			ei.setStream("outData" + i, CPUTypes.INT16, size * CPUTypes.INT16.sizeInBytes() / streamCnt);
 		
 		return ei;
 	}
