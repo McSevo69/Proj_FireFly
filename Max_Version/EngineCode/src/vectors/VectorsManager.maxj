@@ -7,10 +7,12 @@ import com.maxeler.maxcompiler.v2.managers.engine_interfaces.CPUTypes;
 import com.maxeler.maxcompiler.v2.managers.engine_interfaces.EngineInterface;
 import com.maxeler.maxcompiler.v2.managers.engine_interfaces.InterfaceParam;
 import com.maxeler.maxcompiler.v2.kernelcompiler.KernelConfiguration;
+import com.maxeler.maxcompiler.v2.kernelcompiler.KernelConfiguration.OptimizationOptions.OptimizationTechnique;
+import com.maxeler.maxcompiler.v2.managers.custom.ManagerClock;
 
 class VectorsManager extends CustomManager {
 
-	private static int width = 1920, height = 1080, maxRadius = 4, chunkSize = 16;
+	private static int width = 1920, height = 1080, maxRadius = 4, chunkSize = 4;
 
 	VectorsManager(EngineParameters engineParameters) {
 		super(engineParameters);
@@ -48,7 +50,10 @@ class VectorsManager extends CustomManager {
 		VectorsManager manager = new VectorsManager(params);
 
 		KernelConfiguration currKConf = manager.getCurrentKernelConfig();
-		currKConf.optimization.setCEPipelining(2);
+		currKConf.optimization.setOptimizationTechnique(OptimizationTechnique.AREA);
+
+		ManagerClock myClk = generateStreamClock(”myClk”, 120);
+		myKernel.setClock(myClk);
 
 		manager.addMaxFileConstant("width", width);
 		manager.addMaxFileConstant("height", height);
