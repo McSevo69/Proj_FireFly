@@ -16,6 +16,8 @@ class VectorsManager extends CustomManager {
 	VectorsManager(EngineParameters engineParameters) {
 		super(engineParameters);
 
+		config.setDefaultStreamClockFrequency(120);
+
 		KernelBlock kernel = addKernel(new VectorsKernel(makeKernelParameters("ForestFire"), width, height, maxRadius, chunkSize));
 
 		kernel.getInput("inData") <== addStreamFromCPU("inData");
@@ -50,8 +52,7 @@ class VectorsManager extends CustomManager {
 
 		KernelConfiguration currKConf = manager.getCurrentKernelConfig();
 		currKConf.optimization.setOptimizationTechnique(OptimizationTechnique.AREA);
-		config.setDefaultStreamClockFrequency(120);
-
+		
 		manager.addMaxFileConstant("width", width);
 		manager.addMaxFileConstant("height", height);
 		manager.addMaxFileConstant("maxRadius", maxRadius);
