@@ -556,7 +556,7 @@ int main(int argc, char *argv[]) {
 		Vectors(burning, elements, paramsOut[x][0], paramsOut[x][1],
 		dataOutDFE[x-1], &dataOutDFE[x-1][elements/4-overlap], &dataOutDFE[x-1][2*elements/4-overlap], &dataOutDFE[x-1][3*elements/4-overlap],
 		minValues, dataOutDFE[x], &dataOutDFE[x][elements/4], &dataOutDFE[x][2*elements/4], &dataOutDFE[x][3*elements/4]);
-		if (minValues[0] >= -1 & minValues[1] >= -1 & minValues[2] >= -1 & minValues[3] >= -1) convergedDFE = true;
+		if (minValues[0] >= -1 && minValues[1] >= -1 && minValues[2] >= -1 && minValues[3] >= -1) convergedDFE = true;
 	}
 	gettimeofday(&end, NULL);
 
