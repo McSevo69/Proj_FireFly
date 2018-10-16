@@ -171,7 +171,7 @@ class VectorsKernel extends Kernel {
 		Params paramsTwoBegin = control.count.makeParams(addrBitsHeight)
 		.withEnable(counterOneBegin.getWrap())
 		.withWrapMode(WrapMode.STOP_AT_MAX)
-		.withMax(height/4);
+		.withMax(height/2);
 
 		Counter counterTwoBegin = control.count.makeCounter(paramsTwoBegin);
 
@@ -199,12 +199,12 @@ class VectorsKernel extends Kernel {
 		// Input
 		DFEVar streamIn0 = io.input("inData0", dataType);
 		DFEVar streamIn1 = io.input("inData1", dataType);
-		
+
 		DFEVar windDir = io.scalarInput("windDir", dataType);
 		DFEVar windStrength = io.scalarInput("windStrength", dataType);
 		DFEVar burning = io.scalarInput("burningState", dataType);
 
-		//Output	
+		//Output
 		io.output("outData0", getNewCellState(streamIn0, xCntBegin, yCntBegin, width, height, burning, windDir, windStrength, maxRadius), dataType, yCntBegin < height/2);
 		io.output("outData1", getNewCellState(streamIn1, xCntEnd, yCntEnd + height/2, width, height, burning, windDir, windStrength, maxRadius), dataType, ~processingOverlap);
 	}
