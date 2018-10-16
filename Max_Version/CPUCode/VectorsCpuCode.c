@@ -554,8 +554,8 @@ int main(int argc, char *argv[]) {
 	while (++x < it) {
 		if (!paramsGiven) manageParams(paramsOut[x-1], paramsOut[x], radius, wind, windChangeIntervall, x);
 		Vectors(burning, elements, paramsOut[x][0], paramsOut[x][1],
-		dataOutDFE[x-1], &dataOutDFE[x-1][elements/2],
-		dataOutDFE[x], &dataOutDFE[x][elements/2-overlap]);
+		dataOutDFE[x-1], &dataOutDFE[x-1][elements/2-overlap],
+		dataOutDFE[x], &dataOutDFE[x][elements/2]);
 		//if (minValue >= -1) convergedDFE = true;
 	}
 	gettimeofday(&end, NULL);
