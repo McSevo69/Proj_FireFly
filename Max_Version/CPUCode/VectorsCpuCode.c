@@ -541,7 +541,7 @@ int main(int argc, char *argv[]) {
 	if (burningOnes > 0) setSomeTreesOnFire(dataBuffer, Vectors_width*Vectors_height, burningOnes);
 
 	printf("Running DFE...\n");
-	dataType minValues = calloc(Vectors_streamCnt, sizeof(dataType));
+	dataType * minValues = calloc(Vectors_streamCnt, sizeof(dataType));
 	int x = 0;
 	int elements = Vectors_width*Vectors_height;
 	bool convergedDFE = false;
