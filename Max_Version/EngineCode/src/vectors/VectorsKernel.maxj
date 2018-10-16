@@ -196,8 +196,9 @@ class VectorsKernel extends Kernel {
 		DFEVar xCntEnd = counterOneEnd.getCount().cast(dfeInt(addrBitsWidth+3));
 
 		DFEVectorType<DFEVar> vectorType = new DFEVectorType<DFEVar>(dataType, 4);
+		DFEVectorType<DFEVar> vectorType32 = new DFEVectorType<DFEVar>(dfeInt(32), 4);
 
-		DFEVector<DFEVar> minValues = vectorType.newInstance(this);
+		DFEVector<DFEVar> minValues = vectorType32.newInstance(this);
 		DFEVector<DFEVar> dataOutValues = vectorType.newInstance(this);
 
 		// Input
@@ -223,6 +224,6 @@ class VectorsKernel extends Kernel {
 		io.output("outData1", dataOutValues[1], dataType, ~processingOverlap & yCntEnd < height/4);
 		io.output("outData2", dataOutValues[2], dataType, ~processingOverlap & yCntEnd < height/4);
 		io.output("outData3", dataOutValues[3], dataType, ~processingOverlap & yCntEnd < height/4);
-		io.output("minValues", minValues, vectorType, controlInputCounter.getCount() >= width*height/4+2*overlap);
+		io.output("minValues", minValues, vectorType32, controlInputCounter.getCount() >= width*height/4+2*overlap);
 	}
 }
