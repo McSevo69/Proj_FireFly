@@ -8,9 +8,9 @@ import com.maxeler.maxcompiler.v2.utils.MathUtils;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.WrapMode;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Counter;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Params;
-//import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.Reductions;
-//import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVector;
-//import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVectorType;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.Reductions;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVector;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVectorType;
 
 class VectorsKernel extends Kernel {
 
@@ -195,6 +195,11 @@ class VectorsKernel extends Kernel {
 		DFEVar yCntEnd = counterTwoEnd.getCount().cast(dfeInt(addrBitsHeight+3));
 		DFEVar xCntEnd = counterOneEnd.getCount().cast(dfeInt(addrBitsWidth+3));
 
+		DFEVectorType<DFEVar> vectorType = new DFEVectorType<DFEVar>(dataType, 4);
+
+		DFEVector<DFEVar> minValues = vectorType.newInstance(this);
+		DFEVector<DFEVar> dataOutValues = vectorType.newInstance(this);
+
 		// Input
 		DFEVar streamIn0 = io.input("inData0", dataType, processingSmallerParts);
 		DFEVar streamIn1 = io.input("inData1", dataType);
@@ -206,9 +211,18 @@ class VectorsKernel extends Kernel {
 		DFEVar burning = io.scalarInput("burningState", dataType);
 
 		//Output
-		io.output("outData0", getNewCellState(streamIn0, xCntBegin, yCntBegin, width, height, burning, windDir, windStrength, maxRadius), dataType, processingFirstPart);
-		io.output("outData1", getNewCellState(streamIn1, xCntEnd, yCntEnd + height/4, width, height, burning, windDir, windStrength, maxRadius), dataType, ~processingOverlap & yCntEnd < height/4);
-		io.output("outData2", getNewCellState(streamIn2, xCntEnd, yCntEnd + 2*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType, ~processingOverlap & yCntEnd < height/4);
-		io.output("outData3", getNewCellState(streamIn3, xCntEnd, yCntEnd + 3*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType, ~processingOverlap & yCntEnd < height/4);
+		dataOutValues[0] <== getNewCellState(streamIn0, xCntBegin, yCntBegin, width, height, burning, windDir, windStrength, maxRadius);
+		dataOutValues[1] <== getNewCellState(streamIn1, xCntEnd, yCntEnd + height/4, width, height, burning, windDir, windStrength, maxRadius);
+		dataOutValues[2] <== getNewCellState(streamIn2, xCntEnd, yCntEnd + 2*height/4, width, height, burning, windDir, windStrength, maxRadius);
+		dataOutValues[3] <== getNewCellState(streamIn3, xCntEnd, yCntEnd + 3*height/4, width, height, burning, windDir, windStrength, maxRadius);
+
+		for (int i=0; i<4; ++i)
+			minValues[i] <== Reductions.streamMin(dataOutValues[i]);
+
+		io.output("outData0", dataOutValues[0], dataType, processingFirstPart);
+		io.output("outData1", dataOutValues[1], dataType, ~processingOverlap & yCntEnd < height/4);
+		io.output("outData2", dataOutValues[2], dataType, ~processingOverlap & yCntEnd < height/4);
+		io.output("outData3", dataOutValues[3], dataType, ~processingOverlap & yCntEnd < height/4);
+		io.output("minValues", minValues, vectorType, controlInputCounter.getCount() >= width*height/4+2*overlap)
 	}
 }

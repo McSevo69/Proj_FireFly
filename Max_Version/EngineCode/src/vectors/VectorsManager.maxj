@@ -25,6 +25,8 @@ class VectorsManager extends CustomManager {
 			kernel.getInput("inData" + i) <== addStreamFromCPU("inData" + i);
 			addStreamToCPU("outData" + i) <== kernel.getOutput("outData" + i);
 		}
+
+		addStreamToCPU("minValues") <== kernel.getOutput("minValues");
 	}
 
 	static EngineInterface interfaceDefault() {
@@ -35,8 +37,7 @@ class VectorsManager extends CustomManager {
 		InterfaceParam windDir = ei.addParam("windDir", CPUTypes.INT8);
 		InterfaceParam windStrength = ei.addParam("windStrength", CPUTypes.INT8);
 		InterfaceParam burningState = ei.addParam("burningState", CPUTypes.INT8);
-		//InterfaceParam minValue = ei.addParam("minValue", CPUTypes.INT8);
-
+		
 		ei.setTicks("ForestFire", size/streamCnt+2*overlap);
 
 		ei.setScalar("ForestFire", "windDir", windDir);
@@ -50,6 +51,8 @@ class VectorsManager extends CustomManager {
 
 		for (int i=0; i<streamCnt; ++i)
 			ei.setStream("outData" + i, CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes() / streamCnt);
+
+		ei.setStream("minValues", CPUTypes.INT8, streamCnt * CPUTypes.INT8.sizeInBytes());
 
 		return ei;
 	}
