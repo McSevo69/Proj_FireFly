@@ -541,7 +541,7 @@ int main(int argc, char *argv[]) {
 	if (burningOnes > 0) setSomeTreesOnFire(dataBuffer, Vectors_width*Vectors_height, burningOnes);
 
 	printf("Running DFE...\n");
-	dataType minValues = malloc(Vectors_streamCnt*sizeof(dataType));
+	dataType minValues = calloc(Vectors_streamCnt, sizeof(dataType));
 	int x = 0;
 	int elements = Vectors_width*Vectors_height;
 	bool convergedDFE = false;
@@ -550,12 +550,12 @@ int main(int argc, char *argv[]) {
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
 	Vectors(burning, elements, paramsOut[0][0], paramsOut[0][1],
 		dataBuffer, &dataBuffer[elements/4-overlap], &dataBuffer[2*elements/4-overlap], &dataBuffer[3*elements/4-overlap],
-		dataOutDFE[0], &dataOutDFE[0][elements/4], &dataOutDFE[0][2*elements/4], &dataOutDFE[0][3*elements/4]);
+		minValues, dataOutDFE[0], &dataOutDFE[0][elements/4], &dataOutDFE[0][2*elements/4], &dataOutDFE[0][3*elements/4]);
 	while (++x < it) {
 		if (!paramsGiven) manageParams(paramsOut[x-1], paramsOut[x], radius, wind, windChangeIntervall, x);
 		Vectors(burning, elements, paramsOut[x][0], paramsOut[x][1],
 		dataOutDFE[x-1], &dataOutDFE[x-1][elements/4-overlap], &dataOutDFE[x-1][2*elements/4-overlap], &dataOutDFE[x-1][3*elements/4-overlap],
-		dataOutDFE[x], &dataOutDFE[x][elements/4], &dataOutDFE[x][2*elements/4], &dataOutDFE[x][3*elements/4]);
+		minValues, dataOutDFE[x], &dataOutDFE[x][elements/4], &dataOutDFE[x][2*elements/4], &dataOutDFE[x][3*elements/4]);
 		if (minValues[0] >= -1 & minValues[1] >= -1 & minValues[2] >= -1 & minValues[3] >= -1) convergedDFE = true;
 	}
 	gettimeofday(&end, NULL);
