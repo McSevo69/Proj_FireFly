@@ -545,15 +545,15 @@ int main(int argc, char *argv[]) {
 	int x = 0;
 	int elements = Vectors_width*Vectors_height;
 	//bool convergedDFE = false;
-	int overlap = 4 * Vectors_width + 16;
+	int overlap = (Vectors_maxRadius + 1) * Vectors_width;
 	gettimeofday(&begin, NULL);
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
-	Vectors(burning, elements, paramsOut[0][0], paramsOut[0][1], 
+	Vectors(burning, elements, paramsOut[0][0], paramsOut[0][1],
 		dataBuffer, &dataBuffer[elements/2-overlap],
 		dataOutDFE[0], &dataOutDFE[0][elements/2]);
 	while (++x < it) {
 		if (!paramsGiven) manageParams(paramsOut[x-1], paramsOut[x], radius, wind, windChangeIntervall, x);
-		Vectors(burning, elements, paramsOut[x][0], paramsOut[x][1], 
+		Vectors(burning, elements, paramsOut[x][0], paramsOut[x][1],
 		dataOutDFE[x-1], &dataOutDFE[x-1][elements/2],
 		dataOutDFE[x], &dataOutDFE[x][elements/2-overlap]);
 		//if (minValue >= -1) convergedDFE = true;

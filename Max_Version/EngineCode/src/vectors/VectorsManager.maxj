@@ -12,7 +12,7 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.KernelConfiguration.Optimizatio
 class VectorsManager extends CustomManager {
 
 	private static int width = 1920, height = 1080, maxRadius = 4, streamCnt = 2;
-	private static int overlap = maxRadius * width + 16;
+	private static int overlap = (maxRadius+1) * width;
 
 	VectorsManager(EngineParameters engineParameters) {
 		super(engineParameters);
@@ -24,7 +24,7 @@ class VectorsManager extends CustomManager {
 		for (int i=0; i<streamCnt; ++i) {
 			kernel.getInput("inData" + i) <== addStreamFromCPU("inData" + i);
 			addStreamToCPU("outData" + i) <== kernel.getOutput("outData" + i);
-		}		
+		}
 	}
 
 	static EngineInterface interfaceDefault() {
@@ -48,9 +48,9 @@ class VectorsManager extends CustomManager {
 		//ei.setStream("inData2", CPUTypes.INT8, (2*overlap + size/streamCnt) * CPUTypes.INT8.sizeInBytes() / streamCnt);
 		//ei.setStream("inData3", CPUTypes.INT8, (overlap + size/streamCnt) * CPUTypes.INT8.sizeInBytes() / streamCnt);
 
-		for (int i=0; i<streamCnt; ++i) 			
+		for (int i=0; i<streamCnt; ++i)
 			ei.setStream("outData" + i, CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes() / streamCnt);
-		
+
 		return ei;
 	}
 
@@ -60,7 +60,7 @@ class VectorsManager extends CustomManager {
 
 		KernelConfiguration currKConf = manager.getCurrentKernelConfig();
 		currKConf.optimization.setOptimizationTechnique(OptimizationTechnique.AREA);
-		
+
 		manager.addMaxFileConstant("width", width);
 		manager.addMaxFileConstant("height", height);
 		manager.addMaxFileConstant("maxRadius", maxRadius);
