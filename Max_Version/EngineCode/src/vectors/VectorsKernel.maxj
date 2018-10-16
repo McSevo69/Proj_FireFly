@@ -218,7 +218,7 @@ class VectorsKernel extends Kernel {
 		dataOutValues[3] <== getNewCellState(streamIn3, xCntEnd, yCntEnd + 3*height/4, width, height, burning, windDir, windStrength, maxRadius);
 
 		for (int i=0; i<4; ++i)
-			minValues[i] <== Reductions.streamMin(dataOutValues[i]);
+			minValues[i] <== Reductions.streamMin(dataOutValues[i]).cast(dfeInt(32));
 
 		io.output("outData0", dataOutValues[0], dataType, processingFirstPart);
 		io.output("outData1", dataOutValues[1], dataType, ~processingOverlap & yCntEnd < height/4);
