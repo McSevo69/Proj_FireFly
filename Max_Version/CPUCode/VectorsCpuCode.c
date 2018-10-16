@@ -549,13 +549,13 @@ int main(int argc, char *argv[]) {
 	gettimeofday(&begin, NULL);
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
 	Vectors(burning, elements, paramsOut[0][0], paramsOut[0][1],
-		dataBuffer, &dataBuffer[elements/2-overlap],
-		dataOutDFE[0], &dataOutDFE[0][elements/2]);
+		dataBuffer, &dataBuffer[elements/4-overlap], &dataBuffer[2*elements/4-overlap], &dataBuffer[3*elements/4-overlap],
+		dataOutDFE[0], &dataOutDFE[0][elements/4], &dataOutDFE[0][2*elements/4], &dataOutDFE[0][3*elements/4]);
 	while (++x < it) {
 		if (!paramsGiven) manageParams(paramsOut[x-1], paramsOut[x], radius, wind, windChangeIntervall, x);
 		Vectors(burning, elements, paramsOut[x][0], paramsOut[x][1],
-		dataOutDFE[x-1], &dataOutDFE[x-1][elements/2-overlap],
-		dataOutDFE[x], &dataOutDFE[x][elements/2]);
+		dataOutDFE[x-1], &dataOutDFE[x-1][elements/4-overlap], &dataOutDFE[x-1][2*elements/4-overlap], &dataOutDFE[x-1][3*elements/4-overlap],
+		dataOutDFE[x], &dataOutDFE[x][elements/4], &dataOutDFE[x][2*elements/4], &dataOutDFE[x][3*elements/4]);
 		//if (minValue >= -1) convergedDFE = true;
 	}
 	gettimeofday(&end, NULL);

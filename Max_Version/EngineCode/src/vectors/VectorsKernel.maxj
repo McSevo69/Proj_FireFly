@@ -25,7 +25,7 @@ class VectorsKernel extends Kernel {
 		int centeredIdx = (neighSize-1)/2;
 
 		neighbors[centeredIdx] =  constant.var(dataType, 1);
-	
+
 		for (int i = 1; i <= maxRadius; ++i) {
 			//cross around center cell -> 4*r
 			neighbors[centeredIdx-i*neighWidth] = ((y - i) < 0 | i > radius) ? constant.var(dataType, 1)
@@ -148,12 +148,13 @@ class VectorsKernel extends Kernel {
 	VectorsKernel(KernelParameters parameters, int width, int height, int maxRadius, int overlap) {
 		super(parameters);
 
-		int addrBits = MathUtils.bitsToAddress(width*height/2+overlap);
+		int addrBits = MathUtils.bitsToAddress(width*height/4+2*overlap);
 		Params controlInputCounterParams = control.count.makeParams(addrBits+1).withWrapMode(WrapMode.STOP_AT_MAX);
 		Counter controlInputCounter = control.count.makeCounter(controlInputCounterParams);
 
 		DFEVar processingOverlap = controlInputCounter.getCount() < overlap;
-		DFEVar processingFirstPart = controlInputCounter.getCount() < width*height/2;
+		DFEVar processingFirstPart = controlInputCounter.getCount() < width*height/4;
+		DFEVar processingSmallerParts = controlInputCounter.getCount() < width*height/4+overlap;
 
 		// Counters
 		int addrBitsWidth = MathUtils.bitsToAddress(width);
@@ -169,7 +170,7 @@ class VectorsKernel extends Kernel {
 		Params paramsTwoBegin = control.count.makeParams(addrBitsHeight)
 		.withEnable(counterOneBegin.getWrap())
 		.withWrapMode(WrapMode.STOP_AT_MAX)
-		.withMax(height/2);
+		.withMax(height/4);
 
 		Counter counterTwoBegin = control.count.makeCounter(paramsTwoBegin);
 
@@ -184,7 +185,7 @@ class VectorsKernel extends Kernel {
 		Params paramsTwoEnd = control.count.makeParams(addrBitsHeight)
 		.withEnable(counterOneEnd.getWrap())
 		.withWrapMode(WrapMode.COUNT_LT_MAX_THEN_WRAP)
-		.withMax(height);
+		.withMax(height/4);
 
 		Counter counterTwoEnd = control.count.makeCounter(paramsTwoEnd);
 
@@ -195,8 +196,10 @@ class VectorsKernel extends Kernel {
 		DFEVar xCntEnd = counterOneEnd.getCount().cast(dfeInt(addrBitsWidth+3));
 
 		// Input
-		DFEVar streamIn0 = io.input("inData0", dataType);
+		DFEVar streamIn0 = io.input("inData0", dataType, processingSmallerParts);
 		DFEVar streamIn1 = io.input("inData1", dataType);
+		DFEVar streamIn2 = io.input("inData2", dataType);
+		DFEVar streamIn3 = io.input("inData3", dataType, processingSmallerParts);
 
 		DFEVar windDir = io.scalarInput("windDir", dataType);
 		DFEVar windStrength = io.scalarInput("windStrength", dataType);
@@ -204,6 +207,8 @@ class VectorsKernel extends Kernel {
 
 		//Output
 		io.output("outData0", getNewCellState(streamIn0, xCntBegin, yCntBegin, width, height, burning, windDir, windStrength, maxRadius), dataType, processingFirstPart);
-		io.output("outData1", getNewCellState(streamIn1, xCntEnd, yCntEnd + height/2, width, height, burning, windDir, windStrength, maxRadius), dataType, ~processingOverlap);
+		io.output("outData1", getNewCellState(streamIn1, xCntEnd, yCntEnd + height/4, width, height, burning, windDir, windStrength, maxRadius), dataType, ~processingOverlap & yCntEnd < height/4);
+		io.output("outData2", getNewCellState(streamIn2, xCntEnd, yCntEnd + 2*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType, ~processingOverlap & yCntEnd < height/4);
+		io.output("outData3", getNewCellState(streamIn3, xCntEnd, yCntEnd + 3*height/4, width, height, burning, windDir, windStrength, maxRadius), dataType, ~processingOverlap & yCntEnd < height/4);
 	}
 }
