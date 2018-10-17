@@ -591,7 +591,7 @@ int main(int argc, char *argv[]) {
 		else printf("Hasn't converged after %d iterations\n", y);
 
 		double acc = checkAccuracy(dataOutDFE, dataOut, x, y);
-		printf("The accuracy measured is: %i\n", acc);
+		printf("The accuracy measured is: %d\n", acc);
 		printf("Speedup: %f\n", timeSpentCPU/timeSpent);
 
 		FILE* time_res;
