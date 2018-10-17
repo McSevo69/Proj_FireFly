@@ -17,7 +17,7 @@ class VectorsManager extends CustomManager {
 	VectorsManager(EngineParameters engineParameters) {
 		super(engineParameters);
 
-		config.setDefaultStreamClockFrequency(120);
+		config.setDefaultStreamClockFrequency(150);
 
 		KernelBlock kernel = addKernel(new VectorsKernel(makeKernelParameters("ForestFire"), width, height, maxRadius, overlap));
 

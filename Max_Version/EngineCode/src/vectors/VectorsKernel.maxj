@@ -128,7 +128,7 @@ class VectorsKernel extends Kernel {
 		cnt += (neighborhood[centerCell-1] < -1) ? constant.var(dataType, 1) : 0;
 		cnt += (neighborhood[centerCell-neighWidth-1] < -1) ? constant.var(dataType, 1) : 0;
 
-		return (cnt > 6) ? constant.var(dataType, -1) : ((cnt > 0 | radius < 2 | (wind & 5) === 0) ?
+		return (cnt > 6) ? constant.var(dataType, -1) : ((cnt > 0 | radius < 2 | ((wind & 5) === 0) ) ?
 			cnt : willBurnDueToWind(neighborhood, x, y, width, height, wind, radius, maxRadius));
 	}
 
