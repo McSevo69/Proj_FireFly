@@ -540,22 +540,31 @@ int main(int argc, char *argv[]) {
 	if (burningOnes > 0) setSomeTreesOnFire(dataBuffer, Vectors_width*Vectors_height, burningOnes);
 
 	printf("Running DFE...\n");
-	int32_t * minValues = calloc(Vectors_streamCnt, sizeof(int32_t));
+	int16_t * minValues = calloc(8, sizeof(int16_t));
 	int x = 0;
 	int elements = Vectors_width*Vectors_height;
 	bool convergedDFE = false;
 	int overlap = (Vectors_maxRadius + 1) * Vectors_width;
 	gettimeofday(&begin, NULL);
 	if (!paramsGiven) manageParams(paramsOut[0], paramsOut[0], radius, wind, windChangeIntervall, 0);
+	
 	Vectors(burning, elements, paramsOut[0][0], paramsOut[0][1],
-		dataBuffer, &dataBuffer[elements/4-overlap], &dataBuffer[2*elements/4-overlap], &dataBuffer[3*elements/4-overlap],
-		minValues, dataOutDFE[0], &dataOutDFE[0][elements/4], &dataOutDFE[0][2*elements/4], &dataOutDFE[0][3*elements/4]);
+		dataBuffer, &dataBuffer[elements/6-overlap], &dataBuffer[2*elements/6-overlap], 
+		&dataBuffer[3*elements/6-overlap], &dataBuffer[4*elements/6-overlap], &dataBuffer[5*elements/6-overlap],
+		minValues, dataOutDFE[0], &dataOutDFE[0][elements/6], &dataOutDFE[0][2*elements/6],
+		&dataOutDFE[0][3*elements/6], &dataOutDFE[0][4*elements/6], &dataOutDFE[0][5*elements/6]);
+
 	while (++x < it && !convergedDFE) {
 		if (!paramsGiven) manageParams(paramsOut[x-1], paramsOut[x], radius, wind, windChangeIntervall, x);
+
 		Vectors(burning, elements, paramsOut[x][0], paramsOut[x][1],
-		dataOutDFE[x-1], &dataOutDFE[x-1][elements/4-overlap], &dataOutDFE[x-1][2*elements/4-overlap], &dataOutDFE[x-1][3*elements/4-overlap],
-		minValues, dataOutDFE[x], &dataOutDFE[x][elements/4], &dataOutDFE[x][2*elements/4], &dataOutDFE[x][3*elements/4]);
-		if (minValues[0] >= -1 && minValues[1] >= -1 && minValues[2] >= -1 && minValues[3] >= -1) convergedDFE = true;
+			dataOutDFE[x-1], &dataOutDFE[x-1][elements/6-overlap], &dataOutDFE[x-1][2*elements/6-overlap],
+			&dataOutDFE[x-1][3*elements/6-overlap], &dataOutDFE[x-1][4*elements/6-overlap], &dataOutDFE[x-1][5*elements/6-overlap],
+			minValues, dataOutDFE[x], &dataOutDFE[x][elements/6], &dataOutDFE[x][2*elements/6],
+			&dataOutDFE[x][3*elements/6], &dataOutDFE[x][4*elements/6], &dataOutDFE[x][5*elements/6]);
+
+		if (minValues[0] >= -1 && minValues[1] >= -1 && minValues[2] >= -1 && minValues[3] >= -1 && minValues[4] >= -1 && minValues[5] >= -1) 
+			convergedDFE = true;
 	}
 	gettimeofday(&end, NULL);
 
