@@ -23,7 +23,7 @@
 #define LIGHTWIND_PATH "resources/lightwind.png"
 #define MEDIUMWIND_PATH "resources/mediumwind.png"
 #define STRONGWIND_PATH "resources/strongwind.png"
-#define DELAY 250
+#define DELAY 25
 
 char* getWindDirPath(int windCode) {
 	switch(windCode) {

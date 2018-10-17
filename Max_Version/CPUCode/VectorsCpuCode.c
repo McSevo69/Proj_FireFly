@@ -159,7 +159,7 @@ int hasBurningNeighbors(dataType* dataset, int x, int y, int width, int height, 
 
 	if (cnt > 6) return -1; //full fire
 
-	if ((wind & 5) == 0 || radius < 2 || cnt) return cnt; //->no wind
+	if ((wind & 5) == 0 || radius < 2 || cnt) return cnt; //->no wind or burning neighbor found
 
 	//NEIGHBORS
 	dataType *neighborhood = malloc((2*radius+1)*(2*radius+1)*sizeof(dataType));
