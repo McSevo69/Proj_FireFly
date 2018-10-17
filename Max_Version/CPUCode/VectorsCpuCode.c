@@ -68,7 +68,6 @@ dataType* getNeighbors(dataType *dataSet, dataType *neighborhood, int x, int y, 
 	//squares around x -> 4*r^2
 	for (int i = 1; i <= radius; ++i) {
 		for (int j = 1; j <= radius; ++j) {
-
 			neighborhood[centeredIdx-i*(2*radius+1)-j] = ((y - i) < 0 || (x - j) < 0) ? 1 :
 				dataSet[dsIdx-i*Vectors_width-j]; //above left
 
@@ -160,7 +159,7 @@ int hasBurningNeighbors(dataType* dataset, int x, int y, int width, int height, 
 
 	if (cnt > 6) return -1; //full fire
 
-	if ((wind & 5) == 0 || radius < 2) return cnt; //->no wind
+	if ((wind & 5) == 0 || radius < 2 || cnt) return cnt; //->no wind
 
 	//NEIGHBORS
 	dataType *neighborhood = malloc((2*radius+1)*(2*radius+1)*sizeof(dataType));
