@@ -11,7 +11,7 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.KernelConfiguration.Optimizatio
 
 class VectorsManager extends CustomManager {
 
-	private static int width = 3840, height = 2160, maxRadius = 4, streamCnt = 4;
+	private static int width = 3840, height = 2160, maxRadius = 4, streamCnt = 8;
 	private static int overlap = (maxRadius+1) * width;
 
 	VectorsManager(EngineParameters engineParameters) {
@@ -47,7 +47,11 @@ class VectorsManager extends CustomManager {
 		ei.setStream("inData0", CPUTypes.INT8, (overlap + size/streamCnt) * CPUTypes.INT8.sizeInBytes() );
 		ei.setStream("inData1", CPUTypes.INT8, (2*overlap + size/streamCnt) * CPUTypes.INT8.sizeInBytes() );
 		ei.setStream("inData2", CPUTypes.INT8, (2*overlap + size/streamCnt) * CPUTypes.INT8.sizeInBytes() );
-		ei.setStream("inData3", CPUTypes.INT8, (overlap + size/streamCnt) * CPUTypes.INT8.sizeInBytes() );
+		ei.setStream("inData3", CPUTypes.INT8, (2*overlap + size/streamCnt) * CPUTypes.INT8.sizeInBytes() );
+		ei.setStream("inData4", CPUTypes.INT8, (2*overlap + size/streamCnt) * CPUTypes.INT8.sizeInBytes() );
+		ei.setStream("inData5", CPUTypes.INT8, (2*overlap + size/streamCnt) * CPUTypes.INT8.sizeInBytes() );
+		ei.setStream("inData6", CPUTypes.INT8, (2*overlap + size/streamCnt) * CPUTypes.INT8.sizeInBytes() );
+		ei.setStream("inData7", CPUTypes.INT8, (overlap + size/streamCnt) * CPUTypes.INT8.sizeInBytes() );
 
 		for (int i=0; i<streamCnt; ++i)
 			ei.setStream("outData" + i, CPUTypes.INT8, size * CPUTypes.INT8.sizeInBytes() / streamCnt);

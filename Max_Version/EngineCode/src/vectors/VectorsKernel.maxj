@@ -148,13 +148,13 @@ class VectorsKernel extends Kernel {
 	VectorsKernel(KernelParameters parameters, int width, int height, int maxRadius, int overlap) {
 		super(parameters);
 
-		int addrBits = MathUtils.bitsToAddress(width*height/4+2*overlap);
+		int addrBits = MathUtils.bitsToAddress(width*height/8+2*overlap);
 		Params controlInputCounterParams = control.count.makeParams(addrBits+1).withWrapMode(WrapMode.STOP_AT_MAX);
 		Counter controlInputCounter = control.count.makeCounter(controlInputCounterParams);
 
 		DFEVar processingOverlap = controlInputCounter.getCount() < overlap;
-		DFEVar processingFirstPart = controlInputCounter.getCount() < width*height/4;
-		DFEVar processingSmallerParts = controlInputCounter.getCount() < width*height/4+overlap;
+		DFEVar processingFirstPart = controlInputCounter.getCount() < width*height/8;
+		DFEVar processingSmallerParts = controlInputCounter.getCount() < width*height/8+overlap;
 
 		// Counters
 		int addrBitsWidth = MathUtils.bitsToAddress(width);
@@ -170,7 +170,7 @@ class VectorsKernel extends Kernel {
 		Params paramsTwoBegin = control.count.makeParams(addrBitsHeight)
 		.withEnable(counterOneBegin.getWrap())
 		.withWrapMode(WrapMode.STOP_AT_MAX)
-		.withMax(height/4);
+		.withMax(height/8);
 
 		Counter counterTwoBegin = control.count.makeCounter(paramsTwoBegin);
 
@@ -185,7 +185,7 @@ class VectorsKernel extends Kernel {
 		Params paramsTwoEnd = control.count.makeParams(addrBitsHeight)
 		.withEnable(counterOneEnd.getWrap())
 		.withWrapMode(WrapMode.COUNT_LT_MAX_THEN_WRAP)
-		.withMax(height/4);
+		.withMax(height/8);
 
 		Counter counterTwoEnd = control.count.makeCounter(paramsTwoEnd);
 
@@ -195,8 +195,8 @@ class VectorsKernel extends Kernel {
 		DFEVar yCntEnd = counterTwoEnd.getCount().cast(dfeInt(addrBitsHeight+3));
 		DFEVar xCntEnd = counterOneEnd.getCount().cast(dfeInt(addrBitsWidth+3));
 
-		DFEVectorType<DFEVar> vectorType = new DFEVectorType<DFEVar>(dataType, 4);
-		DFEVectorType<DFEVar> vectorType32 = new DFEVectorType<DFEVar>(dfeInt(32), 4);
+		DFEVectorType<DFEVar> vectorType = new DFEVectorType<DFEVar>(dataType, 8);
+		DFEVectorType<DFEVar> vectorType32 = new DFEVectorType<DFEVar>(dfeInt(16), 8);
 
 		DFEVector<DFEVar> minValues = vectorType32.newInstance(this);
 		DFEVector<DFEVar> dataOutValues = vectorType.newInstance(this);
@@ -205,7 +205,11 @@ class VectorsKernel extends Kernel {
 		DFEVar streamIn0 = io.input("inData0", dataType, processingSmallerParts);
 		DFEVar streamIn1 = io.input("inData1", dataType);
 		DFEVar streamIn2 = io.input("inData2", dataType);
-		DFEVar streamIn3 = io.input("inData3", dataType, processingSmallerParts);
+		DFEVar streamIn1 = io.input("inData3", dataType);
+		DFEVar streamIn2 = io.input("inData4", dataType);
+		DFEVar streamIn1 = io.input("inData5", dataType);
+		DFEVar streamIn2 = io.input("inData6", dataType);
+		DFEVar streamIn3 = io.input("inData7", dataType, processingSmallerParts);
 
 		DFEVar windDir = io.scalarInput("windDir", dataType);
 		DFEVar windStrength = io.scalarInput("windStrength", dataType);
@@ -213,17 +217,25 @@ class VectorsKernel extends Kernel {
 
 		//Output
 		dataOutValues[0] <== getNewCellState(streamIn0, xCntBegin, yCntBegin, width, height, burning, windDir, windStrength, maxRadius);
-		dataOutValues[1] <== getNewCellState(streamIn1, xCntEnd, yCntEnd + height/4, width, height, burning, windDir, windStrength, maxRadius);
-		dataOutValues[2] <== getNewCellState(streamIn2, xCntEnd, yCntEnd + 2*height/4, width, height, burning, windDir, windStrength, maxRadius);
-		dataOutValues[3] <== getNewCellState(streamIn3, xCntEnd, yCntEnd + 3*height/4, width, height, burning, windDir, windStrength, maxRadius);
+		dataOutValues[1] <== getNewCellState(streamIn1, xCntEnd, yCntEnd + height/8, width, height, burning, windDir, windStrength, maxRadius);
+		dataOutValues[2] <== getNewCellState(streamIn2, xCntEnd, yCntEnd + 2*height/8, width, height, burning, windDir, windStrength, maxRadius);
+		dataOutValues[3] <== getNewCellState(streamIn3, xCntEnd, yCntEnd + 3*height/8, width, height, burning, windDir, windStrength, maxRadius);
+		dataOutValues[4] <== getNewCellState(streamIn4, xCntEnd, yCntEnd + 4*height/8, width, height, burning, windDir, windStrength, maxRadius);
+		dataOutValues[5] <== getNewCellState(streamIn5, xCntEnd, yCntEnd + 5*height/8, width, height, burning, windDir, windStrength, maxRadius);
+		dataOutValues[6] <== getNewCellState(streamIn6, xCntEnd, yCntEnd + 6*height/8, width, height, burning, windDir, windStrength, maxRadius);
+		dataOutValues[7] <== getNewCellState(streamIn7, xCntEnd, yCntEnd + 7*height/8, width, height, burning, windDir, windStrength, maxRadius);
 
-		for (int i=0; i<4; ++i)
-			minValues[i] <== Reductions.streamMin(dataOutValues[i]).cast(dfeInt(32));
+		for (int i=0; i<8; ++i)
+			minValues[i] <== Reductions.streamMin(dataOutValues[i]).cast(dfeInt(16));
 
 		io.output("outData0", dataOutValues[0], dataType, processingFirstPart);
-		io.output("outData1", dataOutValues[1], dataType, ~processingOverlap & yCntEnd < height/4);
-		io.output("outData2", dataOutValues[2], dataType, ~processingOverlap & yCntEnd < height/4);
-		io.output("outData3", dataOutValues[3], dataType, ~processingOverlap & yCntEnd < height/4);
-		io.output("minValues", minValues, vectorType32, controlInputCounter.getCount() === width*height/4+2*overlap - 1);
+		io.output("outData1", dataOutValues[1], dataType, ~processingOverlap & yCntEnd < height/8);
+		io.output("outData2", dataOutValues[2], dataType, ~processingOverlap & yCntEnd < height/8);
+		io.output("outData3", dataOutValues[3], dataType, ~processingOverlap & yCntEnd < height/8);
+		io.output("outData4", dataOutValues[4], dataType, ~processingOverlap & yCntEnd < height/8);
+		io.output("outData5", dataOutValues[5], dataType, ~processingOverlap & yCntEnd < height/8);
+		io.output("outData6", dataOutValues[6], dataType, ~processingOverlap & yCntEnd < height/8);
+		io.output("outData7", dataOutValues[7], dataType, ~processingOverlap & yCntEnd < height/8);
+		io.output("minValues", minValues, vectorType32, controlInputCounter.getCount() === width*height/8+2*overlap - 1);
 	}
 }
