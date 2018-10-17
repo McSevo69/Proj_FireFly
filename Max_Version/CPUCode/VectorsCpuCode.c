@@ -551,7 +551,7 @@ int main(int argc, char *argv[]) {
 	Vectors(burning, elements, paramsOut[0][0], paramsOut[0][1],
 		dataBuffer, &dataBuffer[elements/4-overlap], &dataBuffer[2*elements/4-overlap], &dataBuffer[3*elements/4-overlap],
 		minValues, dataOutDFE[0], &dataOutDFE[0][elements/4], &dataOutDFE[0][2*elements/4], &dataOutDFE[0][3*elements/4]);
-	while (++x < it) {
+	while (++x < it && !convergedDFE) {
 		if (!paramsGiven) manageParams(paramsOut[x-1], paramsOut[x], radius, wind, windChangeIntervall, x);
 		Vectors(burning, elements, paramsOut[x][0], paramsOut[x][1],
 		dataOutDFE[x-1], &dataOutDFE[x-1][elements/4-overlap], &dataOutDFE[x-1][2*elements/4-overlap], &dataOutDFE[x-1][3*elements/4-overlap],
