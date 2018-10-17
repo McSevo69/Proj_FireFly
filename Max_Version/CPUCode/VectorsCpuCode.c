@@ -27,7 +27,7 @@ enum compass {S = 0b1100, SW = 0b1101, W = 0b0001, NW = 0b0101, N = 0b0100, NE =
 //full fire (all inner neighbors are burning) burns down quicker
 //wind strength = radius (flying sparks)
 
-float checkAccuracy(dataType** results, dataType** expected, int itRes, int itExp) {
+double checkAccuracy(dataType** results, dataType** expected, int itRes, int itExp) {
 	int errors = 0;
 
 	int maxIt = (itRes >= itExp) ? itRes : itExp;
@@ -42,7 +42,7 @@ float checkAccuracy(dataType** results, dataType** expected, int itRes, int itEx
 		}
 	}
 
-	return 1 - ( (float) errors/ (float) (Vectors_width*Vectors_height*maxIt) );
+	return 1 - ( (double) (errors/maxIt) / (double) (Vectors_width*Vectors_height) );
 }
 
 dataType* getNeighbors(dataType *dataSet, dataType *neighborhood, int x, int y, int radius) {
@@ -590,8 +590,8 @@ int main(int argc, char *argv[]) {
 		if (convergedCPU) printf("Converged after %d iterations\n", y);
 		else printf("Hasn't converged after %d iterations\n", y);
 
-		float acc = checkAccuracy(dataOutDFE, dataOut, x, y);
-		printf("The accuracy measured is: %f\n", acc);
+		double acc = checkAccuracy(dataOutDFE, dataOut, x, y);
+		printf("The accuracy measured is: %i\n", acc);
 		printf("Speedup: %f\n", timeSpentCPU/timeSpent);
 
 		FILE* time_res;
