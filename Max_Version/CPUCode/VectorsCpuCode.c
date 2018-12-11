@@ -485,13 +485,7 @@ int main(int argc, char *argv[]) {
 
 	if (windSet) {
 		wind = convertWindToEnum(windString);
-	}
-
-	printf("=============================PARAMETERS==============================\n");
-	printf("iterations: %d, additional burn time: %d, initial fire cells: %ld\nradius: %ld, wind direction: %d, wind change intervall: %zu\n",
-		it, t, burningOnes, radius, wind, windChangeIntervall);
-	if (!inSet) printf("normal ratio: %f, dry ratio: %f\n", normal, dry);
-	printf("=====================================================================\n");
+	}	
 
 	if (t > 0) burning -= (t > maxT) ? maxT : t;
 
@@ -516,7 +510,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (burningOnes >= Vectors_width*Vectors_height) {
-		printf("WARNING: parameter -f/--firecells %ld not in range [0, Vectors_width*Vectors_height]\nDefault (3) is used.\n", burningOnes);
+		printf("WARNING: parameter -f/--firecells %ld not in range [0, %f]\nDefault (3) is used.\n", burningOnes, (Vectors_width*Vectors_height));
 		burningOnes = 3;
 	}
 
@@ -538,6 +532,22 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (burningOnes > 0) setSomeTreesOnFire(dataBuffer, Vectors_width*Vectors_height, burningOnes);
+
+	if (radius > Vectors_maxRadius) {
+		printf("WARNING: parameter -r/--radius %f is greater than the maximal allowed radius of %f.\nRadius is set to %f.\n", radius, 				Vectors_maxRadius, Vectors_maxRadius);		
+		radius = Vectors_maxRadius;
+	}
+
+	if (radius < 0) {
+		printf("WARNING: parameter -r/--radius %f is smaller than zero \nRadius is set to 0 (random).\n", radius);		
+		radius = 0;
+	}
+
+	printf("=============================PARAMETERS==============================\n");
+	printf("iterations: %d, additional burn time: %d, initial fire cells: %ld\nradius: %ld, wind direction: %d, wind change intervall: %zu\n",
+		it, t, burningOnes, radius, wind, windChangeIntervall);
+	if (!inSet) printf("normal ratio: %f, dry ratio: %f\n", normal, dry);
+	printf("=====================================================================\n");
 
 	printf("Running DFE...\n");
 	int16_t * minValues = calloc(8, sizeof(int16_t));
