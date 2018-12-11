@@ -64,7 +64,7 @@ class VectorsManager extends CustomManager {
 		VectorsManager manager = new VectorsManager(params);
 
 		KernelConfiguration currKConf = manager.getCurrentKernelConfig();
-		currKConf.optimization.setOptimizationTechnique(OptimizationTechnique.AREA);
+		currKConf.optimization.setOptimizationTechnique(OptimizationTechnique.SPEED);
 
 		manager.addMaxFileConstant("width", width);
 		manager.addMaxFileConstant("height", height);
