@@ -613,7 +613,7 @@ int main(int argc, char *argv[]) {
 		time_res = fopen(filename, "a");
 		//header:
 		//width, height, radius, initial fire cells, it, it until convergence, time CPU, time DFE, Speedup (CPU/DFE)
-		fprintf(time_res, "%d, %d, %zu, %d, %d, %d, %f, %f, %f\n", Vectors_width, Vectors_height, radius, burningOnes, it, x, timeSpentCPU, timeSpent, timeSpentCPU/timeSpent);
+		fprintf(time_res, "%d, %d, %zu, %d, %d, %zu, %f, %f, %f\n", Vectors_width, Vectors_height, radius, burningOnes, it, x, timeSpentCPU, timeSpent, timeSpentCPU/timeSpent);
 		fclose(time_res);
 		printf("Benchmark results written to %s\n", filename);
 
