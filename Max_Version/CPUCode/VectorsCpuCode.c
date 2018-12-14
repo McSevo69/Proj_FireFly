@@ -616,7 +616,7 @@ int main(int argc, char *argv[]) {
 		char filename[16];
 		snprintf(filename, sizeof(filename), "benchmark.csv");
 		time_res = fopen(filename, "a");
-		fprintf(time_res, "%d, %d, %d, %f, %f, %f, %f\n", Vectors_width, Vectors_height, it, timeSpentCPU, timeSpent, timeSpentCPU/timeSpent, acc);
+		fprintf(time_res, "%d, %d, %d, %d, %f, %f, %f\n", Vectors_width, Vectors_height, radius, it, timeSpentCPU, timeSpent, timeSpentCPU/timeSpent);
 		fclose(time_res);
 		printf("Benchmark results written to %s\n", filename);
 
