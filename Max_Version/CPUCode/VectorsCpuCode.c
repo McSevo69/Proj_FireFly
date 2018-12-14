@@ -534,7 +534,7 @@ int main(int argc, char *argv[]) {
 	if (burningOnes > 0) setSomeTreesOnFire(dataBuffer, Vectors_width*Vectors_height, burningOnes);
 
 	if (radius > Vectors_maxRadius) {
-		printf("WARNING: parameter -r/--radius %d is greater than the maximal allowed radius of %d.\nRadius is set to %d.\n", radius, Vectors_maxRadius, Vectors_maxRadius);		
+		printf("WARNING: parameter -r/--radius %zu is greater than the maximal allowed radius of %d.\nRadius is set to %d.\n", radius, Vectors_maxRadius, Vectors_maxRadius);		
 		radius = Vectors_maxRadius;
 	}
 
@@ -611,7 +611,7 @@ int main(int argc, char *argv[]) {
 		char filename[16];
 		snprintf(filename, sizeof(filename), "benchmark.csv");
 		time_res = fopen(filename, "a");
-		fprintf(time_res, "%d, %d, %d, %d, %f, %f, %f\n", Vectors_width, Vectors_height, radius, it, timeSpentCPU, timeSpent, timeSpentCPU/timeSpent);
+		fprintf(time_res, "%d, %d, %zu, %d, %f, %f, %f\n", Vectors_width, Vectors_height, radius, it, timeSpentCPU, timeSpent, timeSpentCPU/timeSpent);
 		fclose(time_res);
 		printf("Benchmark results written to %s\n", filename);
 
