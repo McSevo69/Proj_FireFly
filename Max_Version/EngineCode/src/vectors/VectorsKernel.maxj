@@ -233,6 +233,6 @@ class VectorsKernel extends Kernel {
 		io.output("outData3", dataOutValues[3], dataType, ~processingOverlap & yCntEnd < height/6);
 		io.output("outData4", dataOutValues[4], dataType, ~processingOverlap & yCntEnd < height/6);
 		io.output("outData5", dataOutValues[5], dataType, ~processingOverlap & yCntEnd < height/6);
-		io.output("minValues", minValues, vectorType32, controlInputCounter.getCount() === width*height/6+2*overlap - 1);
+		io.output("minValues", minValues, vectorType16, controlInputCounter.getCount() === width*height/6+2*overlap - 1);
 	}
 }
