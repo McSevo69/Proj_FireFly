@@ -196,9 +196,9 @@ class VectorsKernel extends Kernel {
 		DFEVar xCntEnd = counterOneEnd.getCount().cast(dfeInt(addrBitsWidth+3));
 
 		DFEVectorType<DFEVar> vectorType = new DFEVectorType<DFEVar>(dataType, 6);
-		DFEVectorType<DFEVar> vectorType32 = new DFEVectorType<DFEVar>(dfeInt(16), 8);
+		DFEVectorType<DFEVar> vectorType16 = new DFEVectorType<DFEVar>(dfeInt(16), 8);
 
-		DFEVector<DFEVar> minValues = vectorType32.newInstance(this);
+		DFEVector<DFEVar> minValues = vectorType16.newInstance(this);
 		DFEVector<DFEVar> dataOutValues = vectorType.newInstance(this);
 
 		// Input
