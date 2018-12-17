@@ -101,7 +101,7 @@ class VectorsKernel extends Kernel {
 
 	DFEVar willBurnDueToWind(DFEVar[] neighborhood, DFEVar x, DFEVar y, int width, int height, DFEVar wind, DFEVar radius, int maxRadius) {
 
-		//this is like transforming DFEVar to int
+		//this is like transforming DFEVar into int
 		return control.mux(wind.cast(dfeUInt(4)), getWindResult(neighborhood, x, y, radius, maxRadius, 0), getWindResult(neighborhood, x, y, radius, maxRadius, 1),
 			getWindResult(neighborhood, x, y, radius, maxRadius, 2), getWindResult(neighborhood, x, y, radius, maxRadius, 3),
 			getWindResult(neighborhood, x, y, radius, maxRadius, 4), getWindResult(neighborhood, x, y, radius, maxRadius, 5),
@@ -134,10 +134,10 @@ class VectorsKernel extends Kernel {
 
 	DFEVar getNewCellState(DFEVar streamIn, DFEVar x, DFEVar y, int width, int height, DFEVar burning, DFEVar wind, DFEVar radius, int maxRadius) {
 
-		DFEVar burnState = hasBurningNeighbors(streamIn, x, y, width, height, wind, radius, maxRadius);
+		DFEVar burnCount = hasBurningNeighbors(streamIn, x, y, width, height, wind, radius, maxRadius);
 
-		DFEVar resultDry = (burnState === -1 | burnState > 0) ? burning + 1 : streamIn;
-		DFEVar resultNormal = (burnState === -1) ? burning + 1 : ((burnState > 1) ? burning -1 : streamIn);
+		DFEVar resultDry = (burnCount === -1 | burnCount > 0) ? burning + 1 : streamIn;
+		DFEVar resultNormal = (burnCount === -1) ? burning + 1 : ((burnCount > 1) ? burning -1 : streamIn);
 
 		DFEVar inState = (streamIn > 2) ? constant.var(dfeUInt(2), 0) :
 			((streamIn > 0) ? constant.var(dfeUInt(2), 1) : ((streamIn >= -1) ? constant.var(dfeUInt(2), 2) : constant.var(dfeUInt(2), 3)));
