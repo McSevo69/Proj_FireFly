@@ -11,7 +11,7 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.KernelConfiguration.Optimizatio
 
 class VectorsManager extends CustomManager {
 
-	private static int width = 7680, height = 4320, maxRadius = 4, streamCnt = 6;
+	private static int width = 3840, height = 2160, maxRadius = 4, streamCnt = 6;
 	private static int overlap = (maxRadius+1) * width;
 
 	VectorsManager(EngineParameters engineParameters) {
